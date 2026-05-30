@@ -1,0 +1,834 @@
+# Prode Mundial 2026 - v1 Backlog
+
+Last updated: 2026-05-30
+
+Statuses: `Todo`, `In Progress`, `Done`, `Blocked`
+
+## EPIC 0 - Base tecnica
+
+### Ticket ID
+E0-T01
+
+### Title
+Document product scope and working rules
+
+### Status
+Done
+
+### Sprint
+Sprint 0
+
+### Priority
+High
+
+### Objective
+Create the initial documentation that defines product scope, backlog, sprint plan, decisions, and future Codex rules.
+
+### Scope
+- Complete `docs/source.md`.
+- Complete `docs/backlog.md`.
+- Complete `docs/sprints.md`.
+- Complete `docs/decisions-log.md`.
+- Create `docs/codex-rules.md`.
+
+### Out of scope
+- Laravel application code.
+- Dependency installation.
+- Package file changes.
+- Application initialization.
+
+### Acceptance criteria
+- Requested documentation files exist in `docs/`.
+- Product scope, rules, stack, and constraints are documented.
+- Backlog uses the agreed ticket format.
+- Sprint plan covers Sprint 0 through Sprint 8.
+
+### Suggested commit message
+docs: define product scope and v1 plan
+
+### Ticket ID
+E0-T02
+
+### Title
+Initialize Laravel technical base
+
+### Status
+Todo
+
+### Sprint
+Sprint 0
+
+### Priority
+High
+
+### Objective
+Create the Laravel 12 application foundation using the agreed stack.
+
+### Scope
+- Initialize Laravel 12.
+- Configure PHP 8.2+ expectations.
+- Add Laravel Breeze with Blade.
+- Configure Tailwind CSS, Vite, and vanilla JavaScript.
+- Prepare MySQL environment variables.
+- Add baseline Pest / Laravel test setup.
+
+### Out of scope
+- Domain models.
+- Tournament data.
+- Prediction logic.
+- Deployment.
+
+### Acceptance criteria
+- App boots locally.
+- Authentication scaffold is ready for future tickets.
+- Baseline tests run.
+- No React, Vue, or Inertia is introduced.
+
+### Suggested commit message
+chore: initialize laravel application base
+
+## EPIC 1 - Modelo del torneo
+
+### Ticket ID
+E1-T01
+
+### Title
+Create tournament data model
+
+### Status
+Todo
+
+### Sprint
+Sprint 1
+
+### Priority
+High
+
+### Objective
+Model teams, phases, and matches using Laravel conventions.
+
+### Scope
+- Add migrations and Eloquent models for teams, phases, and matches.
+- Add foreign keys and basic constraints.
+- Represent match start time, phase, home team, away team, and placeholder state.
+
+### Out of scope
+- Admin UI.
+- Prediction submission.
+- Scoring.
+
+### Acceptance criteria
+- Tables migrate successfully.
+- Matches can reference teams and phases.
+- Knockout placeholders can exist without both teams.
+- Foreign keys protect data integrity where applicable.
+
+### Suggested commit message
+feat: add tournament data model
+
+### Ticket ID
+E1-T02
+
+### Title
+Seed initial tournament structure
+
+### Status
+Todo
+
+### Sprint
+Sprint 1
+
+### Priority
+Medium
+
+### Objective
+Provide maintainable seed data for phases and initial tournament structure.
+
+### Scope
+- Add seeders for phases.
+- Add sample teams and matches suitable for development.
+- Keep seed data clearly marked as test data until official data is added.
+
+### Out of scope
+- Live data ingestion.
+- Final official FIFA schedule validation.
+- Admin import tooling.
+
+### Acceptance criteria
+- Seeders run without errors.
+- Development data is enough to test match listing.
+- Test data is not confused with live mode data.
+
+### Suggested commit message
+feat: seed initial tournament structure
+
+## EPIC 2 - Usuarios y autenticacion
+
+### Ticket ID
+E2-T01
+
+### Title
+Configure user authentication
+
+### Status
+Todo
+
+### Sprint
+Sprint 2
+
+### Priority
+High
+
+### Objective
+Enable registration, login, logout, and authenticated pages.
+
+### Scope
+- Configure Breeze authentication views.
+- Ensure mobile-first auth screens.
+- Keep copy free of gambling language.
+
+### Out of scope
+- Social login.
+- Two-factor authentication.
+- User profile customization beyond defaults.
+
+### Acceptance criteria
+- Users can register, log in, and log out.
+- Authenticated routes are protected.
+- Auth UI works on mobile and desktop.
+
+### Suggested commit message
+feat: configure user authentication
+
+### Ticket ID
+E2-T02
+
+### Title
+Add admin role flag
+
+### Status
+Todo
+
+### Sprint
+Sprint 2
+
+### Priority
+High
+
+### Objective
+Allow the app to distinguish admin users from regular users.
+
+### Scope
+- Add an admin flag or role field to users.
+- Add authorization checks for admin-only routes.
+- Add tests for admin access.
+
+### Out of scope
+- Full role-permission system.
+- Admin UI implementation.
+
+### Acceptance criteria
+- Admin-only routes reject regular users.
+- Admin users can access protected admin routes.
+- The implementation stays simple.
+
+### Suggested commit message
+feat: add admin access control
+
+## EPIC 3 - Partidos y calendario
+
+### Ticket ID
+E3-T01
+
+### Title
+Show match calendar
+
+### Status
+Todo
+
+### Sprint
+Sprint 2
+
+### Priority
+High
+
+### Objective
+Let users browse World Cup matches in a mobile-first calendar/list view.
+
+### Scope
+- Add match list page.
+- Group or filter matches by phase/date.
+- Show teams, kickoff time, phase, and result status.
+
+### Out of scope
+- Prediction form.
+- Admin match editing.
+- Advanced filters.
+
+### Acceptance criteria
+- Authenticated users can view matches.
+- Placeholder matches are clearly shown as not ready for prediction.
+- Layout is responsive.
+
+### Suggested commit message
+feat: show match calendar
+
+## EPIC 4 - Predicciones
+
+### Ticket ID
+E4-T01
+
+### Title
+Submit and edit score predictions
+
+### Status
+Todo
+
+### Sprint
+Sprint 2
+
+### Priority
+High
+
+### Objective
+Allow users to create and update predictions before the edit deadline.
+
+### Scope
+- Add prediction model and migration.
+- Add score prediction form for eligible matches.
+- Enforce one prediction per user per match.
+- Allow edits until 5 minutes before match start.
+
+### Out of scope
+- Knockout qualified-team prediction.
+- Scoring calculation.
+- Private league views.
+
+### Acceptance criteria
+- Users can submit predictions for ready matches.
+- Users can edit predictions before the deadline.
+- Predictions are locked 5 minutes before match start.
+- Users cannot predict placeholder matches.
+
+### Suggested commit message
+feat: add match score predictions
+
+## EPIC 5 - Scoring
+
+### Ticket ID
+E5-T01
+
+### Title
+Calculate prediction points
+
+### Status
+Todo
+
+### Sprint
+Sprint 3
+
+### Priority
+High
+
+### Objective
+Award points based on real match results and prediction accuracy.
+
+### Scope
+- Store real match scores.
+- Calculate 6, 3, or 0 points for standard matches.
+- Make recalculation idempotent.
+- Add tests for exact result, correct winner, correct draw, and incorrect prediction.
+
+### Out of scope
+- Knockout qualified-team scoring.
+- Admin UI for recalculation.
+
+### Acceptance criteria
+- Exact result earns 6 points.
+- Correct winner or correct draw without exact score earns 3 points.
+- Incorrect prediction earns 0 points.
+- Recalculating does not duplicate points.
+
+### Suggested commit message
+feat: calculate prediction points
+
+## EPIC 6 - Leaderboard
+
+### Ticket ID
+E6-T01
+
+### Title
+Show general leaderboard
+
+### Status
+Todo
+
+### Sprint
+Sprint 3
+
+### Priority
+High
+
+### Objective
+Rank all users by total points in the general league.
+
+### Scope
+- Add general leaderboard page.
+- Show user rank and total points.
+- Include all registered users automatically.
+
+### Out of scope
+- Private league leaderboards.
+- Tie-breaker complexity beyond simple stable ordering.
+
+### Acceptance criteria
+- All users appear in the general leaderboard.
+- Users are ordered by total points descending.
+- The page is usable on mobile.
+
+### Suggested commit message
+feat: show general leaderboard
+
+## EPIC 7 - Ligas privadas
+
+### Ticket ID
+E7-T01
+
+### Title
+Create private leagues
+
+### Status
+Todo
+
+### Sprint
+Sprint 4
+
+### Priority
+High
+
+### Objective
+Allow users to create one private league with a unique visible code.
+
+### Scope
+- Add private league model, migration, and owner relationship.
+- Generate a unique visible ID or code.
+- Enforce at most 1 owned private league per user.
+- Allow duplicate league names.
+
+### Out of scope
+- Join requests.
+- Member removal.
+- League leaderboard.
+
+### Acceptance criteria
+- A user can create one private league.
+- A second league creation attempt is blocked.
+- Duplicate league names are allowed.
+- Each league has a unique visible code.
+
+### Suggested commit message
+feat: add private league creation
+
+### Ticket ID
+E7-T02
+
+### Title
+Show private league leaderboard
+
+### Status
+Todo
+
+### Sprint
+Sprint 4
+
+### Priority
+Medium
+
+### Objective
+Rank members inside each private league.
+
+### Scope
+- Add league detail page.
+- Show members ordered by total points.
+- Ensure only league members can view private league details.
+
+### Out of scope
+- Join request workflow.
+- Member removal workflow.
+
+### Acceptance criteria
+- Members can view their private league leaderboard.
+- Non-members cannot view private league details.
+- Ranking uses the same points total as the general leaderboard.
+
+### Suggested commit message
+feat: show private league leaderboard
+
+## EPIC 8 - Invitaciones y solicitudes
+
+### Ticket ID
+E8-T01
+
+### Title
+Search and request to join private leagues
+
+### Status
+Todo
+
+### Sprint
+Sprint 5
+
+### Priority
+High
+
+### Objective
+Let users find private leagues and request owner approval to join.
+
+### Scope
+- Search leagues by name or visible ID/code.
+- Create join request records.
+- Let owners approve or reject requests.
+- Enforce at most 3 private league memberships per user.
+
+### Out of scope
+- Email notifications.
+- Public invitation links.
+
+### Acceptance criteria
+- Users can search by league name.
+- Users can search by league ID/code.
+- Joining requires owner approval.
+- Users cannot exceed 3 private league memberships.
+
+### Suggested commit message
+feat: add private league join requests
+
+### Ticket ID
+E8-T02
+
+### Title
+Remove private league members with audit log
+
+### Status
+Todo
+
+### Sprint
+Sprint 5
+
+### Priority
+Medium
+
+### Objective
+Allow league owners to remove members while logging the action.
+
+### Scope
+- Add owner-only member removal.
+- Add audit log entry for each removal.
+- Preserve enough log details to understand who removed whom and when.
+
+### Out of scope
+- Reinstatement workflow.
+- Notifications.
+
+### Acceptance criteria
+- Owners can remove members from their league.
+- Non-owners cannot remove members.
+- Each removal creates a log entry.
+
+### Suggested commit message
+feat: log private league member removals
+
+## EPIC 9 - Admin
+
+### Ticket ID
+E9-T01
+
+### Title
+Build admin tournament management
+
+### Status
+Todo
+
+### Sprint
+Sprint 5
+
+### Priority
+High
+
+### Objective
+Allow admin users to manage teams, phases, matches, and real results.
+
+### Scope
+- Add admin dashboard.
+- Add CRUD screens for teams, phases, and matches.
+- Add result entry/update workflow.
+- Show current environment and test/live mode.
+
+### Out of scope
+- Advanced import/export.
+- Non-admin management roles.
+
+### Acceptance criteria
+- Admin users can manage tournament records.
+- Regular users cannot access admin screens.
+- Admin dashboard shows environment and mode.
+- Result changes can trigger or prepare ranking recalculation.
+
+### Suggested commit message
+feat: add admin tournament management
+
+### Ticket ID
+E9-T02
+
+### Title
+Add ranking recalculation admin action
+
+### Status
+Todo
+
+### Sprint
+Sprint 5
+
+### Priority
+High
+
+### Objective
+Let admins recalculate rankings after result changes.
+
+### Scope
+- Add admin action to recalculate prediction points.
+- Show success/failure feedback.
+- Add tests for recalculation behavior.
+
+### Out of scope
+- Background queues.
+- Scheduled jobs.
+
+### Acceptance criteria
+- Admin can trigger recalculation.
+- Recalculation is idempotent.
+- Leaderboards reflect updated points.
+
+### Suggested commit message
+feat: add admin ranking recalculation
+
+## EPIC 10 - Fase eliminatoria
+
+### Ticket ID
+E10-T01
+
+### Title
+Support knockout placeholders
+
+### Status
+Todo
+
+### Sprint
+Sprint 6
+
+### Priority
+High
+
+### Objective
+Represent knockout matches before both teams are known.
+
+### Scope
+- Allow matches with placeholder labels.
+- Prevent predictions until both teams are assigned.
+- Let admins assign teams later.
+
+### Out of scope
+- Bracket visualization.
+- Automatic advancement.
+
+### Acceptance criteria
+- Placeholder matches can be created.
+- Placeholder matches appear in the calendar.
+- Users cannot submit predictions until both teams are known.
+
+### Suggested commit message
+feat: support knockout match placeholders
+
+### Ticket ID
+E10-T02
+
+### Title
+Add knockout qualified-team predictions
+
+### Status
+Todo
+
+### Sprint
+Sprint 6
+
+### Priority
+High
+
+### Objective
+Allow users to predict score and qualified team for knockout matches.
+
+### Scope
+- Extend prediction form for knockout matches.
+- Store predicted qualified team.
+- Score knockout predictions using 6, 3, or 0 point rules.
+
+### Out of scope
+- Penalty shootout score details.
+- Automatic bracket propagation.
+
+### Acceptance criteria
+- Users can choose a qualified team for ready knockout matches.
+- Exact score plus correct qualified team earns 6 points.
+- Correct qualified team without exact score earns 3 points.
+- Incorrect prediction earns 0 points.
+
+### Suggested commit message
+feat: add knockout prediction scoring
+
+## EPIC 11 - UX / UI
+
+### Ticket ID
+E11-T01
+
+### Title
+Polish mobile-first user experience
+
+### Status
+Todo
+
+### Sprint
+Sprint 7
+
+### Priority
+Medium
+
+### Objective
+Improve the main user flows for small screens and responsive layouts.
+
+### Scope
+- Review auth, match calendar, predictions, leaderboards, and private league screens.
+- Improve spacing, navigation, forms, and empty states.
+- Keep Blade, Tailwind, and vanilla JavaScript.
+
+### Out of scope
+- Full redesign.
+- New frontend frameworks.
+
+### Acceptance criteria
+- Main flows are usable on common mobile widths.
+- UI copy avoids gambling language.
+- Desktop layouts remain clean and readable.
+
+### Suggested commit message
+style: polish mobile-first user flows
+
+## EPIC 12 - Testing y hardening
+
+### Ticket ID
+E12-T01
+
+### Title
+Add v1 feature coverage
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Cover critical v1 behavior with tests.
+
+### Scope
+- Add tests for auth access, prediction deadlines, scoring, private league limits, join approvals, removals, and admin access.
+- Add regression tests for knockout placeholders and knockout scoring.
+
+### Out of scope
+- Exhaustive browser automation.
+- Load testing.
+
+### Acceptance criteria
+- Critical domain rules have test coverage.
+- Test suite passes locally.
+- Risky edge cases are documented or covered.
+
+### Suggested commit message
+test: cover critical v1 rules
+
+### Ticket ID
+E12-T02
+
+### Title
+Harden validation and authorization
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Review validation and authorization across v1 workflows.
+
+### Scope
+- Validate forms and route access.
+- Check ownership rules for private leagues.
+- Check admin-only actions.
+- Review user-facing errors.
+
+### Out of scope
+- Security audit by a third party.
+- Rate limiting beyond Laravel defaults unless needed.
+
+### Acceptance criteria
+- Users cannot modify records they do not own.
+- Admin actions are protected.
+- Validation errors are understandable.
+
+### Suggested commit message
+fix: harden validation and authorization
+
+## EPIC 13 - Deploy / Railway
+
+### Ticket ID
+E13-T01
+
+### Title
+Prepare Railway deployment
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Prepare the Laravel app for deployment on Railway with Caddy / FrankenPHP.
+
+### Scope
+- Add Railway deployment configuration.
+- Configure Caddy / FrankenPHP as needed.
+- Document required environment variables.
+- Verify production build steps.
+
+### Out of scope
+- Custom Kubernetes setup.
+- Multi-service architecture.
+
+### Acceptance criteria
+- Deployment configuration is documented.
+- App can be deployed to Railway.
+- Environment variables are clear.
+- Test/live mode is visible in admin.
+
+### Suggested commit message
+chore: prepare railway deployment
