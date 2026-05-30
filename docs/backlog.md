@@ -524,42 +524,52 @@ Add informational tournament calendar
 ## EPIC 4 - Predicciones
 
 ### Ticket ID
-E4-T01
+TICKET-011
 
 ### Title
-Submit and edit score predictions
+Crear modelo Prediction
 
-### Status
-Todo
+### Estado
+DONE
 
 ### Sprint
 Sprint 2
 
-### Priority
+### Prioridad
 High
 
-### Objective
-Allow users to create and update predictions before the edit deadline.
+### Objetivo
+Crear el modelo de datos para predicciones de marcador de usuarios.
 
-### Scope
-- Add prediction model and migration.
-- Add score prediction form for eligible matches.
-- Enforce one prediction per user per match.
-- Allow edits until 5 minutes before match start.
+### Alcance
+- Crear modelo Prediction.
+- Crear migration predictions.
+- Crear PredictionFactory si es util.
+- Relacionar Prediction con User.
+- Relacionar Prediction con Match.
+- Agregar relaciones utiles en User y Match.
+- Asegurar una unica prediccion por usuario y partido.
 
-### Out of scope
-- Knockout qualified-team prediction.
-- Scoring calculation.
-- Private league views.
+### Fuera de alcance
+- No crear formulario de prediccion.
+- No crear flujo de envio de predicciones.
+- No implementar edicion.
+- No implementar scoring.
+- No implementar leaderboard.
+- No implementar ligas privadas.
+- No crear UI de predicciones.
 
-### Acceptance criteria
-- Users can submit predictions for ready matches.
-- Users can edit predictions before the deadline.
-- Predictions are locked 5 minutes before match start.
-- Users cannot predict placeholder matches.
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- Modelo Prediction existe.
+- Tabla predictions existe.
+- User tiene relacion predictions.
+- Match tiene relacion predictions.
+- Un usuario no puede duplicar predicciones para el mismo partido a nivel DB.
+- No se implementan funcionalidades fuera de alcance.
 
-### Suggested commit message
-feat: add match score predictions
+### Commit sugerido
+Add predictions model and migration
 
 ## EPIC 5 - Scoring
 
