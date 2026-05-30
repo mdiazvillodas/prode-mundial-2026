@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Tournament extends Model
@@ -26,5 +27,10 @@ class Tournament extends Model
             'starts_at' => 'date',
             'ends_at' => 'date',
         ];
+    }
+
+    public function matches(): HasMany
+    {
+        return $this->hasMany(TournamentMatch::class);
     }
 }
