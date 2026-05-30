@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.index')">
                         {{ __('Partidos') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('calendar.index')" :active="request()->routeIs('calendar.index')">
+                        {{ __('Calendario') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -75,6 +78,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.index')">
                 {{ __('Partidos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('calendar.index')" :active="request()->routeIs('calendar.index')">
+                {{ __('Calendario') }}
             </x-responsive-nav-link>
         </div>
 

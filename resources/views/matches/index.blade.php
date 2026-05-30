@@ -7,6 +7,9 @@
             <p class="text-sm text-gray-500">
                 {{ __('Proximos partidos y estados actuales del Mundial 2026.') }}
             </p>
+            <a href="{{ route('calendar.index') }}" class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                {{ __('Ver calendario completo') }}
+            </a>
         </div>
     </x-slot>
 
