@@ -19,6 +19,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@example.com',
             'email_verified_at' => now(),
             'password' => 'password',
+            'role' => User::ROLE_ADMIN,
         ]);
 
         User::query()->create([
@@ -27,6 +28,7 @@ class UserSeeder extends Seeder
             'email' => 'user@example.com',
             'email_verified_at' => now(),
             'password' => 'password',
+            'role' => User::ROLE_USER,
         ]);
     }
 }
