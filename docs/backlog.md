@@ -334,39 +334,94 @@ Enable registration, login, logout, and authenticated pages.
 feat: configure user authentication
 
 ### Ticket ID
-E2-T02
+TICKET-007
 
 ### Title
-Add admin role flag
+Ajustar registro de usuario con username
 
-### Status
-Todo
+### Estado
+DONE
 
 ### Sprint
 Sprint 2
 
-### Priority
+### Prioridad
 High
 
-### Objective
-Allow the app to distinguish admin users from regular users.
+### Objetivo
+Agregar un username visible y unico al registro de usuarios para futuros leaderboards y ligas privadas.
 
-### Scope
-- Add an admin flag or role field to users.
-- Add authorization checks for admin-only routes.
-- Add tests for admin access.
+### Alcance
+- Agregar columna username a users.
+- Hacer username unico.
+- Actualizar User fillable.
+- Actualizar registro Breeze para solicitar, validar y guardar username.
+- Mantener login por email.
+- Actualizar seeders con usernames.
 
-### Out of scope
-- Full role-permission system.
-- Admin UI implementation.
+### Fuera de alcance
+- No agregar rol admin.
+- No implementar leaderboards.
+- No implementar ligas privadas.
+- No modificar comportamiento de login.
 
-### Acceptance criteria
-- Admin-only routes reject regular users.
-- Admin users can access protected admin routes.
-- The implementation stays simple.
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- Register muestra campo username.
+- Nuevos usuarios pueden registrarse con username unico.
+- Usernames duplicados son rechazados.
+- Usuarios seed tienen usernames.
+- Login por email sigue funcionando.
 
-### Suggested commit message
-feat: add admin access control
+### Commit sugerido
+Add username to user registration
+
+### Ticket ID
+TICKET-008
+
+### Title
+Agregar rol admin
+
+### Estado
+DONE
+
+### Sprint
+Sprint 2
+
+### Prioridad
+High
+
+### Objetivo
+Agregar la base de rol simple para distinguir usuarios admin de usuarios normales.
+
+### Alcance
+- Agregar columna role a users.
+- Soportar roles user y admin.
+- Definir role user como default.
+- Actualizar User fillable.
+- Actualizar seeders con admin@example.com como admin y user@example.com como user.
+- Agregar helper simple isAdmin().
+- Agregar middleware admin basico si corresponde.
+
+### Fuera de alcance
+- No crear dashboard admin.
+- No crear CRUD admin.
+- No crear UI de administracion.
+- No implementar scoring.
+- No implementar predicciones.
+- No implementar ligas privadas.
+- No agregar sistema de permisos avanzado.
+
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- users tiene columna role.
+- Nuevos usuarios se registran con role user por defecto.
+- Usuario admin seed tiene role admin.
+- Usuario normal seed tiene role user.
+- Existe una forma simple de verificar si un usuario es admin.
+
+### Commit sugerido
+Add admin role to users
 
 ## EPIC 3 - Partidos y calendario
 
