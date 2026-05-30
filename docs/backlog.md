@@ -90,77 +90,210 @@ chore: initialize laravel application base
 ## EPIC 1 - Modelo del torneo
 
 ### Ticket ID
-E1-T01
+TICKET-003
 
 ### Title
-Create tournament data model
+Crear modelo Team
 
-### Status
-Todo
+### Estado
+DONE
 
 ### Sprint
 Sprint 1
 
-### Priority
+### Prioridad
 High
 
-### Objective
-Model teams, phases, and matches using Laravel conventions.
+### Objetivo
+Representar las selecciones que participan en el Mundial 2026.
 
-### Scope
-- Add migrations and Eloquent models for teams, phases, and matches.
-- Add foreign keys and basic constraints.
-- Represent match start time, phase, home team, away team, and placeholder state.
+### Alcance
+- Crear migration teams.
+- Crear modelo Team.
+- Crear factory.
+- Crear TeamSeeder.
+- Campos mínimos:
+  - id
+  - name
+  - short_name
+  - country_code
+  - flag_path
+  - created_at
+  - updated_at
 
-### Out of scope
-- Admin UI.
-- Prediction submission.
-- Scoring.
+### Fuera de alcance
+- No crear pantallas admin.
+- No crear lógica de partidos.
+- No crear lógica de torneo.
+- No crear predicciones.
+- No importar equipos desde una API.
+- No customizar UI.
+- No modificar autenticación.
 
-### Acceptance criteria
-- Tables migrate successfully.
-- Matches can reference teams and phases.
-- Knockout placeholders can exist without both teams.
-- Foreign keys protect data integrity where applicable.
+### Criterios de aceptación
+- El modelo Team existe.
+- La tabla teams existe.
+- TeamFactory existe.
+- migrate:fresh --seed crea equipos de prueba.
+- No se implementan funcionalidades fuera de alcance.
 
-### Suggested commit message
-feat: add tournament data model
+### Commit sugerido
+Add teams model and migration
 
 ### Ticket ID
-E1-T02
+TICKET-004
 
 ### Title
-Seed initial tournament structure
+Crear modelo Tournament
 
-### Status
-Todo
+### Estado
+TODO
 
 ### Sprint
 Sprint 1
 
-### Priority
+### Prioridad
+High
+
+### Objetivo
+Representar el Mundial FIFA 2026 como torneo principal de la plataforma.
+
+### Alcance
+- Crear migration tournaments.
+- Crear modelo Tournament.
+- Crear factory.
+- Crear TournamentSeeder.
+- Asociar el torneo inicial “FIFA World Cup 2026”.
+- Campos mínimos sugeridos:
+  - id
+  - name
+  - slug
+  - year
+  - starts_at
+  - ends_at
+  - status
+  - created_at
+  - updated_at
+
+### Fuera de alcance
+- No crear partidos todavía.
+- No crear fases todavía.
+- No crear grupos todavía.
+- No crear pantalla admin.
+- No implementar predicciones.
+
+### Criterios de aceptación
+- El modelo Tournament existe.
+- La tabla tournaments existe.
+- migrate:fresh --seed crea el torneo “FIFA World Cup 2026”.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add tournaments model and seed world cup
+
+### Ticket ID
+TICKET-005
+
+### Title
+Crear modelo Match
+
+### Estado
+TODO
+
+### Sprint
+Sprint 1
+
+### Prioridad
+High
+
+### Objetivo
+Representar los partidos del Mundial 2026.
+
+### Alcance
+- Crear migration matches.
+- Crear modelo Match.
+- Relacionar Match con Tournament.
+- Relacionar Match con Team para team_a y team_b.
+- Permitir partidos placeholder sin equipos definidos.
+- Campos mínimos:
+  - id
+  - tournament_id
+  - team_a_id
+  - team_b_id
+  - starts_at
+  - prediction_closes_at
+  - stage
+  - group
+  - status
+  - team_a_score
+  - team_b_score
+  - winner_team_id
+  - created_at
+  - updated_at
+
+### Fuera de alcance
+- No crear pantalla de partidos.
+- No crear predicciones.
+- No crear scoring.
+- No crear admin CRUD.
+
+### Criterios de aceptación
+- El modelo Match existe.
+- La tabla matches existe.
+- Los partidos pueden tener equipos o ser placeholders.
+- La relación con Tournament funciona.
+- Las relaciones con Team funcionan.
+
+### Commit sugerido
+Add matches model and tournament relationships
+
+### Ticket ID
+TICKET-006
+
+### Title
+Crear seeders iniciales
+
+### Estado
+TODO
+
+### Sprint
+Sprint 1
+
+### Prioridad
 Medium
 
-### Objective
-Provide maintainable seed data for phases and initial tournament structure.
+### Objetivo
+Tener datos iniciales suficientes para probar el proyecto localmente.
 
-### Scope
-- Add seeders for phases.
-- Add sample teams and matches suitable for development.
-- Keep seed data clearly marked as test data until official data is added.
+### Alcance
+- Seeder de equipos.
+- Seeder de torneo.
+- Seeder de partidos.
+- Usuario admin.
+- Usuario normal.
+- Partidos en distintos estados:
+  - scheduled
+  - open
+  - locked
+  - finished
+  - placeholder
 
-### Out of scope
-- Live data ingestion.
-- Final official FIFA schedule validation.
-- Admin import tooling.
+### Fuera de alcance
+- No importar datos desde API.
+- No cargar fixture completo real todavía.
+- No crear pantallas admin.
+- No crear predicciones.
 
-### Acceptance criteria
-- Seeders run without errors.
-- Development data is enough to test match listing.
-- Test data is not confused with live mode data.
+### Criterios de aceptación
+- php artisan migrate:fresh --seed deja la app usable.
+- Hay equipos de prueba.
+- Hay un torneo inicial.
+- Hay partidos de prueba.
+- Hay usuario admin.
+- Hay usuario normal.
 
-### Suggested commit message
-feat: seed initial tournament structure
+### Commit sugerido
+Add initial development seeders
 
 ## EPIC 2 - Usuarios y autenticacion
 
