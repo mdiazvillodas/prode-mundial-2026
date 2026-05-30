@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -14,6 +15,7 @@ class UserSeeder extends Seeder
     {
         User::query()->create([
             'name' => 'Admin User',
+            'username' => Str::lower('admin'),
             'email' => 'admin@example.com',
             'email_verified_at' => now(),
             'password' => 'password',
@@ -21,6 +23,7 @@ class UserSeeder extends Seeder
 
         User::query()->create([
             'name' => 'Test User',
+            'username' => Str::lower('testuser'),
             'email' => 'user@example.com',
             'email_verified_at' => now(),
             'password' => 'password',

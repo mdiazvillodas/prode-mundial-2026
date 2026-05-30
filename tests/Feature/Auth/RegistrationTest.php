@@ -20,6 +20,7 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
+            'username' => 'testuser',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -27,5 +28,28 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_users_can_not_register_with_duplicate_username(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'username' => 'testuser',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        auth()->logout();
+
+        $response = $this->post('/register', [
+            'name' => 'Another User',
+            'username' => 'testuser',
+            'email' => 'another@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('username');
     }
 }
