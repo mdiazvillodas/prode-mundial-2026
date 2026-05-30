@@ -623,6 +623,49 @@ Permitir que un usuario autenticado cargue o actualice su predicciÃ³n de marca
 ### Commit sugerido
 Implement prediction submission flow
 
+### Ticket ID
+TICKET-013
+
+### Title
+Permitir editar predicciÃ³n antes del cierre
+
+### Estado
+DONE
+
+### Sprint
+Sprint 2
+
+### Prioridad
+High
+
+### Objetivo
+Permitir que los usuarios editen una predicciÃ³n existente hasta el cierre de predicciones del partido.
+
+### Nota
+Covered by TICKET-012 implementation. Existing predictions can be edited before prediction_closes_at, and edits are blocked after the close time.
+
+### Alcance
+- Reutilizar el formulario de predicciÃ³n existente para editar marcadores.
+- Precargar la predicciÃ³n existente del usuario.
+- Actualizar la predicciÃ³n existente sin crear duplicados.
+- Bloquear cambios despuÃ©s de prediction_closes_at.
+
+### Fuera de alcance
+- No implementar scoring.
+- No implementar historial de cambios.
+- No implementar leaderboard.
+- No implementar ligas privadas.
+- No crear admin CRUD.
+
+### Criterios de aceptaciÃ³n
+- Usuarios pueden editar su predicciÃ³n antes de prediction_closes_at.
+- Usuarios no pueden editar su predicciÃ³n despuÃ©s de prediction_closes_at.
+- No se crean predicciones duplicadas para el mismo usuario y partido.
+- Partidos terminados, cerrados o placeholder no se pueden editar.
+
+### Commit sugerido
+Allow editing predictions before close
+
 ## EPIC 5 - Scoring
 
 ### Ticket ID
