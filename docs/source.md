@@ -69,6 +69,8 @@ The product is for entertainment only. It does not include real money, monetary 
 - Matches have a start date and time.
 - Knockout matches may initially exist as placeholders without defined teams.
 - Placeholder matches cannot receive user predictions until both teams are known.
+- Because PHP 8 uses `match` as a reserved language construct, the Eloquent model for the `matches` table is `App\Models\TournamentMatch` instead of `App\Models\Match`.
+- Future code, controllers, relationships, and documentation must refer to the Eloquent model as `TournamentMatch`.
 
 ### Predictions
 

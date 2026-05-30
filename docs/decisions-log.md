@@ -26,3 +26,6 @@
 - League owners can remove members, and each removal must be logged.
 - Admin users can manage teams, matches, phases, real results, and ranking recalculations.
 - Admin dashboard must show current environment and whether the app is in test mode or live mode.
+- Because PHP 8 uses `match` as a reserved language construct, the Eloquent model for the `matches` table will be named `App\Models\TournamentMatch` instead of `App\Models\Match`.
+- The database table remains `matches`.
+- Future code, controllers, relationships, and documentation must refer to the Eloquent model as `TournamentMatch`.
