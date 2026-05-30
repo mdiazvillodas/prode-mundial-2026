@@ -13,7 +13,13 @@ class MatchController extends Controller
         $recentFinishedSince = now()->subDays(7)->startOfDay();
 
         $matches = TournamentMatch::query()
-            ->with(['teamA', 'teamB', 'winnerTeam', 'tournament'])
+            ->with([
+                'teamA',
+                'teamB',
+                'winnerTeam',
+                'tournament',
+                'predictions' => fn ($query) => $query->where('user_id', auth()->id()),
+            ])
             ->where(function ($query) use ($today, $recentFinishedSince) {
                 $query
                     ->whereNull('starts_at')

@@ -107,6 +107,12 @@
                                         <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset {{ $statusClass }}">
                                             {{ $statusLabel }}
                                         </span>
+
+                                        @if ($match->isPredictable())
+                                            <a href="{{ route('predictions.show', $match) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                                {{ $match->predictions->isNotEmpty() ? __('Editar prediccion') : __('Cargar prediccion') }}
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

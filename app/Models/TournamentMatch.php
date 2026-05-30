@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,16 @@ class TournamentMatch extends Model
 {
     /** @use HasFactory<\Database\Factories\TournamentMatchFactory> */
     use HasFactory;
+
+    public const STATUS_SCHEDULED = 'scheduled';
+
+    public const STATUS_OPEN = 'open';
+
+    public const STATUS_LOCKED = 'locked';
+
+    public const STATUS_FINISHED = 'finished';
+
+    public const STATUS_PLACEHOLDER = 'placeholder';
 
     protected $table = 'matches';
 
@@ -61,5 +72,31 @@ class TournamentMatch extends Model
     public function predictions(): HasMany
     {
         return $this->hasMany(Prediction::class, 'match_id');
+    }
+
+    public function predictionClosesAt(): ?CarbonInterface
+    {
+        if ($this->prediction_closes_at) {
+            return $this->prediction_closes_at;
+        }
+
+        return $this->starts_at?->copy()->subMinutes(5);
+    }
+
+    public function isPredictable(): bool
+    {
+        if (! $this->team_a_id || ! $this->team_b_id) {
+            return false;
+        }
+
+        if (in_array($this->status, [
+            self::STATUS_PLACEHOLDER,
+            self::STATUS_FINISHED,
+            self::STATUS_LOCKED,
+        ], true)) {
+            return false;
+        }
+
+        return ! $this->predictionClosesAt()?->isPast();
     }
 }
