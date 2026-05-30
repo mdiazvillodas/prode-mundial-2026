@@ -571,6 +571,58 @@ Crear el modelo de datos para predicciones de marcador de usuarios.
 ### Commit sugerido
 Add predictions model and migration
 
+### Ticket ID
+TICKET-012
+
+### Title
+Crear flujo de carga de predicciÃ³n
+
+### Estado
+DONE
+
+### Sprint
+Sprint 2
+
+### Prioridad
+High
+
+### Objetivo
+Permitir que un usuario autenticado cargue o actualice su predicciÃ³n de marcador para un partido del torneo.
+
+### Alcance
+- Crear rutas autenticadas para ver y guardar predicciones de un partido.
+- Crear controlador para el flujo de predicciÃ³n.
+- Crear vista Blade para el formulario de predicciÃ³n.
+- Permitir cargar team_a_score y team_b_score.
+- Actualizar la predicciÃ³n existente del usuario para el mismo partido.
+- Validar marcadores enteros entre 0 y 99.
+- Bloquear predicciones para placeholders, partidos terminados y partidos cerrados.
+- Usar TournamentMatch como modelo Eloquent para la tabla matches.
+- Agregar enlace desde la pantalla de partidos para cargar o editar predicciÃ³n.
+
+### Fuera de alcance
+- No implementar scoring.
+- No implementar leaderboard.
+- No implementar ligas privadas.
+- No crear admin CRUD.
+- No crear historial de predicciones.
+- No implementar predicciÃ³n de equipo clasificado en eliminatorias.
+- No usar React, Vue o Inertia.
+
+### Criterios de aceptaciÃ³n
+- Usuarios autenticados pueden abrir la pantalla de predicciÃ³n de un partido elegible.
+- Invitados no pueden acceder a rutas de predicciÃ³n.
+- Usuarios pueden cargar una predicciÃ³n valida.
+- Usuarios pueden actualizar su predicciÃ³n existente para el mismo partido.
+- No se crean predicciones duplicadas para el mismo usuario y partido.
+- Partidos placeholder, terminados o cerrados no se pueden predecir.
+- Marcadores invalidos son rechazados.
+- Las predicciones guardadas quedan en estado submitted.
+- points_awarded queda null.
+
+### Commit sugerido
+Implement prediction submission flow
+
 ## EPIC 5 - Scoring
 
 ### Ticket ID
