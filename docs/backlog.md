@@ -147,7 +147,7 @@ TICKET-004
 Crear modelo Tournament
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 1
@@ -198,7 +198,7 @@ TICKET-005
 Crear modelo Match
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 1
@@ -254,7 +254,7 @@ TICKET-006
 Crear seeders iniciales
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 1
