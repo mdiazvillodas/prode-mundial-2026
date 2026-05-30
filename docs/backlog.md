@@ -426,40 +426,100 @@ Add admin role to users
 ## EPIC 3 - Partidos y calendario
 
 ### Ticket ID
-E3-T01
+TICKET-009
 
 ### Title
-Show match calendar
+Crear pantalla de próximos partidos
 
-### Status
-Todo
+### Estado
+DONE
 
 ### Sprint
 Sprint 2
 
-### Priority
+### Prioridad
 High
 
-### Objective
-Let users browse World Cup matches in a mobile-first calendar/list view.
+### Objetivo
+Crear una pantalla autenticada donde los usuarios puedan ver próximos partidos y partidos actuales en una interfaz clara mobile-first.
 
-### Scope
-- Add match list page.
-- Group or filter matches by phase/date.
-- Show teams, kickoff time, phase, and result status.
+### Alcance
+- Crear ruta autenticada GET /matches.
+- Crear controlador si corresponde.
+- Crear vista Blade para listado de partidos.
+- Mostrar equipos o placeholders.
+- Mostrar fecha, hora, fase, grupo, estado y resultado si corresponde.
+- Agregar enlace desde dashboard.
 
-### Out of scope
-- Prediction form.
-- Admin match editing.
-- Advanced filters.
+### Fuera de alcance
+- No crear formulario de predicción.
+- No crear modelo de predicción.
+- No implementar scoring.
+- No implementar leaderboard.
+- No implementar ligas privadas.
+- No implementar admin CRUD.
 
-### Acceptance criteria
-- Authenticated users can view matches.
-- Placeholder matches are clearly shown as not ready for prediction.
-- Layout is responsive.
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- npm run build funciona.
+- Usuarios autenticados pueden acceder a /matches.
+- Invitados no pueden acceder a /matches.
+- Dashboard tiene enlace a la pantalla de partidos.
+- Los partidos se muestran con equipos o placeholders.
+- Los partidos terminados muestran resultado.
 
-### Suggested commit message
-feat: show match calendar
+### Commit sugerido
+Add matches listing page
+
+### Ticket ID
+TICKET-010
+
+### Title
+Crear calendario informativo
+
+### Estado
+DONE
+
+### Sprint
+Sprint 2
+
+### Prioridad
+High
+
+### Objetivo
+Crear una pantalla autenticada de calendario para ver todos los partidos conocidos del torneo en orden cronológico.
+
+### Alcance
+- Crear ruta autenticada GET /calendar.
+- Crear controlador si corresponde.
+- Crear vista Blade para calendario.
+- Mostrar todos los partidos ordenados por starts_at.
+- Agrupar partidos por fecha si es simple.
+- Mostrar fecha, hora, equipos o placeholders, fase, grupo, estado y resultado si corresponde.
+- Agregar enlaces desde dashboard, navegación y pantalla de partidos.
+
+### Fuera de alcance
+- No crear formulario de predicción.
+- No crear modelo de predicción.
+- No implementar scoring.
+- No implementar leaderboard.
+- No implementar ligas privadas.
+- No implementar admin CRUD.
+- No usar React, Vue o Inertia.
+
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- npm run build funciona.
+- Usuarios autenticados pueden acceder a /calendar.
+- Invitados no pueden acceder a /calendar.
+- Dashboard tiene enlace al calendario.
+- El calendario muestra todos los partidos seed.
+- Los partidos están ordenados cronológicamente.
+- Los placeholders se muestran claramente.
+- Los partidos terminados muestran resultado.
+
+### Commit sugerido
+Add informational tournament calendar
 
 ## EPIC 4 - Predicciones
 
