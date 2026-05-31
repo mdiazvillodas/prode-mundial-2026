@@ -906,7 +906,7 @@ TICKET-015C
 Aplicar scoring a predicciones al finalizar partido
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 3
