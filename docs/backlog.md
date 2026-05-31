@@ -788,6 +788,162 @@ Crear la experiencia principal de carga de predicciones, permitiendo que el usua
 Add inline daily predictions page
 
 ### Ticket ID
+TICKET-015A
+
+### Title
+Crear listado admin mÃ­nimo de partidos
+
+### Estado
+TODO
+
+### Sprint
+Sprint 3
+
+### Prioridad
+Alta
+
+### Objetivo
+Crear una pantalla admin mÃ­nima para listar partidos y preparar la futura carga de resultados reales.
+
+### Alcance
+- Crear una ruta admin autenticada y protegida por rol admin.
+- Suggested route:
+  - GET /admin/matches
+  - route name: admin.matches.index
+- Mostrar listado de partidos.
+- Mostrar equipos o placeholders.
+- Mostrar fecha y hora.
+- Mostrar fase y grupo si existen.
+- Mostrar estado del partido.
+- Mostrar resultado si ya existe.
+- Mostrar una acciÃ³n visual futura para "Cargar resultado" o "Editar resultado", pero sin implementar todavÃ­a el guardado.
+- Reutilizar el middleware admin existente.
+- Mantener diseÃ±o simple, mobile-first y alineado con docs/ui-guidelines.md.
+
+### Fuera de alcance
+- No cargar resultados todavÃ­a.
+- No editar partidos.
+- No crear partidos.
+- No eliminar partidos.
+- No aplicar scoring.
+- No recalcular rankings.
+- No crear leaderboard.
+- No gestionar equipos.
+- No gestionar usuarios.
+- No crear CRUD admin completo.
+
+### Criterios de aceptaciÃ³n
+- Solo usuarios admin pueden acceder a /admin/matches.
+- Usuarios normales no pueden acceder.
+- Invitados son redirigidos al login.
+- El admin puede ver todos los partidos.
+- Se muestran estado, equipos/placeholders, fecha, fase/grupo y resultado si existe.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add admin matches listing
+
+### Ticket ID
+TICKET-015B
+
+### Title
+Cargar resultado real de partido
+
+### Estado
+TODO
+
+### Sprint
+Sprint 3
+
+### Prioridad
+Alta
+
+### Objetivo
+Permitir que un admin cargue o edite el resultado real de un partido.
+
+### Alcance
+- Crear pantalla/formulario admin para cargar resultado.
+- Suggested routes:
+  - GET /admin/matches/{tournamentMatch}/result
+  - POST /admin/matches/{tournamentMatch}/result
+- Validar goles reales:
+  - enteros
+  - mÃ­nimo 0
+  - mÃ¡ximo 99
+- Guardar team_a_score y team_b_score.
+- Definir winner_team_id si hay ganador.
+- Si hay empate, winner_team_id debe quedar null.
+- Cambiar estado del partido a finished.
+- Mostrar resultado en admin matches.
+- No aplicar scoring todavÃ­a en este ticket.
+
+### Fuera de alcance
+- No puntuar predicciones todavÃ­a.
+- No recalcular rankings.
+- No leaderboard.
+- No penalties/qualified team logic.
+- No ediciÃ³n general de partido.
+- No API externa.
+
+### Criterios de aceptaciÃ³n
+- Solo admin puede cargar resultados.
+- Resultado se guarda correctamente.
+- Partido cambia a finished.
+- Winner team se guarda si corresponde.
+- Empate deja winner_team_id null.
+- No se aplica scoring todavÃ­a.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add admin match result form
+
+### Ticket ID
+TICKET-015C
+
+### Title
+Aplicar scoring a predicciones al finalizar partido
+
+### Estado
+TODO
+
+### Sprint
+Sprint 3
+
+### Prioridad
+Alta
+
+### Objetivo
+Aplicar la lÃ³gica de scoring existente a las predicciones cuando un partido ya tiene resultado real.
+
+### Alcance
+- Reutilizar PredictionScoringService.
+- Puntuar todas las predicciones submitted/locked del partido.
+- Guardar points_awarded.
+- Cambiar status de predicciones a scored.
+- Evitar duplicaciones o acumulaciones incorrectas.
+- Permitir re-ejecutar scoring de forma segura si el resultado se corrige.
+- Integrar el scoring al flujo de carga de resultado si corresponde.
+
+### Fuera de alcance
+- No leaderboard visual todavÃ­a.
+- No rankings por liga.
+- No knockout/penalties scoring.
+- No notificaciones.
+- No API externa.
+
+### Criterios de aceptaciÃ³n
+- PredicciÃ³n exacta recibe 6 puntos.
+- Tendencia correcta recibe 3 puntos.
+- Incorrecta recibe 0 puntos.
+- Predicciones quedan status scored.
+- Recalcular no duplica puntos.
+- Tests o verificaciÃ³n manual cubren el flujo.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Apply scoring when match is finished
+
+### Ticket ID
 E5-T01
 
 ### Title
