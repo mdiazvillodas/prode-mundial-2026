@@ -946,6 +946,68 @@ Aplicar la lÃ³gica de scoring existente a las predicciones cuando un partido y
 Apply scoring when match is finished
 
 ### Ticket ID
+TICKET-016
+
+### Title
+Crear historial de predicciones del usuario
+
+### Estado
+TODO
+
+### Sprint
+Sprint 3
+
+### Prioridad
+Alta
+
+### Objetivo
+Permitir que el usuario vea sus predicciones realizadas, el resultado real del partido cuando exista y los puntos obtenidos.
+
+### Alcance
+- Crear una pantalla autenticada de historial de predicciones.
+- Suggested route:
+  - GET /my-predictions
+  - route name: predictions.history
+- Mostrar solo predicciones del usuario autenticado.
+- Mostrar partido.
+- Mostrar equipos o placeholders.
+- Mostrar fecha y hora del partido.
+- Mostrar predicción del usuario.
+- Mostrar resultado real si el partido está finished.
+- Mostrar estado de la predicción.
+- Mostrar puntos obtenidos si points_awarded no es null.
+- Mostrar estado pendiente si todavía no fue puntuada.
+- Ordenar por fecha del partido, preferentemente más recientes primero.
+- Agregar link desde dashboard y/o pantalla de predicciones.
+- Mantener diseño simple, mobile-first y alineado con docs/ui-guidelines.md.
+
+### Fuera de alcance
+- No crear leaderboard.
+- No crear ranking global.
+- No crear ligas privadas.
+- No crear scoring nuevo.
+- No permitir editar desde historial.
+- No cargar resultados reales.
+- No admin CRUD.
+- No API externa.
+- No agregar dependencias frontend.
+
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- npm run build corre correctamente.
+- Usuario autenticado puede acceder a /my-predictions.
+- Invitados son redirigidos al login.
+- El usuario ve solo sus propias predicciones.
+- Se muestra la predicción realizada.
+- Se muestra resultado real si existe.
+- Se muestran puntos cuando la predicción fue puntuada.
+- Se muestra estado pendiente cuando no fue puntuada.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add user prediction history
+
+### Ticket ID
 E5-T01
 
 ### Title
