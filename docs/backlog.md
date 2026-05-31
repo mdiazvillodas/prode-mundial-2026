@@ -952,7 +952,7 @@ TICKET-016
 Crear historial de predicciones del usuario
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 3
