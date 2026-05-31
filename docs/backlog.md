@@ -724,7 +724,7 @@ TICKET-014B
 Crear pantalla de predicciones inline por dÃ­a
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 3
