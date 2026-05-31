@@ -669,6 +669,52 @@ Allow editing predictions before close
 ## EPIC 5 - Scoring
 
 ### Ticket ID
+TICKET-014
+
+### Title
+Implementar cÃ¡lculo de puntos base
+
+### Estado
+DONE
+
+### Sprint
+Sprint 3
+
+### Prioridad
+High
+
+### Objetivo
+Implementar la lÃ³gica base de cÃ¡lculo de puntos para predicciones de partidos de fase de grupos o partidos estÃ¡ndar.
+
+### Alcance
+- Crear un servicio simple y reutilizable para calcular puntos.
+- Calcular 6 puntos por resultado exacto.
+- Calcular 3 puntos por ganador correcto o empate correcto sin marcador exacto.
+- Calcular 0 puntos por predicciÃ³n incorrecta.
+- Agregar tests unitarios para los casos principales.
+- Mantener la lÃ³gica independiente de UI y de settlement.
+
+### Fuera de alcance
+- No implementar formulario admin de resultados.
+- No implementar settlement de predicciones.
+- No actualizar status scored.
+- No actualizar points_awarded en flujo productivo.
+- No implementar leaderboard.
+- No implementar ligas privadas.
+- No implementar scoring de eliminatorias.
+
+### Criterios de aceptaciÃ³n
+- Existe un servicio/action de scoring.
+- Resultado exacto devuelve 6.
+- Ganador o empate correcto sin marcador exacto devuelve 3.
+- PredicciÃ³n incorrecta devuelve 0.
+- Tests cubren los casos principales.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add base prediction scoring logic
+
+### Ticket ID
 E5-T01
 
 ### Title
@@ -1076,6 +1122,51 @@ Improve the main user flows for small screens and responsive layouts.
 style: polish mobile-first user flows
 
 ## EPIC 12 - Testing y hardening
+
+### Ticket ID
+TICKET-TECH-001
+
+### Title
+Configurar entorno local de tests
+
+### Status
+Todo
+
+### Sprint
+Tech follow-up
+
+### Priority
+Medium
+
+### Objective
+Configurar el entorno local para que la suite completa de tests pueda ejecutarse sin fallas de driver de base de datos.
+
+### Context
+The specific scoring tests pass with:
+`php artisan test --filter=PredictionScoringServiceTest`
+
+However, the full test suite currently fails locally because PHPUnit/Breeze feature tests try to use sqlite `:memory:`, and the local PHP installation does not have the SQLite driver enabled.
+
+This is a local testing environment/configuration issue, not a scoring logic issue.
+
+### Scope
+- Configure tests to use a dedicated MySQL testing database.
+- Or enable the SQLite driver locally.
+- Document the chosen local testing setup.
+
+### Out of scope
+- Application feature changes.
+- Scoring logic changes.
+- Authentication flow changes.
+- UI changes.
+
+### Acceptance criteria
+- The full local test suite can run successfully.
+- The chosen test database strategy is documented.
+- Scoring tests continue to pass.
+
+### Suggested commit message
+Configure local test environment
 
 ### Ticket ID
 E12-T01
