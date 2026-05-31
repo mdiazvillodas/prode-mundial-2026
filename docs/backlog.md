@@ -847,7 +847,7 @@ Add admin matches listing
 TICKET-015B
 
 ### Title
-Cargar resultado real de partido
+Cargar o corregir resultado manualmente
 
 ### Estado
 TODO
@@ -859,10 +859,12 @@ Sprint 3
 Alta
 
 ### Objetivo
-Permitir que un admin cargue o edite el resultado real de un partido.
+Permitir que un admin cargue o edite manualmente el resultado real de un partido como herramienta de fallback o correcciÃ³n. La fuente principal esperada para resultados reales serÃ¡ una integraciÃ³n con API externa en un ticket posterior. La carga manual existe para operar la plataforma durante desarrollo, corregir resultados incorrectos o recuperarse si la API falla o se demora.
 
 ### Alcance
-- Crear pantalla/formulario admin para cargar resultado.
+- Crear pantalla/formulario admin para cargar o corregir manualmente un resultado.
+- Tratar esta funcionalidad como fallback/correcciÃ³n.
+- No asumir que todos los resultados se cargarÃ¡n manualmente en producciÃ³n.
 - Suggested routes:
   - GET /admin/matches/{tournamentMatch}/result
   - POST /admin/matches/{tournamentMatch}/result
@@ -1466,6 +1468,88 @@ Review validation and authorization across v1 workflows.
 
 ### Suggested commit message
 fix: harden validation and authorization
+
+## EPIC 13 - API de fixtures y resultados
+
+### Ticket ID
+TICKET-API-001
+
+### Title
+Integrar API de fixtures y resultados
+
+### Estado
+TODO
+
+### Sprint
+Future
+
+### Prioridad
+Medium
+
+### Objetivo
+Integrar una fuente externa para obtener fixtures y resultados reales del torneo, reduciendo la dependencia de carga manual.
+
+### Alcance
+- Evaluar proveedor de API de fixtures/resultados.
+- Definir configuraciÃ³n de credenciales y entorno.
+- DiseÃ±ar el flujo de importaciÃ³n/sincronizaciÃ³n.
+- Mapear datos externos a TournamentMatch y Team.
+- Registrar errores o inconsistencias para revisiÃ³n admin.
+
+### Fuera de alcance
+- No implementar scoring automÃ¡tico en este ticket.
+- No reemplazar todavÃ­a el fallback manual.
+- No crear UI admin avanzada.
+- No agregar proveedor especÃ­fico sin decisiÃ³n previa.
+
+### Criterios de aceptaciÃ³n
+- La API elegida y el enfoque de integraciÃ³n quedan definidos.
+- El sistema puede obtener o preparar fixtures/resultados desde la fuente externa.
+- La carga manual sigue disponible como fallback.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Integrate fixtures and results API
+
+### Ticket ID
+TICKET-API-002
+
+### Title
+Sincronizar resultados reales automÃ¡ticamente
+
+### Estado
+TODO
+
+### Sprint
+Future
+
+### Prioridad
+Medium
+
+### Objetivo
+Sincronizar resultados reales automÃ¡ticamente desde la API externa para actualizar partidos finalizados.
+
+### Alcance
+- Crear proceso de sincronizaciÃ³n automÃ¡tica o comando programable.
+- Actualizar resultados reales cuando la API confirme un partido finalizado.
+- Manejar demoras, errores y datos inconsistentes.
+- Mantener posibilidad de correcciÃ³n manual por admin.
+- Preparar integraciÃ³n futura con scoring/recalculo.
+
+### Fuera de alcance
+- No implementar leaderboard.
+- No implementar rankings por liga.
+- No eliminar la correcciÃ³n manual.
+- No asumir exactitud absoluta de la API sin validaciones.
+
+### Criterios de aceptaciÃ³n
+- Resultados finalizados pueden sincronizarse desde la API.
+- Fallas o demoras quedan visibles o registradas para revisiÃ³n.
+- Admin puede corregir manualmente si la API falla o se demora.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Sync real match results automatically
 
 ## EPIC 13 - Deploy / Railway
 
