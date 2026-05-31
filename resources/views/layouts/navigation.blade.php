@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('predictions.index')" :active="request()->routeIs('predictions.*')">
                         {{ __('Predicciones') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('leaderboard.index')" :active="request()->routeIs('leaderboard.index')">
+                        {{ __('Ranking') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('calendar.index')" :active="request()->routeIs('calendar.index')">
                         {{ __('Calendario') }}
                     </x-nav-link>
@@ -84,6 +87,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('predictions.index')" :active="request()->routeIs('predictions.*')">
                 {{ __('Predicciones') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('leaderboard.index')" :active="request()->routeIs('leaderboard.index')">
+                {{ __('Ranking') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('calendar.index')" :active="request()->routeIs('calendar.index')">
                 {{ __('Calendario') }}
