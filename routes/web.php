@@ -33,6 +33,8 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/matches', [AdminMatchController::class, 'index'])->name('matches.index');
+        Route::get('/matches/{tournamentMatch}/result', [AdminMatchController::class, 'editResult'])->name('matches.result.edit');
+        Route::post('/matches/{tournamentMatch}/result', [AdminMatchController::class, 'updateResult'])->name('matches.result.update');
     });
 
 require __DIR__.'/auth.php';
