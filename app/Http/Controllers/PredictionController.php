@@ -33,6 +33,30 @@ class PredictionController extends Controller
         ]);
     }
 
+    public function history(Request $request): View
+    {
+        $predictions = $request->user()
+            ->predictions()
+            ->with([
+                'match.teamA',
+                'match.teamB',
+                'match.winnerTeam',
+                'match.tournament',
+            ])
+            ->orderByDesc(
+                TournamentMatch::query()
+                    ->select('starts_at')
+                    ->whereColumn('matches.id', 'predictions.match_id')
+                    ->limit(1),
+            )
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('predictions.history', [
+            'predictions' => $predictions,
+        ]);
+    }
+
     public function show(Request $request, TournamentMatch $tournamentMatch): View
     {
         abort_unless($tournamentMatch->isPredictable(), 403);

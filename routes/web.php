@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/matches', [MatchController::class, 'index'])->name('matches.index');
     Route::get('/predictions', [PredictionController::class, 'index'])->name('predictions.index');
     Route::post('/predictions/bulk', [PredictionController::class, 'bulkStore'])->name('predictions.bulk-store');
+    Route::get('/my-predictions', [PredictionController::class, 'history'])->name('predictions.history');
     Route::get('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'show'])->name('predictions.show');
     Route::post('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'store'])->name('predictions.store');
 
