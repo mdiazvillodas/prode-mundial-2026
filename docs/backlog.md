@@ -850,7 +850,7 @@ TICKET-015B
 Cargar o corregir resultado manualmente
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 3
