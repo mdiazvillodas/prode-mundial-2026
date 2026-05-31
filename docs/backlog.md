@@ -589,6 +589,9 @@ High
 ### Objetivo
 Permitir que un usuario autenticado cargue o actualice su predicciÃ³n de marcador para un partido del torneo.
 
+### Nota
+The single-match prediction flow remains available, but the primary UX will move to TICKET-014B.
+
 ### Alcance
 - Crear rutas autenticadas para ver y guardar predicciones de un partido.
 - Crear controlador para el flujo de predicciÃ³n.
@@ -713,6 +716,76 @@ Implementar la lÃ³gica base de cÃ¡lculo de puntos para predicciones de parti
 
 ### Commit sugerido
 Add base prediction scoring logic
+
+### Ticket ID
+TICKET-014B
+
+### Title
+Crear pantalla de predicciones inline por dÃ­a
+
+### Estado
+TODO
+
+### Sprint
+Sprint 3
+
+### Prioridad
+Alta
+
+### Objetivo
+Crear la experiencia principal de carga de predicciones, permitiendo que el usuario cargue o edite varios pronÃ³sticos directamente desde una lista agrupada por dÃ­a, sin tener que entrar partido por partido.
+
+### Alcance
+- Crear una pantalla autenticada de predicciones inline.
+- Suggested route:
+  - GET /predictions
+  - route name: predictions.index
+- Mostrar partidos agrupados por fecha.
+- Mostrar equipos, horario, fase, grupo y estado.
+- Mostrar inputs inline para team_a_score y team_b_score cuando el partido sea predecible.
+- Precargar valores si el usuario ya tiene una predicciÃ³n.
+- Mostrar partidos no predecibles como solo lectura.
+- Mostrar placeholders claramente.
+- Agregar un botÃ³n flotante "Guardar cambios" que aparezca cuando el usuario modifique algÃºn input.
+- Guardar mÃºltiples predicciones modificadas en una sola acciÃ³n.
+- Suggested route:
+  - POST /predictions/bulk
+  - route name: predictions.bulk-store
+- Reutilizar validaciones existentes.
+- Reutilizar TournamentMatch::isPredictable().
+- Reutilizar updateOrCreate para mantener una predicciÃ³n por usuario/partido.
+- Mantener la vista individual de predicciÃ³n como fallback por ahora, salvo que sea necesario simplificar.
+- Agregar link desde dashboard y/o matches hacia la nueva pantalla principal de predicciones.
+
+### Fuera de alcance
+- No implementar scoring nuevo.
+- No implementar leaderboard.
+- No implementar private leagues.
+- No implementar admin CRUD.
+- No implementar resultados reales.
+- No implementar predicciÃ³n de clasificado en eliminatorias.
+- No implementar API externa.
+- No agregar frameworks frontend.
+- No usar React, Vue o Inertia.
+- No agregar dependencias innecesarias.
+
+### Criterios de aceptaciÃ³n
+- php artisan migrate:fresh --seed corre correctamente.
+- npm run build corre correctamente.
+- Usuario autenticado puede acceder a /predictions.
+- Invitados no pueden acceder a /predictions.
+- Los partidos aparecen agrupados por dÃ­a.
+- Los partidos predecibles muestran inputs inline.
+- Las predicciones existentes aparecen precargadas.
+- Al modificar inputs aparece un botÃ³n flotante para guardar.
+- Se pueden guardar varias predicciones en una sola acciÃ³n.
+- No se guardan predicciones para partidos cerrados, locked, finished o placeholder.
+- Los errores de validaciÃ³n se muestran de forma clara.
+- No se duplica una predicciÃ³n para el mismo usuario/partido.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add inline daily predictions page
 
 ### Ticket ID
 E5-T01
