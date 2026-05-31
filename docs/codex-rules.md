@@ -8,6 +8,7 @@ These rules apply to future Codex work in this repository.
 
 - Always read `docs/source.md` before implementing.
 - Always check `docs/backlog.md` for the current ticket.
+- Before UI work, always read `docs/ui-guidelines.md`.
 - Work on only one ticket at a time.
 - Confirm or document ambiguous requirements before implementing.
 - If a requirement is ambiguous, update `docs/decisions-log.md` or ask before implementing.
