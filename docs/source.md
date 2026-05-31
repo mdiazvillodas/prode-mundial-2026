@@ -1,6 +1,6 @@
 # Prode Mundial 2026 - Source of Truth
 
-Last updated: 2026-05-30
+Last updated: 2026-05-31
 
 ## Product Summary
 
@@ -74,7 +74,14 @@ The product is for entertainment only. It does not include real money, monetary 
 
 ### Predictions
 
-- Users can view matches and submit score predictions.
+- The primary prediction experience is an inline predictions screen grouped by date/day.
+- Users can view matches and enter score predictions directly in the match list.
+- Predictable matches show inline score inputs.
+- Existing predictions are pre-filled.
+- When a user changes any input, a floating save button appears.
+- Users can save multiple changed predictions at once.
+- Closed, locked, finished, and placeholder matches are visible but cannot be edited.
+- The existing one-match-at-a-time prediction page may remain as a fallback or internal route, but it is not the primary prediction UX.
 - Users can edit predictions until 5 minutes before match start.
 - Once the edit deadline passes, predictions are locked.
 - For knockout matches, users predict both score and qualified team.

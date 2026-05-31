@@ -29,3 +29,16 @@
 - Because PHP 8 uses `match` as a reserved language construct, the Eloquent model for the `matches` table will be named `App\Models\TournamentMatch` instead of `App\Models\Match`.
 - The database table remains `matches`.
 - Future code, controllers, relationships, and documentation must refer to the Eloquent model as `TournamentMatch`.
+
+## 2026-05-31
+
+- The primary prediction UX will not be a one-match-at-a-time flow.
+- The main user experience for submitting predictions will be an inline predictions screen grouped by date/day.
+- Users will open a predictions page where matches are grouped by date/day.
+- Each predictable match will show score inputs inline.
+- Existing predictions will be pre-filled.
+- When the user changes any input, a floating save button will appear.
+- Users can save multiple changed predictions at once.
+- Closed, locked, finished, and placeholder matches will be shown but cannot be edited.
+- The existing single-match prediction page may remain as a fallback or internal route for now, but the primary UX should be the inline daily prediction screen.
+- The current `PredictionController`, `Prediction` model, validation rules, `updateOrCreate` logic, and `TournamentMatch::isPredictable()` should be reused where possible.
