@@ -7,9 +7,14 @@
             <p class="text-sm text-gray-500">
                 {{ __('Proximos partidos y estados actuales del Mundial 2026.') }}
             </p>
-            <a href="{{ route('calendar.index') }}" class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                {{ __('Ver calendario completo') }}
-            </a>
+            <div class="mt-2 flex flex-wrap gap-3">
+                <a href="{{ route('predictions.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                    {{ __('Cargar predicciones') }}
+                </a>
+                <a href="{{ route('calendar.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                    {{ __('Ver calendario completo') }}
+                </a>
+            </div>
         </div>
     </x-slot>
 
