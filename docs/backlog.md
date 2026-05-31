@@ -53,7 +53,7 @@ E0-T02
 Initialize Laravel technical base
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 0
@@ -1086,6 +1086,9 @@ High
 
 ### Objective
 Award points based on real match results and prediction accuracy.
+
+### Note
+Covered by TICKET-014 and TICKET-015C. Base scoring and idempotent settlement are already implemented.
 
 ### Scope
 - Store real match scores.
