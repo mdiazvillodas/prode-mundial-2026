@@ -195,7 +195,7 @@ Add tournaments model and seed world cup
 TICKET-005
 
 ### Title
-Crear modelo Match
+Crear modelo TournamentMatch
 
 ### Estado
 DONE
@@ -211,9 +211,11 @@ Representar los partidos del Mundial 2026.
 
 ### Alcance
 - Crear migration matches.
-- Crear modelo Match.
-- Relacionar Match con Tournament.
-- Relacionar Match con Team para team_a y team_b.
+- Crear modelo TournamentMatch.
+- Mantener la tabla de base de datos como matches.
+- Usar App\Models\TournamentMatch como modelo Eloquent.
+- Relacionar TournamentMatch con Tournament.
+- Relacionar TournamentMatch con Team para team_a y team_b.
 - Permitir partidos placeholder sin equipos definidos.
 - Campos mínimos:
   - id
@@ -238,7 +240,7 @@ Representar los partidos del Mundial 2026.
 - No crear admin CRUD.
 
 ### Criterios de aceptación
-- El modelo Match existe.
+- El modelo TournamentMatch existe.
 - La tabla matches existe.
 - Los partidos pueden tener equipos o ser placeholders.
 - La relación con Tournament funciona.
@@ -575,7 +577,7 @@ Add predictions model and migration
 TICKET-012
 
 ### Title
-Crear flujo de carga de predicciÃ³n
+Crear flujo de carga de predicción
 
 ### Estado
 DONE
@@ -587,21 +589,21 @@ Sprint 2
 High
 
 ### Objetivo
-Permitir que un usuario autenticado cargue o actualice su predicciÃ³n de marcador para un partido del torneo.
+Permitir que un usuario autenticado cargue o actualice su predicción de marcador para un partido del torneo.
 
 ### Nota
 The single-match prediction flow remains available, but the primary UX will move to TICKET-014B.
 
 ### Alcance
 - Crear rutas autenticadas para ver y guardar predicciones de un partido.
-- Crear controlador para el flujo de predicciÃ³n.
-- Crear vista Blade para el formulario de predicciÃ³n.
+- Crear controlador para el flujo de predicción.
+- Crear vista Blade para el formulario de predicción.
 - Permitir cargar team_a_score y team_b_score.
-- Actualizar la predicciÃ³n existente del usuario para el mismo partido.
+- Actualizar la predicción existente del usuario para el mismo partido.
 - Validar marcadores enteros entre 0 y 99.
 - Bloquear predicciones para placeholders, partidos terminados y partidos cerrados.
 - Usar TournamentMatch como modelo Eloquent para la tabla matches.
-- Agregar enlace desde la pantalla de partidos para cargar o editar predicciÃ³n.
+- Agregar enlace desde la pantalla de partidos para cargar o editar predicción.
 
 ### Fuera de alcance
 - No implementar scoring.
@@ -609,14 +611,14 @@ The single-match prediction flow remains available, but the primary UX will move
 - No implementar ligas privadas.
 - No crear admin CRUD.
 - No crear historial de predicciones.
-- No implementar predicciÃ³n de equipo clasificado en eliminatorias.
+- No implementar predicción de equipo clasificado en eliminatorias.
 - No usar React, Vue o Inertia.
 
-### Criterios de aceptaciÃ³n
-- Usuarios autenticados pueden abrir la pantalla de predicciÃ³n de un partido elegible.
-- Invitados no pueden acceder a rutas de predicciÃ³n.
-- Usuarios pueden cargar una predicciÃ³n valida.
-- Usuarios pueden actualizar su predicciÃ³n existente para el mismo partido.
+### Criterios de aceptación
+- Usuarios autenticados pueden abrir la pantalla de predicción de un partido elegible.
+- Invitados no pueden acceder a rutas de predicción.
+- Usuarios pueden cargar una predicción valida.
+- Usuarios pueden actualizar su predicción existente para el mismo partido.
 - No se crean predicciones duplicadas para el mismo usuario y partido.
 - Partidos placeholder, terminados o cerrados no se pueden predecir.
 - Marcadores invalidos son rechazados.
@@ -630,7 +632,7 @@ Implement prediction submission flow
 TICKET-013
 
 ### Title
-Permitir editar predicciÃ³n antes del cierre
+Permitir editar predicción antes del cierre
 
 ### Estado
 DONE
@@ -642,16 +644,16 @@ Sprint 2
 High
 
 ### Objetivo
-Permitir que los usuarios editen una predicciÃ³n existente hasta el cierre de predicciones del partido.
+Permitir que los usuarios editen una predicción existente hasta el cierre de predicciones del partido.
 
 ### Nota
 Covered by TICKET-012 implementation. Existing predictions can be edited before prediction_closes_at, and edits are blocked after the close time.
 
 ### Alcance
-- Reutilizar el formulario de predicciÃ³n existente para editar marcadores.
-- Precargar la predicciÃ³n existente del usuario.
-- Actualizar la predicciÃ³n existente sin crear duplicados.
-- Bloquear cambios despuÃ©s de prediction_closes_at.
+- Reutilizar el formulario de predicción existente para editar marcadores.
+- Precargar la predicción existente del usuario.
+- Actualizar la predicción existente sin crear duplicados.
+- Bloquear cambios después de prediction_closes_at.
 
 ### Fuera de alcance
 - No implementar scoring.
@@ -660,9 +662,9 @@ Covered by TICKET-012 implementation. Existing predictions can be edited before 
 - No implementar ligas privadas.
 - No crear admin CRUD.
 
-### Criterios de aceptaciÃ³n
-- Usuarios pueden editar su predicciÃ³n antes de prediction_closes_at.
-- Usuarios no pueden editar su predicciÃ³n despuÃ©s de prediction_closes_at.
+### Criterios de aceptación
+- Usuarios pueden editar su predicción antes de prediction_closes_at.
+- Usuarios no pueden editar su predicción después de prediction_closes_at.
 - No se crean predicciones duplicadas para el mismo usuario y partido.
 - Partidos terminados, cerrados o placeholder no se pueden editar.
 
@@ -675,7 +677,7 @@ Allow editing predictions before close
 TICKET-014
 
 ### Title
-Implementar cÃ¡lculo de puntos base
+Implementar cálculo de puntos base
 
 ### Estado
 DONE
@@ -687,15 +689,15 @@ Sprint 3
 High
 
 ### Objetivo
-Implementar la lÃ³gica base de cÃ¡lculo de puntos para predicciones de partidos de fase de grupos o partidos estÃ¡ndar.
+Implementar la lógica base de cálculo de puntos para predicciones de partidos de fase de grupos o partidos estándar.
 
 ### Alcance
 - Crear un servicio simple y reutilizable para calcular puntos.
 - Calcular 6 puntos por resultado exacto.
 - Calcular 3 puntos por ganador correcto o empate correcto sin marcador exacto.
-- Calcular 0 puntos por predicciÃ³n incorrecta.
+- Calcular 0 puntos por predicción incorrecta.
 - Agregar tests unitarios para los casos principales.
-- Mantener la lÃ³gica independiente de UI y de settlement.
+- Mantener la lógica independiente de UI y de settlement.
 
 ### Fuera de alcance
 - No implementar formulario admin de resultados.
@@ -706,11 +708,11 @@ Implementar la lÃ³gica base de cÃ¡lculo de puntos para predicciones de parti
 - No implementar ligas privadas.
 - No implementar scoring de eliminatorias.
 
-### Criterios de aceptaciÃ³n
+### Criterios de aceptación
 - Existe un servicio/action de scoring.
 - Resultado exacto devuelve 6.
 - Ganador o empate correcto sin marcador exacto devuelve 3.
-- PredicciÃ³n incorrecta devuelve 0.
+- Predicción incorrecta devuelve 0.
 - Tests cubren los casos principales.
 - No se implementan funcionalidades fuera de alcance.
 
@@ -721,7 +723,7 @@ Add base prediction scoring logic
 TICKET-014B
 
 ### Title
-Crear pantalla de predicciones inline por dÃ­a
+Crear pantalla de predicciones inline por día
 
 ### Estado
 DONE
@@ -733,7 +735,7 @@ Sprint 3
 Alta
 
 ### Objetivo
-Crear la experiencia principal de carga de predicciones, permitiendo que el usuario cargue o edite varios pronÃ³sticos directamente desde una lista agrupada por dÃ­a, sin tener que entrar partido por partido.
+Crear la experiencia principal de carga de predicciones, permitiendo que el usuario cargue o edite varios pronósticos directamente desde una lista agrupada por día, sin tener que entrar partido por partido.
 
 ### Alcance
 - Crear una pantalla autenticada de predicciones inline.
@@ -743,18 +745,18 @@ Crear la experiencia principal de carga de predicciones, permitiendo que el usua
 - Mostrar partidos agrupados por fecha.
 - Mostrar equipos, horario, fase, grupo y estado.
 - Mostrar inputs inline para team_a_score y team_b_score cuando el partido sea predecible.
-- Precargar valores si el usuario ya tiene una predicciÃ³n.
+- Precargar valores si el usuario ya tiene una predicción.
 - Mostrar partidos no predecibles como solo lectura.
 - Mostrar placeholders claramente.
-- Agregar un botÃ³n flotante "Guardar cambios" que aparezca cuando el usuario modifique algÃºn input.
-- Guardar mÃºltiples predicciones modificadas en una sola acciÃ³n.
+- Agregar un botón flotante "Guardar cambios" que aparezca cuando el usuario modifique algún input.
+- Guardar múltiples predicciones modificadas en una sola acción.
 - Suggested route:
   - POST /predictions/bulk
   - route name: predictions.bulk-store
 - Reutilizar validaciones existentes.
 - Reutilizar TournamentMatch::isPredictable().
-- Reutilizar updateOrCreate para mantener una predicciÃ³n por usuario/partido.
-- Mantener la vista individual de predicciÃ³n como fallback por ahora, salvo que sea necesario simplificar.
+- Reutilizar updateOrCreate para mantener una predicción por usuario/partido.
+- Mantener la vista individual de predicción como fallback por ahora, salvo que sea necesario simplificar.
 - Agregar link desde dashboard y/o matches hacia la nueva pantalla principal de predicciones.
 
 ### Fuera de alcance
@@ -763,25 +765,25 @@ Crear la experiencia principal de carga de predicciones, permitiendo que el usua
 - No implementar private leagues.
 - No implementar admin CRUD.
 - No implementar resultados reales.
-- No implementar predicciÃ³n de clasificado en eliminatorias.
+- No implementar predicción de clasificado en eliminatorias.
 - No implementar API externa.
 - No agregar frameworks frontend.
 - No usar React, Vue o Inertia.
 - No agregar dependencias innecesarias.
 
-### Criterios de aceptaciÃ³n
+### Criterios de aceptación
 - php artisan migrate:fresh --seed corre correctamente.
 - npm run build corre correctamente.
 - Usuario autenticado puede acceder a /predictions.
 - Invitados no pueden acceder a /predictions.
-- Los partidos aparecen agrupados por dÃ­a.
+- Los partidos aparecen agrupados por día.
 - Los partidos predecibles muestran inputs inline.
 - Las predicciones existentes aparecen precargadas.
-- Al modificar inputs aparece un botÃ³n flotante para guardar.
-- Se pueden guardar varias predicciones en una sola acciÃ³n.
+- Al modificar inputs aparece un botón flotante para guardar.
+- Se pueden guardar varias predicciones en una sola acción.
 - No se guardan predicciones para partidos cerrados, locked, finished o placeholder.
-- Los errores de validaciÃ³n se muestran de forma clara.
-- No se duplica una predicciÃ³n para el mismo usuario/partido.
+- Los errores de validación se muestran de forma clara.
+- No se duplica una predicción para el mismo usuario/partido.
 - No se implementan funcionalidades fuera de alcance.
 
 ### Commit sugerido
@@ -791,10 +793,10 @@ Add inline daily predictions page
 TICKET-015A
 
 ### Title
-Crear listado admin mÃ­nimo de partidos
+Crear listado admin mínimo de partidos
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 3
@@ -803,7 +805,10 @@ Sprint 3
 Alta
 
 ### Objetivo
-Crear una pantalla admin mÃ­nima para listar partidos y preparar la futura carga de resultados reales.
+Crear una pantalla admin mínima para listar partidos y preparar la futura carga de resultados reales.
+
+### Nota
+Implemented and committed. Admin users can access /admin/matches, normal users receive 403, guests are redirected, and matches are listed with status/result/action placeholders.
 
 ### Alcance
 - Crear una ruta admin autenticada y protegida por rol admin.
@@ -816,12 +821,12 @@ Crear una pantalla admin mÃ­nima para listar partidos y preparar la futura car
 - Mostrar fase y grupo si existen.
 - Mostrar estado del partido.
 - Mostrar resultado si ya existe.
-- Mostrar una acciÃ³n visual futura para "Cargar resultado" o "Editar resultado", pero sin implementar todavÃ­a el guardado.
+- Mostrar una acción visual futura para "Cargar resultado" o "Editar resultado", pero sin implementar todavía el guardado.
 - Reutilizar el middleware admin existente.
-- Mantener diseÃ±o simple, mobile-first y alineado con docs/ui-guidelines.md.
+- Mantener diseño simple, mobile-first y alineado con docs/ui-guidelines.md.
 
 ### Fuera de alcance
-- No cargar resultados todavÃ­a.
+- No cargar resultados todavía.
 - No editar partidos.
 - No crear partidos.
 - No eliminar partidos.
@@ -832,7 +837,7 @@ Crear una pantalla admin mÃ­nima para listar partidos y preparar la futura car
 - No gestionar usuarios.
 - No crear CRUD admin completo.
 
-### Criterios de aceptaciÃ³n
+### Criterios de aceptación
 - Solo usuarios admin pueden acceder a /admin/matches.
 - Usuarios normales no pueden acceder.
 - Invitados son redirigidos al login.
@@ -859,41 +864,41 @@ Sprint 3
 Alta
 
 ### Objetivo
-Permitir que un admin cargue o edite manualmente el resultado real de un partido como herramienta de fallback o correcciÃ³n. La fuente principal esperada para resultados reales serÃ¡ una integraciÃ³n con API externa en un ticket posterior. La carga manual existe para operar la plataforma durante desarrollo, corregir resultados incorrectos o recuperarse si la API falla o se demora.
+Permitir que un admin cargue o edite manualmente el resultado real de un partido como herramienta de fallback o corrección. La fuente principal esperada para resultados reales será una integración con API externa en un ticket posterior. La carga manual existe para operar la plataforma durante desarrollo, corregir resultados incorrectos o recuperarse si la API falla o se demora.
 
 ### Alcance
 - Crear pantalla/formulario admin para cargar o corregir manualmente un resultado.
-- Tratar esta funcionalidad como fallback/correcciÃ³n.
-- No asumir que todos los resultados se cargarÃ¡n manualmente en producciÃ³n.
+- Tratar esta funcionalidad como fallback/corrección.
+- No asumir que todos los resultados se cargarán manualmente en producción.
 - Suggested routes:
   - GET /admin/matches/{tournamentMatch}/result
   - POST /admin/matches/{tournamentMatch}/result
 - Validar goles reales:
   - enteros
-  - mÃ­nimo 0
-  - mÃ¡ximo 99
+  - mínimo 0
+  - máximo 99
 - Guardar team_a_score y team_b_score.
 - Definir winner_team_id si hay ganador.
 - Si hay empate, winner_team_id debe quedar null.
 - Cambiar estado del partido a finished.
 - Mostrar resultado en admin matches.
-- No aplicar scoring todavÃ­a en este ticket.
+- No aplicar scoring todavía en este ticket.
 
 ### Fuera de alcance
-- No puntuar predicciones todavÃ­a.
+- No puntuar predicciones todavía.
 - No recalcular rankings.
 - No leaderboard.
 - No penalties/qualified team logic.
-- No ediciÃ³n general de partido.
+- No edición general de partido.
 - No API externa.
 
-### Criterios de aceptaciÃ³n
+### Criterios de aceptación
 - Solo admin puede cargar resultados.
 - Resultado se guarda correctamente.
 - Partido cambia a finished.
 - Winner team se guarda si corresponde.
 - Empate deja winner_team_id null.
-- No se aplica scoring todavÃ­a.
+- No se aplica scoring todavía.
 - No se implementan funcionalidades fuera de alcance.
 
 ### Commit sugerido
@@ -915,7 +920,7 @@ Sprint 3
 Alta
 
 ### Objetivo
-Aplicar la lÃ³gica de scoring existente a las predicciones cuando un partido ya tiene resultado real.
+Aplicar la lógica de scoring existente a las predicciones cuando un partido ya tiene resultado real.
 
 ### Alcance
 - Reutilizar PredictionScoringService.
@@ -927,19 +932,19 @@ Aplicar la lÃ³gica de scoring existente a las predicciones cuando un partido y
 - Integrar el scoring al flujo de carga de resultado si corresponde.
 
 ### Fuera de alcance
-- No leaderboard visual todavÃ­a.
+- No leaderboard visual todavía.
 - No rankings por liga.
 - No knockout/penalties scoring.
 - No notificaciones.
 - No API externa.
 
-### Criterios de aceptaciÃ³n
-- PredicciÃ³n exacta recibe 6 puntos.
+### Criterios de aceptación
+- Predicción exacta recibe 6 puntos.
 - Tendencia correcta recibe 3 puntos.
 - Incorrecta recibe 0 puntos.
 - Predicciones quedan status scored.
 - Recalcular no duplica puntos.
-- Tests o verificaciÃ³n manual cubren el flujo.
+- Tests o verificación manual cubren el flujo.
 - No se implementan funcionalidades fuera de alcance.
 
 ### Commit sugerido
@@ -1076,7 +1081,7 @@ E5-T01
 Calculate prediction points
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 3
@@ -1118,7 +1123,7 @@ E6-T01
 Show general leaderboard
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 3
@@ -1318,6 +1323,9 @@ High
 ### Objective
 Allow admin users to manage teams, phases, matches, and real results.
 
+### Note
+Partially covered by TICKET-015A and TICKET-015B. Remaining scope includes admin dashboard, team CRUD, match CRUD, phase management, and environment/test-live mode visibility.
+
 ### Scope
 - Add admin dashboard.
 - Add CRUD screens for teams, phases, and matches.
@@ -1354,6 +1362,9 @@ High
 
 ### Objective
 Let admins recalculate rankings after result changes.
+
+### Note
+Partially covered by TICKET-015C because result corrections already trigger idempotent prediction rescoring. Keep this ticket only for a future explicit admin recalculation action if still needed.
 
 ### Scope
 - Add admin action to recalculate prediction points.
@@ -1621,19 +1632,19 @@ Integrar una fuente externa para obtener fixtures y resultados reales del torneo
 
 ### Alcance
 - Evaluar proveedor de API de fixtures/resultados.
-- Definir configuraciÃ³n de credenciales y entorno.
-- DiseÃ±ar el flujo de importaciÃ³n/sincronizaciÃ³n.
+- Definir configuración de credenciales y entorno.
+- Diseñar el flujo de importación/sincronización.
 - Mapear datos externos a TournamentMatch y Team.
-- Registrar errores o inconsistencias para revisiÃ³n admin.
+- Registrar errores o inconsistencias para revisión admin.
 
 ### Fuera de alcance
-- No implementar scoring automÃ¡tico en este ticket.
-- No reemplazar todavÃ­a el fallback manual.
+- No implementar scoring automático en este ticket.
+- No reemplazar todavía el fallback manual.
 - No crear UI admin avanzada.
-- No agregar proveedor especÃ­fico sin decisiÃ³n previa.
+- No agregar proveedor específico sin decisión previa.
 
-### Criterios de aceptaciÃ³n
-- La API elegida y el enfoque de integraciÃ³n quedan definidos.
+### Criterios de aceptación
+- La API elegida y el enfoque de integración quedan definidos.
 - El sistema puede obtener o preparar fixtures/resultados desde la fuente externa.
 - La carga manual sigue disponible como fallback.
 - No se implementan funcionalidades fuera de alcance.
@@ -1645,7 +1656,7 @@ Integrate fixtures and results API
 TICKET-API-002
 
 ### Title
-Sincronizar resultados reales automÃ¡ticamente
+Sincronizar resultados reales automáticamente
 
 ### Estado
 TODO
@@ -1657,31 +1668,31 @@ Future
 Medium
 
 ### Objetivo
-Sincronizar resultados reales automÃ¡ticamente desde la API externa para actualizar partidos finalizados.
+Sincronizar resultados reales automáticamente desde la API externa para actualizar partidos finalizados.
 
 ### Alcance
-- Crear proceso de sincronizaciÃ³n automÃ¡tica o comando programable.
+- Crear proceso de sincronización automática o comando programable.
 - Actualizar resultados reales cuando la API confirme un partido finalizado.
 - Manejar demoras, errores y datos inconsistentes.
-- Mantener posibilidad de correcciÃ³n manual por admin.
-- Preparar integraciÃ³n futura con scoring/recalculo.
+- Mantener posibilidad de corrección manual por admin.
+- Preparar integración futura con scoring/recalculo.
 
 ### Fuera de alcance
 - No implementar leaderboard.
 - No implementar rankings por liga.
-- No eliminar la correcciÃ³n manual.
+- No eliminar la corrección manual.
 - No asumir exactitud absoluta de la API sin validaciones.
 
-### Criterios de aceptaciÃ³n
+### Criterios de aceptación
 - Resultados finalizados pueden sincronizarse desde la API.
-- Fallas o demoras quedan visibles o registradas para revisiÃ³n.
+- Fallas o demoras quedan visibles o registradas para revisión.
 - Admin puede corregir manualmente si la API falla o se demora.
 - No se implementan funcionalidades fuera de alcance.
 
 ### Commit sugerido
 Sync real match results automatically
 
-## EPIC 13 - Deploy / Railway
+## EPIC 14 - Deploy / Railway
 
 ### Ticket ID
 E13-T01
