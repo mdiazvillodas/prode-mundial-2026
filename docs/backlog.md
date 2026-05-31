@@ -304,7 +304,7 @@ E2-T01
 Configure user authentication
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 2
@@ -1128,6 +1128,9 @@ High
 
 ### Objective
 Rank all users by total points in the general league.
+
+### Note
+Covered by TICKET-017. The authenticated global leaderboard is already implemented, ranks users by total scored points, shows exact results, trends and scored prediction count, and is mobile-friendly.
 
 ### Scope
 - Add general leaderboard page.
