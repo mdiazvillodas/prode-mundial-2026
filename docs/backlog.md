@@ -1014,7 +1014,7 @@ TICKET-017
 Crear leaderboard general
 
 ### Estado
-TODO
+DONE
 
 ### Sprint
 Sprint 3
