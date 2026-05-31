@@ -105,7 +105,7 @@
 
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p class="text-sm text-gray-500">
-                                    {{ __('Guardar este resultado marcara el partido como terminado. No se aplicara scoring en este ticket.') }}
+                                    {{ __('Guardar este resultado marcara el partido como terminado y recalculara los puntos de sus predicciones.') }}
                                 </p>
 
                                 <x-primary-button>

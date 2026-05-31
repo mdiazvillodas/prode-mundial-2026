@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\TournamentMatch;
+use App\Services\MatchPredictionSettlementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -34,7 +35,11 @@ class MatchController extends Controller
         ]);
     }
 
-    public function updateResult(Request $request, TournamentMatch $tournamentMatch): RedirectResponse
+    public function updateResult(
+        Request $request,
+        TournamentMatch $tournamentMatch,
+        MatchPredictionSettlementService $settlement,
+    ): RedirectResponse
     {
         $tournamentMatch->load(['teamA', 'teamB']);
 
@@ -67,9 +72,16 @@ class MatchController extends Controller
             'status' => TournamentMatch::STATUS_FINISHED,
         ]);
 
+        $scoredPredictions = $settlement->score($tournamentMatch);
+
         return redirect()
             ->route('admin.matches.index')
-            ->with('status', __('Resultado guardado.'));
+            ->with(
+                'status',
+                $scoredPredictions > 0
+                    ? __('Resultado guardado. Predicciones puntuadas: :count.', ['count' => $scoredPredictions])
+                    : __('Resultado guardado. No habia predicciones para puntuar.'),
+            );
     }
 
     private function canLoadResult(TournamentMatch $tournamentMatch): bool
