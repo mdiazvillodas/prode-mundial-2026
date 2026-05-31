@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\MatchController as AdminMatchController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PredictionController;
@@ -26,5 +27,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/matches', [AdminMatchController::class, 'index'])->name('matches.index');
+    });
 
 require __DIR__.'/auth.php';
