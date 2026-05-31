@@ -1008,6 +1008,68 @@ Permitir que el usuario vea sus predicciones realizadas, el resultado real del p
 Add user prediction history
 
 ### Ticket ID
+TICKET-017
+
+### Title
+Crear leaderboard general
+
+### Estado
+TODO
+
+### Sprint
+Sprint 3
+
+### Prioridad
+Alta
+
+### Objetivo
+Crear el ranking general de usuarios según los puntos obtenidos en sus predicciones puntuadas.
+
+### Alcance
+- Crear una pantalla pública o autenticada de leaderboard general.
+- Suggested route:
+  - GET /leaderboard
+  - route name: leaderboard.index
+- Mostrar ranking de usuarios.
+- Calcular puntos totales sumando points_awarded de predicciones scored.
+- Mostrar posición.
+- Mostrar username.
+- Mostrar puntos totales.
+- Mostrar cantidad de resultados exactos acertados.
+- Mostrar cantidad de tendencias acertadas.
+- Mostrar cantidad de predicciones puntuadas.
+- Ordenar por puntos totales descendente.
+- Destacar visualmente el primer puesto.
+- Agregar link desde dashboard y/o navegación principal.
+- Mantener diseño mobile-first y alineado con docs/ui-guidelines.md.
+
+### Fuera de alcance
+- No crear ligas privadas.
+- No crear leaderboard por liga.
+- No crear sistema avanzado de desempate.
+- No crear rankings persistidos en tabla separada.
+- No crear badges.
+- No crear premios.
+- No modificar scoring.
+- No agregar API externa.
+
+### Criterios de aceptación
+- php artisan migrate:fresh --seed corre correctamente.
+- npm run build corre correctamente.
+- Usuario puede acceder a /leaderboard.
+- Se muestran usuarios con predicciones puntuadas.
+- Se ordena por puntos descendente.
+- Se muestran puntos totales.
+- Se muestran exactos.
+- Se muestran tendencias.
+- Se muestran predicciones puntuadas.
+- El primer puesto se destaca visualmente.
+- No se implementan funcionalidades fuera de alcance.
+
+### Commit sugerido
+Add global leaderboard
+
+### Ticket ID
 E5-T01
 
 ### Title
