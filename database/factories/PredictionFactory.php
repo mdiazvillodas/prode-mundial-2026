@@ -24,6 +24,7 @@ class PredictionFactory extends Factory
             'match_id' => TournamentMatch::factory(),
             'team_a_score' => fake()->numberBetween(0, 8),
             'team_b_score' => fake()->numberBetween(0, 8),
+            'predicted_qualified_team_id' => null,
             'status' => Prediction::STATUS_SUBMITTED,
             'points_awarded' => null,
         ];

@@ -74,6 +74,27 @@ class TournamentMatch extends Model
         return $this->hasMany(Prediction::class, 'match_id');
     }
 
+    public function isKnockout(): bool
+    {
+        if (! $this->stage) {
+            return false;
+        }
+
+        return in_array($this->stage, [
+            'round_of_32',
+            'round_of_16',
+            'quarter_final',
+            'semi_final',
+            'third_place',
+            'final',
+        ], true);
+    }
+
+    public function requiresQualifiedTeamPrediction(): bool
+    {
+        return $this->isKnockout();
+    }
+
     public function predictionClosesAt(): ?CarbonInterface
     {
         if ($this->prediction_closes_at) {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Prediction extends Model
@@ -24,6 +25,7 @@ class Prediction extends Model
         'match_id',
         'team_a_score',
         'team_b_score',
+        'predicted_qualified_team_id',
         'status',
         'points_awarded',
     ];
@@ -33,6 +35,7 @@ class Prediction extends Model
         return [
             'team_a_score' => 'integer',
             'team_b_score' => 'integer',
+            'predicted_qualified_team_id' => 'integer',
             'points_awarded' => 'integer',
         ];
     }
@@ -45,5 +48,10 @@ class Prediction extends Model
     public function match(): BelongsTo
     {
         return $this->belongsTo(TournamentMatch::class, 'match_id');
+    }
+
+    public function predictedQualifiedTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'predicted_qualified_team_id');
     }
 }
