@@ -6,6 +6,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PredictionController;
+use App\Http\Controllers\PrivateLeagueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-predictions', [PredictionController::class, 'history'])->name('predictions.history');
     Route::get('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'show'])->name('predictions.show');
     Route::post('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'store'])->name('predictions.store');
+    Route::get('/private-leagues/create', [PrivateLeagueController::class, 'create'])->name('private-leagues.create');
+    Route::post('/private-leagues', [PrivateLeagueController::class, 'store'])->name('private-leagues.store');
+    Route::get('/private-leagues/{privateLeague}', [PrivateLeagueController::class, 'show'])->name('private-leagues.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
