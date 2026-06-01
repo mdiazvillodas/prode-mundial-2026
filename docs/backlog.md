@@ -1545,7 +1545,7 @@ E10-T01
 Support knockout placeholders
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 6
@@ -1573,7 +1573,7 @@ Represent knockout matches before both teams are known.
 ### Suggested commit message
 feat: support knockout match placeholders
 
-> Note: Partially covered by existing placeholder display/blocking. E10-T01A covers the missing admin workflow to assign teams to placeholder matches.
+> Note: Covered by existing placeholder support and E10-T01A. Placeholder matches can exist, appear in calendar/listings, block predictions until teams are assigned, and admin can assign teams later.
 
 ### Ticket ID
 E10-T01A
@@ -1582,7 +1582,7 @@ E10-T01A
 Assign teams to knockout placeholder matches
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 6
@@ -1592,6 +1592,8 @@ High
 
 ### Objective
 Allow admin users to assign teams to placeholder knockout matches so they can become real predictable fixtures once teams are known.
+
+> Note: Implemented with admin-only team assignment routes, team selection form, validation for existing and different teams, placeholder-to-scheduled status update, admin matches action, and tests for guest redirect, normal user block, admin form access, successful assignment and distinct team validation.
 
 ### Scope
 - Add admin-only form to assign or update team_a_id and team_b_id for an existing TournamentMatch.
