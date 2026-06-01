@@ -1204,7 +1204,7 @@ E7-T02
 Show private league leaderboard
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 4
@@ -1216,7 +1216,7 @@ Medium
 Rank members inside each private league.
 
 ### Note
-Depends on E8-T01 because private league leaderboards require league memberships and approved members. Do not implement E7-T02 before join requests and memberships exist.
+Implemented after E8-T01. Private league detail now shows a leaderboard for active members only, using the same scoring aggregation as the global leaderboard, with owner/member access control and non-member blocking.
 
 ### Scope
 - Add league detail page.
