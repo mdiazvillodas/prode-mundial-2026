@@ -1244,7 +1244,10 @@ E8-T01
 Search and request to join private leagues
 
 ### Status
-Todo
+Done
+
+### Note
+Implemented with LeagueMembership, LeagueJoinRequest, league search by name/code, join requests, owner approval/rejection, owner auto-membership, member-only league detail access, duplicate request blocking, own-league request blocking, active-member blocking, and max 3 active private league memberships.
 
 ### Sprint
 Sprint 5
