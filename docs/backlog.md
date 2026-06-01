@@ -1315,6 +1315,65 @@ Allow league owners to remove members while logging the action.
 ### Suggested commit message
 feat: log private league member removals
 
+### Ticket ID
+E8-T03
+
+### Title
+Add private league invitation links
+
+### Status
+Todo
+
+### Sprint
+Sprint 5
+
+### Priority
+High
+
+### Objective
+Allow private league owners to share a direct invitation link so other users can find the league and request access more easily.
+
+### Scope
+- Add a visible invitation link/button on the private league detail page for the owner.
+- The link should point to the league detail or a dedicated join/request page.
+- The owner should be able to copy the invitation link.
+- Users who open the link should be able to request access if eligible.
+- If the user is not authenticated, they should be redirected to login and then be able to continue.
+- If the user is already an active member, show the league detail.
+- If the user already has a pending request, show a clear pending state.
+- If the user was removed, do not automatically re-add them.
+- Joining through the link must still require owner approval.
+- Reuse the existing LeagueJoinRequest flow.
+- Reuse existing business rules:
+  - no duplicate pending requests
+  - no request to own league
+  - no request if already active member
+  - max 3 active private league memberships
+
+### Out of scope
+- No automatic joining without approval.
+- No email invitations.
+- No notifications.
+- No public league directory.
+- No member removal changes.
+- No scoring changes.
+- No leaderboard changes.
+- No API integration.
+- No external packages.
+
+### Acceptance criteria
+- Owner can see and copy an invitation link.
+- Authenticated non-members can open the link and request access.
+- Guests are redirected to login.
+- Existing members opening the link see the league detail.
+- Users with pending requests see pending state.
+- Removed users are not automatically re-added.
+- Owner approval is still required.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add private league invitation links
+
 ## EPIC 9 - Admin
 
 ### Ticket ID
