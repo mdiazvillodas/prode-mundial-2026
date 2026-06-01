@@ -1386,7 +1386,10 @@ E9-T01A
 Create minimal admin dashboard
 
 ### Status
-Todo
+Done
+
+### Note
+Implemented with /admin route, admin-only dashboard, environment and app mode display, operational counts, quick links, and admin-only navigation link. E9-T01 remains for full admin tournament management.
 
 ### Sprint
 Sprint 5
