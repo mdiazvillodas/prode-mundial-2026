@@ -68,6 +68,47 @@
                 </div>
             </article>
 
+            @if ($privateLeague->owner_id === auth()->id())
+                <section class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm font-medium uppercase tracking-wide text-emerald-700">
+                                {{ __('Invitacion') }}
+                            </p>
+                            <h3 class="mt-1 text-lg font-semibold text-gray-900">
+                                {{ __('Compartir liga') }}
+                            </h3>
+                        </div>
+                    </div>
+
+                    <p class="mt-2 text-sm text-gray-600">
+                        {{ __('Compartir este link permite que otros usuarios soliciten acceso. El ingreso sigue requiriendo tu aprobacion.') }}
+                    </p>
+
+                    <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                        <input
+                            id="league-invitation-url"
+                            type="text"
+                            readonly
+                            value="{{ $invitationUrl }}"
+                            class="block w-full rounded-md border-gray-300 bg-gray-50 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                        >
+
+                        <button
+                            type="button"
+                            data-copy-invite
+                            class="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                        >
+                            {{ __('Copiar link') }}
+                        </button>
+                    </div>
+
+                    <p data-copy-invite-status class="mt-2 hidden text-sm font-medium text-emerald-700">
+                        {{ __('Link copiado') }}
+                    </p>
+                </section>
+            @endif
+
             <section class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-100">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -288,4 +329,30 @@
             </div>
         </div>
     </div>
+
+    @if ($privateLeague->owner_id === auth()->id())
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const button = document.querySelector('[data-copy-invite]');
+                const input = document.getElementById('league-invitation-url');
+                const status = document.querySelector('[data-copy-invite-status]');
+
+                if (! button || ! input || ! status) {
+                    return;
+                }
+
+                button.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(input.value);
+                    } catch (error) {
+                        input.select();
+                        document.execCommand('copy');
+                    }
+
+                    status.classList.remove('hidden');
+                    window.setTimeout(() => status.classList.add('hidden'), 2500);
+                });
+            });
+        </script>
+    @endif
 </x-app-layout>

@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PrivateLeagueController extends Controller
 {
@@ -108,8 +109,49 @@ class PrivateLeagueController extends Controller
         ]);
 
         return view('private-leagues.show', [
+            'invitationUrl' => route('private-leagues.invite', $privateLeague->code),
             'leaderboard' => $this->privateLeagueLeaderboard($privateLeague->id),
             'privateLeague' => $privateLeague,
+        ]);
+    }
+
+    public function invite(Request $request, string $code): View
+    {
+        $privateLeague = PrivateLeague::query()
+            ->with('owner')
+            ->where('code', strtoupper($code))
+            ->first();
+
+        if (! $privateLeague) {
+            throw new NotFoundHttpException();
+        }
+
+        $user = $request->user();
+        $membership = $privateLeague->memberships()
+            ->where('user_id', $user->id)
+            ->first();
+        $pendingJoinRequest = $privateLeague->joinRequests()
+            ->where('user_id', $user->id)
+            ->where('status', LeagueJoinRequest::STATUS_PENDING)
+            ->first();
+        $activeMembershipsCount = $this->activeMembershipsCount($user->id);
+
+        $isOwner = $privateLeague->owner_id === $user->id;
+        $isActiveMember = $membership?->status === LeagueMembership::STATUS_ACTIVE;
+        $wasRemoved = $membership?->status === LeagueMembership::STATUS_REMOVED;
+        $canRequestAccess = ! $isOwner
+            && ! $isActiveMember
+            && ! $pendingJoinRequest
+            && $activeMembershipsCount < self::MAX_ACTIVE_MEMBERSHIPS;
+
+        return view('private-leagues.invite', [
+            'activeMembershipsCount' => $activeMembershipsCount,
+            'canRequestAccess' => $canRequestAccess,
+            'isActiveMember' => $isActiveMember,
+            'isOwner' => $isOwner,
+            'pendingJoinRequest' => $pendingJoinRequest,
+            'privateLeague' => $privateLeague,
+            'wasRemoved' => $wasRemoved,
         ]);
     }
 

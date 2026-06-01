@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'store'])->name('predictions.store');
     Route::get('/private-leagues/search', [PrivateLeagueController::class, 'search'])->name('private-leagues.search');
     Route::get('/private-leagues/create', [PrivateLeagueController::class, 'create'])->name('private-leagues.create');
+    Route::get('/private-leagues/invite/{code}', [PrivateLeagueController::class, 'invite'])->name('private-leagues.invite');
     Route::post('/private-leagues', [PrivateLeagueController::class, 'store'])->name('private-leagues.store');
     Route::post('/private-leagues/{privateLeague}/join-requests', [PrivateLeagueController::class, 'storeJoinRequest'])->name('private-leagues.join-requests.store');
     Route::post('/private-leagues/{privateLeague}/join-requests/{leagueJoinRequest}/accept', [PrivateLeagueController::class, 'acceptJoinRequest'])->name('private-leagues.join-requests.accept');
