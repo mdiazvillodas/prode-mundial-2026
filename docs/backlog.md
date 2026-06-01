@@ -1688,7 +1688,7 @@ E10-T02A
 Add qualified team prediction data model
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 6
@@ -1726,6 +1726,9 @@ Prepare the data model for knockout predictions by allowing users to store the t
 - Prediction model supports predicted qualified team relationship.
 - TournamentMatch can identify knockout matches.
 - Existing group-stage prediction behavior is not changed.
+
+### Note
+Implemented with predictions.predicted_qualified_team_id, foreign key to teams, Prediction model fillable/cast/relationship, TournamentMatch knockout helper methods, PredictionFactory update, and focused tests. No UI, scoring, settlement or controller changes were included.
 
 ### Suggested commit message
 Add qualified team prediction data model
