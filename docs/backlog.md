@@ -1678,6 +1678,116 @@ Allow users to predict score and qualified team for knockout matches.
 ### Suggested commit message
 feat: add knockout prediction scoring
 
+### Note
+Split into E10-T02A for data model/helper work and E10-T02B for UI, validation and scoring.
+
+### Ticket ID
+E10-T02A
+
+### Title
+Add qualified team prediction data model
+
+### Status
+Todo
+
+### Sprint
+Sprint 6
+
+### Priority
+High
+
+### Objective
+Prepare the data model for knockout predictions by allowing users to store the team they believe will qualify.
+
+### Scope
+- Add a nullable predicted_qualified_team_id field to predictions.
+- Add foreign key to teams.
+- Update Prediction model fillable/casts/relationships as appropriate.
+- Add helper relationship predictedQualifiedTeam if useful.
+- Add TournamentMatch helper methods:
+  - isKnockout()
+  - requiresQualifiedTeamPrediction()
+- Determine knockout status based on stage values.
+- Keep existing group-stage prediction behavior unchanged.
+
+### Out of scope
+- No UI changes.
+- No scoring changes.
+- No controller validation changes.
+- No leaderboard changes.
+- No history UI changes.
+- No bracket visualization.
+- No penalty shootout detail.
+
+### Acceptance criteria
+- php artisan test passes.
+- php artisan migrate:fresh --seed passes.
+- predictions table has predicted_qualified_team_id.
+- Prediction model supports predicted qualified team relationship.
+- TournamentMatch can identify knockout matches.
+- Existing group-stage prediction behavior is not changed.
+
+### Suggested commit message
+Add qualified team prediction data model
+
+### Ticket ID
+E10-T02B
+
+### Title
+Add knockout qualified-team prediction flow and scoring
+
+### Status
+Todo
+
+### Sprint
+Sprint 6
+
+### Priority
+High
+
+### Objective
+Allow users to predict the qualified team for knockout matches and score knockout predictions using the defined 6/3/0 rules.
+
+### Scope
+- Update inline predictions page to show qualified-team selection for knockout matches.
+- Update single-match prediction fallback view if still available.
+- Validate predicted_qualified_team_id for knockout matches.
+- The selected qualified team must be either team_a_id or team_b_id.
+- Persist predicted_qualified_team_id.
+- Update scoring logic:
+  - knockout exact score + correct qualified team = 6
+  - knockout correct qualified team without exact score = 3
+  - knockout incorrect qualified team = 0
+  - non-knockout scoring remains unchanged
+- Use matches.winner_team_id as actual qualified team for knockout scoring.
+- Update prediction history to show predicted qualified team if relevant.
+- Add focused tests for knockout scoring and validation.
+
+### Out of scope
+- No bracket visualization.
+- No automatic advancement.
+- No penalty shootout score details.
+- No API integration.
+- No leaderboard redesign.
+- No private league changes.
+- No admin CRUD.
+
+### Acceptance criteria
+- php artisan test passes.
+- php artisan migrate:fresh --seed passes.
+- npm run build passes.
+- Knockout matches require qualified team prediction.
+- Selected qualified team must belong to the match.
+- Group-stage predictions continue working without qualified team.
+- Exact score + correct qualified team gives 6.
+- Correct qualified team without exact score gives 3.
+- Incorrect qualified team gives 0.
+- Placeholder knockout matches remain blocked until teams are assigned.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add knockout qualified team predictions
+
 ## EPIC 11 - UX / UI
 
 ### Ticket ID
