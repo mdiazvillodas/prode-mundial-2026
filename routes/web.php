@@ -48,6 +48,8 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::get('/matches', [AdminMatchController::class, 'index'])->name('matches.index');
+        Route::get('/matches/{tournamentMatch}/teams', [AdminMatchController::class, 'editTeams'])->name('matches.teams.edit');
+        Route::post('/matches/{tournamentMatch}/teams', [AdminMatchController::class, 'updateTeams'])->name('matches.teams.update');
         Route::get('/matches/{tournamentMatch}/result', [AdminMatchController::class, 'editResult'])->name('matches.result.edit');
         Route::post('/matches/{tournamentMatch}/result', [AdminMatchController::class, 'updateResult'])->name('matches.result.update');
     });

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Services\MatchPredictionSettlementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MatchController extends Controller
@@ -23,6 +25,51 @@ class MatchController extends Controller
         return view('admin.matches.index', [
             'matches' => $matches,
         ]);
+    }
+
+    public function editTeams(TournamentMatch $tournamentMatch): View
+    {
+        if ($tournamentMatch->team_a_id && $tournamentMatch->team_b_id && $tournamentMatch->status !== TournamentMatch::STATUS_PLACEHOLDER) {
+            return redirect()
+                ->route('admin.matches.index')
+                ->with('status', __('Este partido ya tiene equipos asignados.'));
+        }
+
+        $teams = Team::orderBy('name')->get();
+
+        return view('admin.matches.teams', [
+            'tournamentMatch' => $tournamentMatch,
+            'teams' => $teams,
+        ]);
+    }
+
+    public function updateTeams(Request $request, TournamentMatch $tournamentMatch): RedirectResponse
+    {
+        if ($tournamentMatch->team_a_id && $tournamentMatch->team_b_id && $tournamentMatch->status !== TournamentMatch::STATUS_PLACEHOLDER) {
+            return redirect()
+                ->route('admin.matches.index')
+                ->with('status', __('Este partido ya tiene equipos asignados.'));
+        }
+
+        $validated = $request->validate([
+            'team_a_id' => ['required', 'integer', Rule::exists('teams', 'id')],
+            'team_b_id' => ['required', 'integer', Rule::exists('teams', 'id'), 'different:team_a_id'],
+        ]);
+
+        $updateData = [
+            'team_a_id' => $validated['team_a_id'],
+            'team_b_id' => $validated['team_b_id'],
+        ];
+
+        if ($tournamentMatch->status === TournamentMatch::STATUS_PLACEHOLDER) {
+            $updateData['status'] = TournamentMatch::STATUS_SCHEDULED;
+        }
+
+        $tournamentMatch->update($updateData);
+
+        return redirect()
+            ->route('admin.matches.index')
+            ->with('status', __('Equipos asignados. El partido ya puede recibir predicciones cuando sea elegible.'));
     }
 
     public function editResult(TournamentMatch $tournamentMatch): View

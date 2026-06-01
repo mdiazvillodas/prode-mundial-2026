@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\LeagueJoinRequest;
 use App\Models\LeagueMembership;
 use App\Models\PrivateLeague;
+use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -159,6 +160,77 @@ class HardenValidationAuthorizationTest extends TestCase
         $adminResponse = $this->actingAs($admin)
             ->get("/admin/matches/{$match->id}/result");
         $adminResponse->assertOk();
+    }
+
+    public function test_guest_is_redirected_from_admin_team_assignment_route(): void
+    {
+        $match = TournamentMatch::factory()->placeholder()->create();
+
+        $response = $this->get("/admin/matches/{$match->id}/teams");
+
+        $response->assertRedirect('/login');
+    }
+
+    public function test_non_admin_cannot_access_admin_team_assignment_route(): void
+    {
+        $user = User::factory()->create();
+        $match = TournamentMatch::factory()->placeholder()->create();
+
+        $response = $this->actingAs($user)
+            ->get("/admin/matches/{$match->id}/teams");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_view_team_assignment_form_for_placeholder_match(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $match = TournamentMatch::factory()->placeholder()->create();
+
+        $response = $this->actingAs($admin)
+            ->get("/admin/matches/{$match->id}/teams");
+
+        $response->assertOk();
+        $response->assertSee('Asignar equipos');
+    }
+
+    public function test_admin_can_assign_different_teams_to_placeholder_match(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $match = TournamentMatch::factory()->placeholder()->create();
+        $teamA = Team::factory()->create();
+        $teamB = Team::factory()->create();
+
+        $response = $this->actingAs($admin)
+            ->from("/admin/matches/{$match->id}/teams")
+            ->post("/admin/matches/{$match->id}/teams", [
+                'team_a_id' => $teamA->id,
+                'team_b_id' => $teamB->id,
+            ]);
+
+        $response->assertRedirect('/admin/matches');
+        $this->assertDatabaseHas('matches', [
+            'id' => $match->id,
+            'team_a_id' => $teamA->id,
+            'team_b_id' => $teamB->id,
+            'status' => TournamentMatch::STATUS_SCHEDULED,
+        ]);
+    }
+
+    public function test_admin_team_assignment_requires_two_different_teams(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $match = TournamentMatch::factory()->placeholder()->create();
+        $team = Team::factory()->create();
+
+        $response = $this->actingAs($admin)
+            ->from("/admin/matches/{$match->id}/teams")
+            ->post("/admin/matches/{$match->id}/teams", [
+                'team_a_id' => $team->id,
+                'team_b_id' => $team->id,
+            ]);
+
+        $response->assertSessionHasErrors(['team_b_id']);
     }
 
     public function test_admin_cannot_update_result_for_placeholder_match(): void

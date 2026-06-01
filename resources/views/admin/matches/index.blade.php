@@ -131,12 +131,21 @@
                                             {{ $statusLabel }}
                                         </span>
 
-                                        <a
-                                            href="{{ route('admin.matches.result.edit', $match) }}"
-                                            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                        >
-                                            {{ $hasResult ? __('Editar resultado') : __('Cargar resultado') }}
-                                        </a>
+                                        @if ($isPlaceholder)
+                                            <a
+                                                href="{{ route('admin.matches.teams.edit', $match) }}"
+                                                class="inline-flex items-center justify-center rounded-md border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            >
+                                                {{ __('Asignar equipos') }}
+                                            </a>
+                                        @else
+                                            <a
+                                                href="{{ route('admin.matches.result.edit', $match) }}"
+                                                class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            >
+                                                {{ $hasResult ? __('Editar resultado') : __('Cargar resultado') }}
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
