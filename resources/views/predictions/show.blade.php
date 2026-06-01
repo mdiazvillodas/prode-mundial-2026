@@ -94,6 +94,27 @@
                             </div>
                         </div>
 
+                        @if ($tournamentMatch->requiresQualifiedTeamPrediction())
+                            <div>
+                                <x-input-label for="predicted_qualified_team_id" :value="__('Equipo clasificado')" />
+                                <select
+                                    id="predicted_qualified_team_id"
+                                    name="predicted_qualified_team_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                >
+                                    <option value="">{{ __('Selecciona el equipo clasificado') }}</option>
+                                    <option value="{{ $tournamentMatch->team_a_id }}" {{ old('predicted_qualified_team_id', $prediction?->predicted_qualified_team_id) == $tournamentMatch->team_a_id ? 'selected' : '' }}>
+                                        {{ $tournamentMatch->teamA->name }}
+                                    </option>
+                                    <option value="{{ $tournamentMatch->team_b_id }}" {{ old('predicted_qualified_team_id', $prediction?->predicted_qualified_team_id) == $tournamentMatch->team_b_id ? 'selected' : '' }}>
+                                        {{ $tournamentMatch->teamB->name }}
+                                    </option>
+                                </select>
+                                <x-input-error :messages="$errors->get('predicted_qualified_team_id')" class="mt-2" />
+                            </div>
+                        @endif
+
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <p class="text-sm text-gray-500">
                                 {{ $prediction ? __('Ya tenes una prediccion cargada para este partido.') : __('Tu prediccion se puede editar hasta el cierre.') }}

@@ -7,6 +7,7 @@ use App\Models\TournamentMatch;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -38,6 +39,7 @@ class PredictionController extends Controller
         $predictions = $request->user()
             ->predictions()
             ->with([
+                'predictedQualifiedTeam',
                 'match.teamA',
                 'match.teamB',
                 'match.winnerTeam',
@@ -78,16 +80,27 @@ class PredictionController extends Controller
     {
         abort_unless($tournamentMatch->isPredictable(), 403);
 
-        $validated = $request->validate([
+        $rules = [
             'team_a_score' => ['required', 'integer', 'min:0', 'max:99'],
             'team_b_score' => ['required', 'integer', 'min:0', 'max:99'],
-        ]);
+        ];
+
+        if ($tournamentMatch->requiresQualifiedTeamPrediction()) {
+            $rules['predicted_qualified_team_id'] = [
+                'required',
+                'integer',
+                Rule::in([$tournamentMatch->team_a_id, $tournamentMatch->team_b_id]),
+            ];
+        }
+
+        $validated = $request->validate($rules);
 
         $request->user()->predictions()->updateOrCreate(
             ['match_id' => $tournamentMatch->id],
             [
                 'team_a_score' => $validated['team_a_score'],
                 'team_b_score' => $validated['team_b_score'],
+                'predicted_qualified_team_id' => $validated['predicted_qualified_team_id'] ?? null,
                 'status' => Prediction::STATUS_SUBMITTED,
                 'points_awarded' => null,
             ],
@@ -108,7 +121,8 @@ class PredictionController extends Controller
 
                 return ($prediction['changed'] ?? '0') === '1'
                     || filled($prediction['team_a_score'] ?? null)
-                    || filled($prediction['team_b_score'] ?? null);
+                    || filled($prediction['team_b_score'] ?? null)
+                    || filled($prediction['predicted_qualified_team_id'] ?? null);
             });
 
         if ($submittedPredictions->isEmpty()) {
@@ -134,10 +148,20 @@ class PredictionController extends Controller
                 continue;
             }
 
-            $validator = Validator::make($prediction, [
+            $rules = [
                 'team_a_score' => ['required', 'integer', 'min:0', 'max:99'],
                 'team_b_score' => ['required', 'integer', 'min:0', 'max:99'],
-            ]);
+            ];
+
+            if ($match->requiresQualifiedTeamPrediction()) {
+                $rules['predicted_qualified_team_id'] = [
+                    'required',
+                    'integer',
+                    Rule::in([$match->team_a_id, $match->team_b_id]),
+                ];
+            }
+
+            $validator = Validator::make($prediction, $rules);
 
             if ($validator->fails()) {
                 foreach ($validator->errors()->messages() as $field => $messages) {
@@ -160,6 +184,7 @@ class PredictionController extends Controller
                 [
                     'team_a_score' => $prediction['team_a_score'],
                     'team_b_score' => $prediction['team_b_score'],
+                    'predicted_qualified_team_id' => $prediction['predicted_qualified_team_id'] ?? null,
                     'status' => Prediction::STATUS_SUBMITTED,
                     'points_awarded' => null,
                 ],

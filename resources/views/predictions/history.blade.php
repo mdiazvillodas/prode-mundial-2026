@@ -106,6 +106,13 @@
                                 <p class="mt-2 text-2xl font-bold text-indigo-950">
                                     {{ $prediction->team_a_score }} - {{ $prediction->team_b_score }}
                                 </p>
+
+                                @if ($prediction->predictedQualifiedTeam)
+                                    <p class="mt-3 text-sm text-gray-700">
+                                        <span class="font-medium">{{ __('Clasificado pronosticado') }}:</span>
+                                        <span>{{ $prediction->predictedQualifiedTeam->name }}</span>
+                                    </p>
+                                @endif
                             </div>
 
                             <div class="rounded-md bg-gray-50 p-4">

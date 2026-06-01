@@ -50,6 +50,60 @@ class PredictionScoringServiceTest extends TestCase
         $this->assertSame(3, $this->scoring->calculate(98, 99, 1, 99));
     }
 
+    public function test_knockout_exact_score_and_correct_qualified_team_returns_six_points(): void
+    {
+        $prediction = new Prediction([
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => 1,
+        ]);
+
+        $tournamentMatch = new TournamentMatch([
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'winner_team_id' => 1,
+            'stage' => 'quarter_final',
+        ]);
+
+        $this->assertSame(6, $this->scoring->calculateFor($prediction, $tournamentMatch));
+    }
+
+    public function test_knockout_correct_qualified_team_without_exact_score_returns_three_points(): void
+    {
+        $prediction = new Prediction([
+            'team_a_score' => 2,
+            'team_b_score' => 0,
+            'predicted_qualified_team_id' => 1,
+        ]);
+
+        $tournamentMatch = new TournamentMatch([
+            'team_a_score' => 3,
+            'team_b_score' => 1,
+            'winner_team_id' => 1,
+            'stage' => 'semi_final',
+        ]);
+
+        $this->assertSame(3, $this->scoring->calculateFor($prediction, $tournamentMatch));
+    }
+
+    public function test_knockout_incorrect_qualified_team_returns_zero_points(): void
+    {
+        $prediction = new Prediction([
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => 2,
+        ]);
+
+        $tournamentMatch = new TournamentMatch([
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'winner_team_id' => 1,
+            'stage' => 'final',
+        ]);
+
+        $this->assertSame(0, $this->scoring->calculateFor($prediction, $tournamentMatch));
+    }
+
     public function test_prediction_and_tournament_match_can_be_scored_together(): void
     {
         $prediction = new Prediction([

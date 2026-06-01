@@ -159,6 +159,31 @@
                                                             @endif
                                                         </div>
                                                     </div>
+
+                                                    @if ($match->requiresQualifiedTeamPrediction())
+                                                        <div class="mt-3 rounded-md bg-gray-50 p-3">
+                                                            <label for="prediction-{{ $match->id }}-qualified-team" class="block text-xs font-medium text-gray-600">
+                                                                {{ __('Equipo clasificado') }}
+                                                            </label>
+                                                            <select
+                                                                id="prediction-{{ $match->id }}-qualified-team"
+                                                                name="predictions[{{ $match->id }}][predicted_qualified_team_id]"
+                                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                data-prediction-input
+                                                            >
+                                                                <option value="">{{ __('Selecciona el equipo clasificado') }}</option>
+                                                                <option value="{{ $match->team_a_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_a_id ? 'selected' : '' }}>
+                                                                    {{ $teamAName }}
+                                                                </option>
+                                                                <option value="{{ $match->team_b_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_b_id ? 'selected' : '' }}>
+                                                                    {{ $teamBName }}
+                                                                </option>
+                                                            </select>
+                                                            @if ($errors->first("predictions.{$match->id}.predicted_qualified_team_id"))
+                                                                <p class="mt-1 text-xs text-red-600">{{ $errors->first("predictions.{$match->id}.predicted_qualified_team_id") }}</p>
+                                                            @endif
+                                                        </div>
+                                                    @endif
                                                 @else
                                                     <div class="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
                                                         @if ($isPlaceholder)

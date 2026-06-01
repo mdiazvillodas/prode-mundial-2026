@@ -11,6 +11,8 @@ class PredictionScoringService
 
     public const POINTS_CORRECT_OUTCOME = 3;
 
+    public const POINTS_CORRECT_QUALIFIED_TEAM = 3;
+
     public const POINTS_INCORRECT = 0;
 
     public function calculate(
@@ -38,12 +40,39 @@ class PredictionScoringService
 
     public function calculateFor(Prediction $prediction, TournamentMatch $tournamentMatch): int
     {
+        if ($tournamentMatch->requiresQualifiedTeamPrediction()) {
+            return $this->calculateKnockoutPrediction($prediction, $tournamentMatch);
+        }
+
         return $this->calculate(
             $prediction->team_a_score,
             $prediction->team_b_score,
             $tournamentMatch->team_a_score,
             $tournamentMatch->team_b_score,
         );
+    }
+
+    private function calculateKnockoutPrediction(Prediction $prediction, TournamentMatch $tournamentMatch): int
+    {
+        if (
+            $prediction->predicted_qualified_team_id === null
+            || $tournamentMatch->winner_team_id === null
+        ) {
+            return self::POINTS_INCORRECT;
+        }
+
+        if ($prediction->predicted_qualified_team_id !== $tournamentMatch->winner_team_id) {
+            return self::POINTS_INCORRECT;
+        }
+
+        if (
+            $prediction->team_a_score === $tournamentMatch->team_a_score
+            && $prediction->team_b_score === $tournamentMatch->team_b_score
+        ) {
+            return self::POINTS_EXACT_RESULT;
+        }
+
+        return self::POINTS_CORRECT_QUALIFIED_TEAM;
     }
 
     private function outcome(int $teamAScore, int $teamBScore): int
