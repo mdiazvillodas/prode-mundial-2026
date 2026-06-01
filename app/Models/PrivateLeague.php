@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class PrivateLeague extends Model
@@ -27,11 +28,29 @@ class PrivateLeague extends Model
             $privateLeague->status ??= self::STATUS_ACTIVE;
             $privateLeague->code ??= self::generateUniqueCode();
         });
+
+        static::created(function (PrivateLeague $privateLeague): void {
+            $privateLeague->memberships()->create([
+                'user_id' => $privateLeague->owner_id,
+                'status' => LeagueMembership::STATUS_ACTIVE,
+                'joined_at' => now(),
+            ]);
+        });
     }
 
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(LeagueMembership::class);
+    }
+
+    public function joinRequests(): HasMany
+    {
+        return $this->hasMany(LeagueJoinRequest::class);
     }
 
     private static function generateUniqueCode(): string

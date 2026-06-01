@@ -26,8 +26,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-predictions', [PredictionController::class, 'history'])->name('predictions.history');
     Route::get('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'show'])->name('predictions.show');
     Route::post('/matches/{tournamentMatch}/prediction', [PredictionController::class, 'store'])->name('predictions.store');
+    Route::get('/private-leagues/search', [PrivateLeagueController::class, 'search'])->name('private-leagues.search');
     Route::get('/private-leagues/create', [PrivateLeagueController::class, 'create'])->name('private-leagues.create');
     Route::post('/private-leagues', [PrivateLeagueController::class, 'store'])->name('private-leagues.store');
+    Route::post('/private-leagues/{privateLeague}/join-requests', [PrivateLeagueController::class, 'storeJoinRequest'])->name('private-leagues.join-requests.store');
+    Route::post('/private-leagues/{privateLeague}/join-requests/{leagueJoinRequest}/accept', [PrivateLeagueController::class, 'acceptJoinRequest'])->name('private-leagues.join-requests.accept');
+    Route::post('/private-leagues/{privateLeague}/join-requests/{leagueJoinRequest}/reject', [PrivateLeagueController::class, 'rejectJoinRequest'])->name('private-leagues.join-requests.reject');
     Route::get('/private-leagues/{privateLeague}', [PrivateLeagueController::class, 'show'])->name('private-leagues.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

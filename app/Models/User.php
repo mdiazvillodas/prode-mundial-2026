@@ -69,4 +69,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(PrivateLeague::class, 'owner_id');
     }
+
+    public function leagueMemberships(): HasMany
+    {
+        return $this->hasMany(LeagueMembership::class);
+    }
+
+    public function leagueJoinRequests(): HasMany
+    {
+        return $this->hasMany(LeagueJoinRequest::class);
+    }
 }

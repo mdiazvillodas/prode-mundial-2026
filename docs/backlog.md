@@ -1215,6 +1215,9 @@ Medium
 ### Objective
 Rank members inside each private league.
 
+### Note
+Depends on E8-T01 because private league leaderboards require league memberships and approved members. Do not implement E7-T02 before join requests and memberships exist.
+
 ### Scope
 - Add league detail page.
 - Show members ordered by total points.
