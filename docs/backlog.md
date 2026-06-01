@@ -1655,7 +1655,7 @@ TICKET-TECH-001
 Configurar entorno local de tests
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Tech follow-up
@@ -1673,6 +1673,8 @@ The specific scoring tests pass with:
 However, the full test suite currently fails locally because PHPUnit/Breeze feature tests try to use sqlite `:memory:`, and the local PHP installation does not have the SQLite driver enabled.
 
 This is a local testing environment/configuration issue, not a scoring logic issue.
+
+Note: Implemented using a dedicated MySQL testing database instead of SQLite. The full php artisan test suite now runs without SQLite driver errors, and local test setup is documented without committing real secrets.
 
 ### Scope
 - Configure tests to use a dedicated MySQL testing database.
