@@ -1163,7 +1163,7 @@ E7-T01
 Create private leagues
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 4
@@ -1173,6 +1173,9 @@ High
 
 ### Objective
 Allow users to create one private league with a unique visible code.
+
+### Note
+Implemented with PrivateLeague model, unique visible code, unique owner constraint, owner relationship, create/store/show routes, owner-only detail page, and dashboard/navigation links.
 
 ### Scope
 - Add private league model, migration, and owner relationship.
