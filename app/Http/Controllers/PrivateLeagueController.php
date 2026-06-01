@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\LeagueJoinRequest;
 use App\Models\LeagueMembership;
+use App\Models\LeagueAuditLog;
 use App\Models\PrivateLeague;
+use App\Models\User;
 use App\Services\PredictionScoringService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -99,6 +101,10 @@ class PrivateLeagueController extends Controller
                 ->where('status', LeagueJoinRequest::STATUS_PENDING)
                 ->with('user')
                 ->latest(),
+            'auditLogs' => fn ($query) => $query
+                ->with(['actor', 'target'])
+                ->latest()
+                ->limit(10),
         ]);
 
         return view('private-leagues.show', [
@@ -184,6 +190,42 @@ class PrivateLeagueController extends Controller
         ]);
 
         return back()->with('status', __('Solicitud rechazada.'));
+    }
+
+    public function removeMember(Request $request, PrivateLeague $privateLeague, User $user): RedirectResponse
+    {
+        abort_unless($privateLeague->owner_id === $request->user()->id, 403);
+
+        if ($privateLeague->owner_id === $user->id) {
+            return back()->withErrors(['member' => __('No podes removerte de tu propia liga.')]);
+        }
+
+        $membership = $privateLeague->memberships()
+            ->where('user_id', $user->id)
+            ->where('status', LeagueMembership::STATUS_ACTIVE)
+            ->first();
+
+        if (! $membership) {
+            return back()->withErrors(['member' => __('Ese usuario no es miembro activo de esta liga.')]);
+        }
+
+        DB::transaction(function () use ($request, $privateLeague, $user, $membership): void {
+            $membership->update([
+                'status' => LeagueMembership::STATUS_REMOVED,
+            ]);
+
+            $privateLeague->auditLogs()->create([
+                'actor_user_id' => $request->user()->id,
+                'target_user_id' => $user->id,
+                'action' => LeagueAuditLog::ACTION_MEMBER_REMOVED,
+                'details' => [
+                    'message' => 'Member removed from private league.',
+                    'removed_username' => $user->username,
+                ],
+            ]);
+        });
+
+        return back()->with('status', __('Miembro removido de la liga.'));
     }
 
     private function authorizeJoinRequestDecision(

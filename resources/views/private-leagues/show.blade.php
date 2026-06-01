@@ -157,7 +157,7 @@
 
                 <div class="mt-4 space-y-3">
                     @foreach ($privateLeague->memberships as $membership)
-                        <div class="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-4 py-3">
+                        <div class="flex flex-col gap-3 rounded-md border border-gray-100 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <p class="text-sm font-semibold text-gray-950">
                                     {{ '@'.$membership->user->username }}
@@ -167,9 +167,24 @@
                                 </p>
                             </div>
 
-                            <p class="text-xs font-medium text-gray-500">
-                                {{ optional($membership->joined_at)->format('d/m/Y') }}
-                            </p>
+                            <div class="flex flex-col gap-2 sm:items-end">
+                                <p class="text-xs font-medium text-gray-500">
+                                    {{ optional($membership->joined_at)->format('d/m/Y') }}
+                                </p>
+
+                                @if ($privateLeague->owner_id === auth()->id() && $membership->user_id !== $privateLeague->owner_id)
+                                    <form method="POST" action="{{ route('private-leagues.members.remove', [$privateLeague, $membership->user]) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                        >
+                                            {{ __('Remover miembro') }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -221,6 +236,36 @@
                                             </form>
                                         </div>
                                     </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            @if ($privateLeague->owner_id === auth()->id())
+                <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        {{ __('Actividad reciente') }}
+                    </h3>
+
+                    @if ($privateLeague->auditLogs->isEmpty())
+                        <p class="mt-2 text-sm text-gray-600">
+                            {{ __('Todavia no hay actividad de miembros para esta liga.') }}
+                        </p>
+                    @else
+                        <div class="mt-4 space-y-3">
+                            @foreach ($privateLeague->auditLogs as $auditLog)
+                                <div class="rounded-md border border-gray-100 bg-gray-50 p-4">
+                                    <p class="text-sm font-semibold text-gray-950">
+                                        {{ __('Miembro removido') }}
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-600">
+                                        {{ '@'.$auditLog->actor->username }} {{ __('removio a') }} {{ '@'.$auditLog->target->username }}
+                                    </p>
+                                    <p class="mt-2 text-xs text-gray-500">
+                                        {{ $auditLog->created_at->format('d/m/Y H:i') }}
+                                    </p>
                                 </div>
                             @endforeach
                         </div>

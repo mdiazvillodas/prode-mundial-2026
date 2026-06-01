@@ -53,6 +53,11 @@ class PrivateLeague extends Model
         return $this->hasMany(LeagueJoinRequest::class);
     }
 
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(LeagueAuditLog::class);
+    }
+
     private static function generateUniqueCode(): string
     {
         do {

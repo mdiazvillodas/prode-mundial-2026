@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/private-leagues/{privateLeague}/join-requests', [PrivateLeagueController::class, 'storeJoinRequest'])->name('private-leagues.join-requests.store');
     Route::post('/private-leagues/{privateLeague}/join-requests/{leagueJoinRequest}/accept', [PrivateLeagueController::class, 'acceptJoinRequest'])->name('private-leagues.join-requests.accept');
     Route::post('/private-leagues/{privateLeague}/join-requests/{leagueJoinRequest}/reject', [PrivateLeagueController::class, 'rejectJoinRequest'])->name('private-leagues.join-requests.reject');
+    Route::delete('/private-leagues/{privateLeague}/members/{user}/remove', [PrivateLeagueController::class, 'removeMember'])->name('private-leagues.members.remove');
     Route::get('/private-leagues/{privateLeague}', [PrivateLeagueController::class, 'show'])->name('private-leagues.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -79,4 +79,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(LeagueJoinRequest::class);
     }
+
+    public function leagueAuditLogsAsActor(): HasMany
+    {
+        return $this->hasMany(LeagueAuditLog::class, 'actor_user_id');
+    }
+
+    public function leagueAuditLogsAsTarget(): HasMany
+    {
+        return $this->hasMany(LeagueAuditLog::class, 'target_user_id');
+    }
 }
