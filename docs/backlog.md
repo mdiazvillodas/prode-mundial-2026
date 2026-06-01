@@ -1573,6 +1573,73 @@ Represent knockout matches before both teams are known.
 ### Suggested commit message
 feat: support knockout match placeholders
 
+> Note: Partially covered by existing placeholder display/blocking. E10-T01A covers the missing admin workflow to assign teams to placeholder matches.
+
+### Ticket ID
+E10-T01A
+
+### Title
+Assign teams to knockout placeholder matches
+
+### Status
+Todo
+
+### Sprint
+Sprint 6
+
+### Priority
+High
+
+### Objective
+Allow admin users to assign teams to placeholder knockout matches so they can become real predictable fixtures once teams are known.
+
+### Scope
+- Add admin-only form to assign or update team_a_id and team_b_id for an existing TournamentMatch.
+- Suggested route:
+  - GET /admin/matches/{tournamentMatch}/teams
+  - route name: admin.matches.teams.edit
+  - POST /admin/matches/{tournamentMatch}/teams
+  - route name: admin.matches.teams.update
+- Allow assigning teams only from existing Team records.
+- Validate:
+  - team_a_id required
+  - team_b_id required
+  - both must exist in teams
+  - team_a_id and team_b_id must be different
+- When both teams are assigned:
+  - update status from placeholder to scheduled or open, using the safest existing convention
+  - keep starts_at and prediction_closes_at unchanged unless there is a clear reason to update them
+- Update admin matches listing to show an action like "Asignar equipos" for placeholder or missing-team matches.
+- Once teams are assigned, existing prediction screens should naturally allow predictions if TournamentMatch::isPredictable() allows it.
+- Keep UI simple, mobile-first and aligned with docs/ui-guidelines.md.
+
+### Out of scope
+- No bracket visualization.
+- No automatic advancement.
+- No API integration.
+- No knockout qualified-team prediction.
+- No scoring changes.
+- No result loading changes except preserving existing result flow.
+- No team CRUD.
+- No match CRUD beyond assigning teams to an existing placeholder match.
+- No external packages.
+
+### Acceptance criteria
+- php artisan test passes.
+- php artisan migrate:fresh --seed passes.
+- npm run build passes.
+- Admin can open team assignment form for a placeholder/missing-team match.
+- Admin can assign two different existing teams.
+- Match team_a_id and team_b_id are saved.
+- Match status changes from placeholder to scheduled/open.
+- Normal users cannot access team assignment routes.
+- Guests are redirected to login.
+- Predictions become available once teams are assigned and match is otherwise predictable.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add admin team assignment for placeholder matches
+
 ### Ticket ID
 E10-T02
 
@@ -1736,7 +1803,7 @@ E12-T02
 Harden validation and authorization
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 8
@@ -1761,6 +1828,9 @@ Review validation and authorization across v1 workflows.
 - Users cannot modify records they do not own.
 - Admin actions are protected.
 - Validation errors are understandable.
+
+### Note
+Implemented with targeted validation and authorization hardening for predictions, private leagues, removed members, invite access, admin result access and placeholder/invalid score handling. Added HardenValidationAuthorizationTest.php and verified phpunit, migrate:fresh --seed --force and npm run build.
 
 ### Suggested commit message
 fix: harden validation and authorization
