@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\MatchController as AdminMatchController;
 use App\Http\Controllers\CalendarController;
@@ -45,6 +46,7 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::get('/matches', [AdminMatchController::class, 'index'])->name('matches.index');
         Route::get('/matches/{tournamentMatch}/result', [AdminMatchController::class, 'editResult'])->name('matches.result.edit');
         Route::post('/matches/{tournamentMatch}/result', [AdminMatchController::class, 'updateResult'])->name('matches.result.update');

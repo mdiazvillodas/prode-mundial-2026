@@ -1380,6 +1380,81 @@ Add private league invitation links
 ## EPIC 9 - Admin
 
 ### Ticket ID
+E9-T01A
+
+### Title
+Create minimal admin dashboard
+
+### Status
+Todo
+
+### Sprint
+Sprint 5
+
+### Priority
+High
+
+### Objective
+Create a minimal admin dashboard to centralize operational access and show current environment and test/live mode.
+
+### Scope
+- Add an admin-only dashboard route:
+  - GET /admin
+  - route name: admin.dashboard
+- Show current application environment:
+  - APP_ENV or equivalent
+- Show current application mode:
+  - test/live or equivalent
+- If APP_MODE does not exist yet, document or add a safe fallback value like test.
+- Show quick operational links:
+  - admin matches
+  - global leaderboard
+  - private leagues overview if it exists, otherwise placeholder text
+  - manual result fallback if relevant via admin matches
+- Show basic counts if simple:
+  - users
+  - matches
+  - predictions
+  - private leagues
+- Add admin-only navigation link to the admin dashboard.
+- Keep UI mobile-first and aligned with docs/ui-guidelines.md.
+- Use product language:
+  - administracion
+  - entorno
+  - modo prueba
+  - modo live
+  - partidos
+  - resultados
+  - ligas
+  - ranking
+  Avoid gambling/betting language.
+
+### Out of scope
+- No full admin CRUD.
+- No team management.
+- No match editing.
+- No user management.
+- No private league admin management.
+- No scoring changes.
+- No API integration.
+- No deploy configuration.
+- No external packages.
+
+### Acceptance criteria
+- php artisan migrate:fresh --seed passes.
+- npm run build passes.
+- Admin can access /admin.
+- Normal users cannot access /admin.
+- Guests are redirected to login.
+- Admin dashboard shows current environment.
+- Admin dashboard shows test/live mode or safe fallback.
+- Admin dashboard links to admin matches.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add minimal admin dashboard
+
+### Ticket ID
 E9-T01
 
 ### Title
@@ -1399,6 +1474,7 @@ Allow admin users to manage teams, phases, matches, and real results.
 
 ### Note
 Partially covered by TICKET-015A and TICKET-015B. Remaining scope includes admin dashboard, team CRUD, match CRUD, phase management, and environment/test-live mode visibility.
+Partially covered by E9-T01A once implemented. E9-T01 remains for full admin tournament management.
 
 ### Scope
 - Add admin dashboard.
