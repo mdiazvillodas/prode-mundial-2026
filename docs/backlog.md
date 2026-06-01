@@ -1322,7 +1322,10 @@ E8-T03
 Add private league invitation links
 
 ### Status
-Todo
+Done
+
+### Note
+Implemented with invite route using visible league code, owner share/copy section, invitation page, reuse of existing join request flow, authenticated access, states for owner, active member, pending request, removed user, max 3 leagues, and new requester. Invitation links do not bypass owner approval.
 
 ### Sprint
 Sprint 5
