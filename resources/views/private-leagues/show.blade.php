@@ -68,6 +68,88 @@
                 </div>
             </article>
 
+            <section class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-medium uppercase tracking-wide text-indigo-700">
+                            {{ __('Ranking de liga') }}
+                        </p>
+                        <h3 class="mt-1 text-lg font-semibold text-gray-900">
+                            {{ __('Puntos de miembros activos') }}
+                        </h3>
+                    </div>
+
+                    <p class="text-sm text-gray-500">
+                        {{ __('Solo predicciones puntuadas') }}
+                    </p>
+                </div>
+
+                <div class="mt-5 space-y-3">
+                    @foreach ($leaderboard as $entry)
+                        <article class="{{ $loop->first ? 'border-amber-200 bg-amber-50' : 'border-gray-100 bg-gray-50' }} rounded-lg border p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="{{ $loop->first ? 'bg-amber-500 text-white' : 'bg-gray-900 text-white' }} flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold">
+                                    {{ $loop->iteration }}
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                                        <div>
+                                            <h4 class="font-bold text-gray-950">
+                                                {{ '@'.$entry->username }}
+                                            </h4>
+                                            @if ($loop->first)
+                                                <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                                    {{ __('Primer puesto') }}
+                                                </p>
+                                            @endif
+                                        </div>
+
+                                        <div class="text-left sm:text-right">
+                                            <p class="text-2xl font-black text-gray-950">
+                                                {{ (int) $entry->total_points }}
+                                            </p>
+                                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ __('puntos') }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
+                                        <div class="rounded-md bg-white px-2 py-3 ring-1 ring-gray-100">
+                                            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ __('Exactos') }}
+                                            </dt>
+                                            <dd class="mt-1 text-lg font-bold text-gray-950">
+                                                {{ (int) $entry->exact_results_count }}
+                                            </dd>
+                                        </div>
+
+                                        <div class="rounded-md bg-white px-2 py-3 ring-1 ring-gray-100">
+                                            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ __('Tendencias') }}
+                                            </dt>
+                                            <dd class="mt-1 text-lg font-bold text-gray-950">
+                                                {{ (int) $entry->trend_count }}
+                                            </dd>
+                                        </div>
+
+                                        <div class="rounded-md bg-white px-2 py-3 ring-1 ring-gray-100">
+                                            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ __('Puntuadas') }}
+                                            </dt>
+                                            <dd class="mt-1 text-lg font-bold text-gray-950">
+                                                {{ (int) $entry->scored_predictions_count }}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+
             <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-100">
                 <h3 class="text-lg font-semibold text-gray-900">
                     {{ __('Miembros') }}
@@ -151,12 +233,9 @@
                     {{ __('Proximos pasos') }}
                 </h3>
                 <p class="mt-2 text-sm text-gray-600">
-                    {{ __('El ranking privado por puntos y la gestion avanzada de miembros se van a sumar en tickets futuros.') }}
+                    {{ __('La gestion avanzada de miembros se va a sumar en tickets futuros.') }}
                 </p>
-                <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                    <div class="rounded-md border border-dashed border-gray-300 p-4 text-sm text-gray-600">
-                        {{ __('Ranking privado por puntos') }}
-                    </div>
+                <div class="mt-5 grid gap-3 sm:grid-cols-1">
                     <div class="rounded-md border border-dashed border-gray-300 p-4 text-sm text-gray-600">
                         {{ __('Gestion de miembros') }}
                     </div>
