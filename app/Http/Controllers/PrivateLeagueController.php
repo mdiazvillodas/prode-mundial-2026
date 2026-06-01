@@ -120,6 +120,7 @@ class PrivateLeagueController extends Controller
         $privateLeague = PrivateLeague::query()
             ->with('owner')
             ->where('code', strtoupper($code))
+            ->where('status', PrivateLeague::STATUS_ACTIVE)
             ->first();
 
         if (! $privateLeague) {
@@ -142,6 +143,7 @@ class PrivateLeagueController extends Controller
         $canRequestAccess = ! $isOwner
             && ! $isActiveMember
             && ! $pendingJoinRequest
+            && ! $wasRemoved
             && $activeMembershipsCount < self::MAX_ACTIVE_MEMBERSHIPS;
 
         return view('private-leagues.invite', [
@@ -159,12 +161,24 @@ class PrivateLeagueController extends Controller
     {
         $user = $request->user();
 
+        if ($privateLeague->status !== PrivateLeague::STATUS_ACTIVE) {
+            return back()->withErrors(['league' => __('No podes solicitar acceso a esta liga.')]);
+        }
+
         if ($privateLeague->owner_id === $user->id) {
             return back()->withErrors(['league' => __('No podes solicitar acceso a tu propia liga.')]);
         }
 
-        if ($this->isActiveMember($privateLeague, $user->id)) {
+        $membership = $privateLeague->memberships()
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($membership?->status === LeagueMembership::STATUS_ACTIVE) {
             return back()->withErrors(['league' => __('Ya sos miembro activo de esta liga.')]);
+        }
+
+        if ($membership?->status === LeagueMembership::STATUS_REMOVED) {
+            return back()->withErrors(['league' => __('No podes solicitar acceso despues de haber sido removido de esta liga.')]);
         }
 
         if ($this->activeMembershipsCount($user->id) >= self::MAX_ACTIVE_MEMBERSHIPS) {
