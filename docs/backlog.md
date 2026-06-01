@@ -1284,7 +1284,10 @@ E8-T02
 Remove private league members with audit log
 
 ### Status
-Todo
+Done
+
+### Note
+Implemented with LeagueAuditLog, owner-only member removal, membership status changed to removed, joined_at preserved, member_removed audit entries, owner-only remove actions, recent removal activity for owner, removed members blocked from league detail, and removed members excluded from private league leaderboard.
 
 ### Sprint
 Sprint 5
