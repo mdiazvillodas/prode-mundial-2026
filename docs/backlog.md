@@ -1649,7 +1649,7 @@ E10-T02
 Add knockout qualified-team predictions
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 6
@@ -1679,7 +1679,7 @@ Allow users to predict score and qualified team for knockout matches.
 feat: add knockout prediction scoring
 
 ### Note
-Split into E10-T02A for data model/helper work and E10-T02B for UI, validation and scoring.
+Covered by E10-T02A and E10-T02B. The data model, UI flow, validation, persistence and scoring for knockout qualified-team predictions are implemented.
 
 ### Ticket ID
 E10-T02A
@@ -1740,7 +1740,7 @@ E10-T02B
 Add knockout qualified-team prediction flow and scoring
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 6
@@ -1765,6 +1765,9 @@ Allow users to predict the qualified team for knockout matches and score knockou
 - Use matches.winner_team_id as actual qualified team for knockout scoring.
 - Update prediction history to show predicted qualified team if relevant.
 - Add focused tests for knockout scoring and validation.
+
+### Note
+Implemented with qualified-team selection in inline and single-match prediction flows, validation that the selected qualified team belongs to the match, persistence of predicted_qualified_team_id, knockout scoring logic using winner_team_id, history display of predicted qualified team, and focused tests for knockout scoring and prediction flow.
 
 ### Out of scope
 - No bracket visualization.
