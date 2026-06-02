@@ -4,6 +4,8 @@ Last updated: 2026-05-31
 
 These guidelines define the visual direction for the Prode Mundial 2026 platform. They are based on the current Prode mockup/reference direction and should guide future UI work.
 
+For concrete design-system categories and token status, read `docs/design-system.md` before UI implementation. If a token is marked `pending decision`, do not invent a replacement without product approval.
+
 ## Direction
 
 - Build mobile-first.
