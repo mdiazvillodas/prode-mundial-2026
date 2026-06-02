@@ -1857,6 +1857,100 @@ Future UI polish should not assume final visual values until actual design token
 Define Prode design system tokens
 
 ### Ticket ID
+E11-T00B
+
+### Title
+Extract Prode visual system from prediction mock
+
+### Status
+Todo
+
+### Sprint
+Sprint 7
+
+### Priority
+High
+
+### Objective
+Translate the Prode prediction mock into a practical visual system for implementation, so future UI polish is based on the actual intended look and feel instead of generic Tailwind/Breeze styling.
+
+### Context
+The visual reference is the Prode prediction mock uploaded as project source. It shows the intended direction for the primary predictions screen.
+
+The product owner confirmed:
+- The mock is the visual starting point.
+- The first implementation target will be the predictions screen.
+- Preferred public font candidates are Inter or Plus Jakarta Sans.
+- The exact proprietary font may be replaced later if legally available.
+- Do not commit proprietary font files.
+
+### Scope
+- Update docs/design-system.md with a concrete visual interpretation of the Prode prediction mock.
+- Update docs/ui-guidelines.md if needed to reference the mock-derived visual system.
+- Update docs/codex-rules.md if needed so future UI work must read docs/design-system.md before editing views.
+- Define the visual direction for:
+  - app shell
+  - top header
+  - page header
+  - bottom navigation
+  - date/filter pills
+  - match cards
+  - score inputs
+  - status badges
+  - floating save button
+  - empty states
+  - success/error states
+  - team flag/code display
+  - knockout placeholder display
+  - qualified-team selector
+- Document font choice:
+  - Primary recommendation: Plus Jakarta Sans or Inter.
+  - Use public web font only if safely available.
+  - Do not commit proprietary fonts.
+  - Score/numeric UI should use the same family with strong weight unless a better public numeric font is later selected.
+- Document the mock's visual principles:
+  - light premium background
+  - blue/navy brand structure
+  - white rounded cards
+  - soft shadows
+  - strong blue active states
+  - green open state
+  - orange urgent state
+  - light blue placeholder state
+  - gray finished/disabled state
+  - circular flags or country-code fallback
+  - large readable score controls
+  - clear mobile-first hierarchy
+- Document what remains pending:
+  - exact HEX colors if not explicitly defined
+  - final official font if not legally available
+  - exact shadow/radius values if not extracted yet
+- Do not redesign app views in this ticket.
+- Do not modify routes, controllers, models, migrations, seeders, tests or business logic.
+- Do not install packages.
+
+### Out of scope
+- No screen implementation.
+- No Tailwind theme changes unless strictly necessary for documentation references.
+- No UI redesign.
+- No app logic changes.
+- No database changes.
+- No new features.
+- No external packages.
+- No copyrighted/proprietary font files committed.
+
+### Acceptance criteria
+- docs/design-system.md reflects the Prode prediction mock as the visual source of truth.
+- The document includes specific guidance for the predictions screen components.
+- Font recommendation is documented as Inter or Plus Jakarta Sans, with proprietary font warning.
+- Future UI work has clear rules to avoid generic Breeze/Tailwind styling.
+- Existing screens are not modified.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Document Prode visual system from prediction mock
+
+### Ticket ID
 E11-T01
 
 ### Title
