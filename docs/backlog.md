@@ -1797,6 +1797,61 @@ Add knockout qualified team predictions
 ## EPIC 11 - UX / UI
 
 ### Ticket ID
+E11-T00
+
+### Title
+Define Prode design system tokens
+
+### Status
+Todo
+
+### Sprint
+Sprint 7
+
+### Priority
+High
+
+### Objective
+Define the visual design system foundation for Prode using the provided design tokens, so future UI work is consistent and aligned with the intended look and feel.
+
+### Scope
+- Document the design tokens in docs/ui-guidelines.md or a dedicated docs/design-system.md.
+- Define typography rules.
+- Define color palette.
+- Define spacing and layout rules.
+- Define border radius and shadow rules.
+- Define button styles.
+- Define input styles.
+- Define card styles.
+- Define badges/status styles.
+- Define mobile-first layout principles.
+- Update docs/codex-rules.md so Codex must read the design system before UI work.
+- Update Tailwind configuration only if needed and only with approved tokens.
+- Do not redesign screens yet.
+
+### Out of scope
+- No full UI redesign.
+- No screen-by-screen polish.
+- No new product features.
+- No logic changes.
+- No route changes.
+- No database changes.
+- No external packages unless explicitly required.
+- No copyrighted font files committed to the repository.
+
+### Acceptance criteria
+- Design tokens are documented.
+- Typography rules are documented.
+- Colors and semantic usage are documented.
+- Tailwind config reflects the approved tokens if appropriate.
+- Codex rules require reading the design system before UI work.
+- Existing screens are not redesigned in this ticket.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Define Prode design system tokens
+
+### Ticket ID
 E11-T01
 
 ### Title
