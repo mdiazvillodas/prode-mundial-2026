@@ -1985,6 +1985,50 @@ Implemented with CorePredictionFlowTest covering authenticated/guest prediction 
 Add core prediction feature coverage
 
 ### Ticket ID
+E12-T01B
+
+### Title
+Private leagues and leaderboard coverage
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add focused feature test coverage for private league and private league leaderboard workflows.
+
+### Note
+Implemented with PrivateLeagueFlowTest and PrivateLeagueLeaderboardTest covering league creation, one-owned-league limit, duplicate names, unique codes, owner auto-membership, guest access, search by name/code, join requests, duplicate blocking, own-league blocking, active-member blocking, accept/reject, non-owner blocking, max 3 active leagues, owner/member/non-member access, invitation states, member removal, audit log and removed-member leaderboard exclusion. Full php artisan test passes with 89 tests and 223 assertions.
+
+### Scope
+- Cover private league creation and ownership limits.
+- Cover league search by name and visible code.
+- Cover join requests, approval/rejection, and membership limits.
+- Cover invitation link states.
+- Cover member removal and audit logging.
+- Cover private league leaderboard ordering and removed-member exclusion.
+
+### Out of scope
+- No new product features.
+- No UI redesign.
+- No admin tests.
+- No deployment work.
+
+### Acceptance criteria
+- php artisan test passes.
+- Private league workflows have meaningful feature coverage.
+- Existing tests continue to pass.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add private league feature coverage
+
+### Ticket ID
 E12-T01
 
 ### Title
