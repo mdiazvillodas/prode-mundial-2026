@@ -43,6 +43,21 @@ Design attention should focus first on:
 - Leaderboard.
 - Private leagues.
 
+Navigation direction:
+
+- `Predicciones` is the primary match-action destination.
+- `Ligas` is the primary ranking and league destination.
+- `Partidos` should not be a primary navigation item because it duplicates the match list already present in `Predicciones`.
+- `/matches` may remain available for compatibility or internal access, but it should not compete as a main user destination.
+
+Calendar direction:
+
+- `Calendario` should be a team-focused schedule screen, not another generic match list.
+- The user should choose a team and then see that team's known schedule.
+- Calendar cards should show opponent, date, local time, group/stage, status, and result when finished.
+- For v1, do not infer hypothetical knockout paths. Future knockout matches should appear for a team only after that team has been assigned to the match by admin or future API integration.
+- If no team is selected, show a helpful empty state that invites the user to choose one.
+
 ## Product Language
 
 Use product language centered on sports prediction and points:

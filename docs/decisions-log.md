@@ -42,3 +42,12 @@
 - Closed, locked, finished, and placeholder matches will be shown but cannot be edited.
 - The existing single-match prediction page may remain as a fallback or internal route for now, but the primary UX should be the inline daily prediction screen.
 - The current `PredictionController`, `Prediction` model, validation rules, `updateOrCreate` logic, and `TournamentMatch::isPredictable()` should be reused where possible.
+
+## 2026-06-02
+
+- `Partidos` is redundant as a primary navigation item because `Predicciones` already shows matches with the main user action.
+- The `/matches` route may remain for compatibility or internal access, but it should not be treated as a primary user destination.
+- `Calendario` should not be another generic match list.
+- The calendar should become a team-focused schedule screen where the user selects a team and sees that team's known matches in the user's local timezone.
+- Team schedule cards should show upcoming matches, match date and local time, group or stage, opponent, status, and result when finished.
+- For v1, the app must not infer hypothetical knockout paths. A team should appear in future knockout matches only after that team has been assigned to the `TournamentMatch` by admin or future API integration.

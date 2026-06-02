@@ -2017,6 +2017,76 @@ Redesign the primary /predictions screen using the Prode prediction mock and doc
 Redesign predictions screen from Prode mock
 
 ### Ticket ID
+E11-T02A
+
+### Title
+Rework calendar into team schedule view
+
+### Status
+Todo
+
+### Sprint
+Sprint 7
+
+### Priority
+High
+
+### Objective
+Make the calendar useful and non-redundant by turning it into a team-focused schedule screen, while removing "Partidos" from the main navigation.
+
+### Scope
+- Remove "Partidos" from primary navigation.
+- Keep /matches route working for compatibility, but do not expose it as a primary nav item.
+- Update /calendar to work as a team schedule view.
+- Add a team selector at the top of /calendar.
+- Allow selecting a team and showing only matches where that team is team_a or team_b.
+- Use a query parameter such as /calendar?team_id={id} or equivalent simple approach.
+- If simple, remember the last selected team in localStorage.
+- Show selected team matches as cards visually aligned with the redesigned /predictions screen.
+- Show:
+  - selected team
+  - opponent
+  - date
+  - local time
+  - group/stage
+  - status
+  - result if finished
+- If no team is selected, show a helpful empty state inviting the user to choose a team.
+- If the selected team has no known future matches, show a clear empty state.
+- For knockout stages, show matches only once the selected team is assigned to the match.
+- Keep Spanish copy.
+- Avoid gambling/betting language.
+- Follow docs/design-system.md.
+
+### Out of scope
+- No prediction changes.
+- No scoring changes.
+- No bracket simulation.
+- No hypothetical knockout paths.
+- No automatic advancement.
+- No API integration.
+- No favorite_team_id database field unless explicitly decided later.
+- No external packages.
+- No React, Vue or Inertia.
+
+### Acceptance criteria
+- php artisan test passes.
+- php artisan migrate:fresh --seed passes.
+- npm run build passes.
+- "Partidos" no longer appears as a primary navigation item.
+- /matches still works if visited directly.
+- /calendar lets the user select a team.
+- /calendar shows only matches for the selected team.
+- Finished matches show result.
+- Upcoming matches show local date/time.
+- No-team-selected state is clear.
+- Knockout future matches appear only after teams are assigned.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Rework calendar into team schedule view
+
+### Ticket ID
 E11-T01
 
 ### Title

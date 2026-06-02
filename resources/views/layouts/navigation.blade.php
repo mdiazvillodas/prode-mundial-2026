@@ -20,9 +20,6 @@
                             {{ __('Admin') }}
                         </x-nav-link>
                     @endif
-                    <x-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.index')">
-                        {{ __('Partidos') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('predictions.index')" :active="request()->routeIs('predictions.*')">
                         {{ __('Predicciones') }}
                     </x-nav-link>
@@ -92,9 +89,6 @@
                     {{ __('Admin') }}
                 </x-responsive-nav-link>
             @endif
-            <x-responsive-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.index')">
-                {{ __('Partidos') }}
-            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('predictions.index')" :active="request()->routeIs('predictions.*')">
                 {{ __('Predicciones') }}
             </x-responsive-nav-link>

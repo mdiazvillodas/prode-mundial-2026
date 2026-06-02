@@ -2,26 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Team;
 use App\Models\TournamentMatch;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CalendarController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $matches = TournamentMatch::query()
-            ->with(['teamA', 'teamB', 'winnerTeam', 'tournament'])
-            ->orderByRaw('CASE WHEN starts_at IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('starts_at')
-            ->orderBy('id')
+        $teams = Team::query()
+            ->orderBy('name')
             ->get();
 
-        $matchesByDate = $matches->groupBy(function (TournamentMatch $match): string {
-            return $match->starts_at?->toDateString() ?? 'date_pending';
-        });
+        $requestedTeamId = $request->integer('team_id') ?: null;
+        $selectedTeam = $requestedTeamId
+            ? $teams->firstWhere('id', $requestedTeamId)
+            : null;
+
+        $matches = collect();
+
+        if ($selectedTeam) {
+            $matches = TournamentMatch::query()
+                ->with(['teamA', 'teamB', 'winnerTeam', 'tournament'])
+                ->where(function ($query) use ($selectedTeam): void {
+                    $query
+                        ->where('team_a_id', $selectedTeam->id)
+                        ->orWhere('team_b_id', $selectedTeam->id);
+                })
+                ->orderByRaw('CASE WHEN starts_at IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('starts_at')
+                ->orderBy('id')
+                ->get();
+        }
 
         return view('calendar.index', [
-            'matchesByDate' => $matchesByDate,
+            'matches' => $matches,
+            'requestedTeamId' => $requestedTeamId,
+            'selectedTeam' => $selectedTeam,
+            'teams' => $teams,
         ]);
     }
 }

@@ -5,117 +5,277 @@
                 {{ __('Calendario') }}
             </h2>
             <p class="text-sm text-gray-500">
-                {{ __('Todos los partidos conocidos del Mundial 2026 en orden cronologico.') }}
+                {{ __('Elegí una selección y seguí su agenda conocida del Mundial 2026.') }}
             </p>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if ($matchesByDate->isEmpty())
-                <div class="bg-white border border-gray-200 shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-sm text-gray-700">
-                        {{ __('Todavia no hay partidos cargados en el calendario.') }}
+        <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
+            <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                <form method="GET" action="{{ route('calendar.index') }}" class="space-y-4 sm:flex sm:items-end sm:gap-4 sm:space-y-0">
+                    <div class="flex-1">
+                        <label for="team_id" class="text-sm font-bold uppercase tracking-wide text-indigo-700">
+                            {{ __('Selección') }}
+                        </label>
+                        <select
+                            id="team_id"
+                            name="team_id"
+                            data-team-selector
+                            class="mt-2 block w-full rounded-xl border-gray-300 bg-white text-base font-semibold text-gray-950 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            <option value="">{{ __('Elegí una selección') }}</option>
+                            @foreach ($teams as $team)
+                                <option value="{{ $team->id }}" @selected($selectedTeam?->id === $team->id)>
+                                    {{ $team->name }}{{ $team->country_code ? ' · '.$team->country_code : '' }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-                </div>
+
+                    <button
+                        type="submit"
+                        class="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                    >
+                        {{ __('Ver calendario') }}
+                    </button>
+                </form>
+
+                @if ($selectedTeam)
+                    <div class="mt-5 flex items-center gap-3 rounded-xl bg-indigo-50 p-4">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black uppercase text-indigo-900 ring-1 ring-indigo-100">
+                            {{ $selectedTeam->country_code ?: mb_substr($selectedTeam->short_name ?? $selectedTeam->name, 0, 3) }}
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-indigo-700">
+                                {{ __('Agenda seleccionada') }}
+                            </p>
+                            <h3 class="text-lg font-black text-gray-950">
+                                {{ $selectedTeam->name }}
+                            </h3>
+                        </div>
+                    </div>
+                @endif
+            </section>
+
+            @if ($requestedTeamId && ! $selectedTeam)
+                <section class="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-red-100">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-xl font-black text-red-700">
+                        !
+                    </div>
+                    <h3 class="mt-4 text-lg font-black text-gray-950">
+                        {{ __('Selección no encontrada') }}
+                    </h3>
+                    <p class="mt-2 text-sm text-gray-600">
+                        {{ __('Elegí una selección válida para ver su calendario.') }}
+                    </p>
+                </section>
+            @elseif (! $selectedTeam)
+                <section class="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-xl font-black text-indigo-700">
+                        ?
+                    </div>
+                    <h3 class="mt-4 text-lg font-black text-gray-950">
+                        {{ __('Elegí una selección') }}
+                    </h3>
+                    <p class="mt-2 text-sm text-gray-600">
+                        {{ __('El calendario se va a mostrar con partidos confirmados, resultados y próximos cruces conocidos.') }}
+                    </p>
+                </section>
+            @elseif ($matches->isEmpty())
+                <section class="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-xl font-black text-gray-700">
+                        0
+                    </div>
+                    <h3 class="mt-4 text-lg font-black text-gray-950">
+                        {{ __('Sin partidos conocidos') }}
+                    </h3>
+                    <p class="mt-2 text-sm text-gray-600">
+                        {{ __('Todavía no hay partidos cargados para esta selección. Los cruces de eliminatorias aparecerán cuando el equipo esté asignado al partido.') }}
+                    </p>
+                </section>
             @else
-                <div class="space-y-6">
-                    @foreach ($matchesByDate as $date => $matches)
-                        <section class="space-y-3">
-                            <div class="sticky top-0 z-10 -mx-4 border-y border-gray-200 bg-gray-50 px-4 py-2 sm:static sm:mx-0 sm:rounded-md sm:border">
-                                <h3 class="text-sm font-semibold text-gray-800">
-                                    @if ($date === 'date_pending')
-                                        {{ __('Fecha por definir') }}
-                                    @else
-                                        {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}
-                                    @endif
-                                </h3>
+                <section class="space-y-4">
+                    @foreach ($matches as $match)
+                        @php
+                            $statusLabels = [
+                                'scheduled' => 'Programado',
+                                'open' => 'Abierto',
+                                'locked' => 'Cerrado',
+                                'finished' => 'Finalizado',
+                                'placeholder' => 'Por definir',
+                            ];
+
+                            $statusClasses = [
+                                'scheduled' => 'bg-sky-50 text-sky-700 ring-sky-600/20',
+                                'open' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+                                'locked' => 'bg-amber-50 text-amber-700 ring-amber-600/20',
+                                'finished' => 'bg-gray-100 text-gray-700 ring-gray-500/20',
+                                'placeholder' => 'bg-blue-50 text-blue-700 ring-blue-600/20',
+                            ];
+
+                            $selectedTeamIsA = $match->team_a_id === $selectedTeam->id;
+                            $opponent = $selectedTeamIsA ? $match->teamB : $match->teamA;
+                            $selectedScore = $selectedTeamIsA ? $match->team_a_score : $match->team_b_score;
+                            $opponentScore = $selectedTeamIsA ? $match->team_b_score : $match->team_a_score;
+                            $statusLabel = $statusLabels[$match->status] ?? ucfirst($match->status);
+                            $statusClass = $statusClasses[$match->status] ?? 'bg-gray-100 text-gray-700 ring-gray-500/20';
+                            $stageLabel = $match->stage ? str_replace('_', ' ', $match->stage) : null;
+                        @endphp
+
+                        <article class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+                            <div class="flex items-start justify-between gap-3 border-b border-gray-100 p-4">
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+                                        @if ($stageLabel)
+                                            <span>{{ $stageLabel }}</span>
+                                        @endif
+                                        @if ($match->group)
+                                            <span class="text-gray-300">·</span>
+                                            <span>{{ __('Grupo') }} {{ $match->group }}</span>
+                                        @endif
+                                    </div>
+                                    <p class="mt-1 text-sm font-semibold text-gray-700">
+                                        @if ($match->starts_at)
+                                            <span data-local-date="{{ $match->starts_at->toIso8601String() }}">
+                                                {{ $match->starts_at->format('d/m/Y') }}
+                                            </span>
+                                            <span class="text-gray-300">·</span>
+                                            <span data-local-time="{{ $match->starts_at->toIso8601String() }}">
+                                                {{ $match->starts_at->format('H:i') }}
+                                            </span>
+                                        @else
+                                            {{ __('Fecha por definir') }}
+                                        @endif
+                                    </p>
+                                </div>
+
+                                <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset {{ $statusClass }}">
+                                    {{ $statusLabel }}
+                                </span>
                             </div>
 
-                            <div class="space-y-3">
-                                @foreach ($matches as $match)
-                                    @php
-                                        $statusLabels = [
-                                            'scheduled' => 'Programado',
-                                            'open' => 'Abierto',
-                                            'locked' => 'Cerrado',
-                                            'finished' => 'Terminado',
-                                            'placeholder' => 'Por definir',
-                                        ];
-
-                                        $statusClasses = [
-                                            'scheduled' => 'bg-sky-50 text-sky-700 ring-sky-600/20',
-                                            'open' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-                                            'locked' => 'bg-amber-50 text-amber-700 ring-amber-600/20',
-                                            'finished' => 'bg-gray-100 text-gray-700 ring-gray-500/20',
-                                            'placeholder' => 'bg-violet-50 text-violet-700 ring-violet-600/20',
-                                        ];
-
-                                        $isPlaceholder = $match->status === 'placeholder' || ! $match->teamA || ! $match->teamB;
-                                        $teamAName = $match->teamA?->name ?? 'Equipo por definir';
-                                        $teamBName = $match->teamB?->name ?? 'Equipo por definir';
-                                        $statusLabel = $statusLabels[$match->status] ?? ucfirst($match->status);
-                                        $statusClass = $statusClasses[$match->status] ?? 'bg-gray-100 text-gray-700 ring-gray-500/20';
-                                    @endphp
-
-                                    <article class="bg-white border border-gray-200 shadow-sm sm:rounded-lg">
-                                        <div class="p-4 sm:p-5">
-                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                                <div class="flex items-start gap-4">
-                                                    <div class="w-14 shrink-0 rounded-md bg-gray-100 px-2 py-2 text-center text-sm font-semibold text-gray-800">
-                                                        {{ $match->starts_at ? $match->starts_at->format('H:i') : '--:--' }}
-                                                    </div>
-
-                                                    <div class="min-w-0">
-                                                        <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                                            @if ($match->stage)
-                                                                <span>{{ __('Fase') }}: {{ str_replace('_', ' ', $match->stage) }}</span>
-                                                            @endif
-
-                                                            @if ($match->group)
-                                                                <span aria-hidden="true">-</span>
-                                                                <span>{{ __('Grupo') }} {{ $match->group }}</span>
-                                                            @endif
-                                                        </div>
-
-                                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-base font-semibold text-gray-900">
-                                                            <span>{{ $teamAName }}</span>
-                                                            @if ($match->status === 'finished')
-                                                                <span class="rounded-md bg-gray-900 px-2 py-1 text-sm text-white">
-                                                                    {{ $match->team_a_score }} - {{ $match->team_b_score }}
-                                                                </span>
-                                                            @else
-                                                                <span class="text-sm text-gray-500">{{ __('vs') }}</span>
-                                                            @endif
-                                                            <span>{{ $teamBName }}</span>
-                                                        </div>
-
-                                                        @if ($isPlaceholder)
-                                                            <p class="mt-2 text-sm text-gray-600">
-                                                                {{ __('Partido pendiente de equipos definidos.') }}
-                                                            </p>
-                                                        @elseif ($match->status === 'finished' && $match->winnerTeam)
-                                                            <p class="mt-2 text-sm text-gray-600">
-                                                                {{ __('Ganador') }}: {{ $match->winnerTeam->name }}
-                                                            </p>
-                                                        @endif
-                                                    </div>
-                                                </div>
-
-                                                <div class="shrink-0">
-                                                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset {{ $statusClass }}">
-                                                        {{ $statusLabel }}
-                                                    </span>
-                                                </div>
-                                            </div>
+                            <div class="p-5">
+                                <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                                    <div class="min-w-0 text-center">
+                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-sm font-black uppercase text-indigo-900 ring-1 ring-indigo-100">
+                                            {{ $selectedTeam->country_code ?: mb_substr($selectedTeam->short_name ?? $selectedTeam->name, 0, 3) }}
                                         </div>
-                                    </article>
-                                @endforeach
+                                        <h4 class="mt-2 truncate text-sm font-black text-gray-950 sm:text-base">
+                                            {{ $selectedTeam->name }}
+                                        </h4>
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                            {{ __('Selección') }}
+                                        </p>
+                                    </div>
+
+                                    <div class="text-center">
+                                        @if ($match->status === 'finished')
+                                            <div class="rounded-2xl bg-gray-950 px-4 py-3 text-white shadow-sm">
+                                                <p class="text-3xl font-black">
+                                                    {{ $selectedScore }} - {{ $opponentScore }}
+                                                </p>
+                                                <p class="mt-1 text-[11px] font-bold uppercase tracking-wide text-gray-300">
+                                                    {{ __('Resultado') }}
+                                                </p>
+                                            </div>
+                                        @else
+                                            <div class="rounded-2xl bg-gray-50 px-4 py-3 ring-1 ring-gray-100">
+                                                <p class="text-2xl font-black text-gray-950">
+                                                    {{ __('vs') }}
+                                                </p>
+                                                <p class="mt-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                                                    {{ __('Próximo') }}
+                                                </p>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <div class="min-w-0 text-center">
+                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-sm font-black uppercase text-gray-700 ring-1 ring-gray-200">
+                                            {{ $opponent?->country_code ?: mb_substr($opponent?->short_name ?? $opponent?->name ?? 'POR', 0, 3) }}
+                                        </div>
+                                        <h4 class="mt-2 truncate text-sm font-black text-gray-950 sm:text-base">
+                                            {{ $opponent?->name ?? __('Rival por definir') }}
+                                        </h4>
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                            {{ __('Rival') }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
+                                    @if ($match->status === 'finished')
+                                        @if ($match->winnerTeam)
+                                            {{ __('Ganador') }}: <span class="font-bold text-gray-950">{{ $match->winnerTeam->name }}</span>
+                                        @else
+                                            {{ __('Partido finalizado en empate.') }}
+                                        @endif
+                                    @elseif ($match->starts_at)
+                                        {{ __('Horario mostrado en tu zona local cuando el navegador lo permite.') }}
+                                    @else
+                                        {{ __('El horario de este partido todavía no está definido.') }}
+                                    @endif
+                                </div>
                             </div>
-                        </section>
+                        </article>
                     @endforeach
-                </div>
+                </section>
             @endif
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const selector = document.querySelector('[data-team-selector]');
+            const storageKey = 'prode.calendar.selectedTeamId';
+
+            if (selector) {
+                const params = new URLSearchParams(window.location.search);
+                const currentTeamId = params.get('team_id');
+
+                if (currentTeamId) {
+                    window.localStorage.setItem(storageKey, currentTeamId);
+                } else {
+                    const savedTeamId = window.localStorage.getItem(storageKey);
+
+                    if (savedTeamId && selector.querySelector(`option[value="${savedTeamId}"]`)) {
+                        selector.value = savedTeamId;
+                    }
+                }
+
+                selector.addEventListener('change', () => {
+                    if (selector.value) {
+                        window.localStorage.setItem(storageKey, selector.value);
+                    } else {
+                        window.localStorage.removeItem(storageKey);
+                    }
+                });
+            }
+
+            document.querySelectorAll('[data-local-date], [data-local-time]').forEach((element) => {
+                const isoDate = element.dataset.localDate || element.dataset.localTime;
+                const date = new Date(isoDate);
+
+                if (Number.isNaN(date.getTime())) {
+                    return;
+                }
+
+                if (element.dataset.localDate) {
+                    element.textContent = new Intl.DateTimeFormat(undefined, {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                    }).format(date);
+                }
+
+                if (element.dataset.localTime) {
+                    element.textContent = new Intl.DateTimeFormat(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    }).format(date);
+                }
+            });
+        });
+    </script>
 </x-app-layout>
