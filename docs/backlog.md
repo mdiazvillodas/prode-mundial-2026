@@ -1951,6 +1951,72 @@ The product owner confirmed:
 Document Prode visual system from prediction mock
 
 ### Ticket ID
+E11-T01A-1
+
+### Title
+Redesign predictions screen from Prode mock
+
+### Status
+Todo
+
+### Sprint
+Sprint 7
+
+### Priority
+High
+
+### Objective
+Redesign the primary /predictions screen using the Prode prediction mock and docs/design-system.md, improving visual quality, mobile usability, hierarchy and prediction clarity without changing business logic.
+
+### Scope
+- Redesign only the /predictions screen and any small shared layout/nav pieces strictly required for that screen.
+- Use the Prode prediction mock as the visual reference.
+- Follow docs/design-system.md.
+- Use Plus Jakarta Sans or Inter as the public font direction if safe and already possible.
+- Improve:
+  - top section/header for predictions
+  - date grouping
+  - filter/date pills if feasible without changing backend logic
+  - status legend
+  - match cards
+  - score inputs
+  - knockout qualified-team selector
+  - placeholder match presentation
+  - closed/finished states
+  - floating save button
+  - success/error feedback
+  - mobile spacing and hierarchy
+- Keep Blade + Tailwind + vanilla JavaScript.
+- Keep copy in Spanish.
+- Avoid gambling/betting language.
+- Preserve existing prediction behavior and validation.
+
+### Out of scope
+- No business logic changes.
+- No database changes.
+- No route changes unless absolutely necessary.
+- No redesign of dashboard, history, leaderboard, private leagues or admin screens.
+- No full brand palette finalization beyond the documented mock-derived style.
+- No proprietary font files.
+- No external packages.
+- No React, Vue or Inertia.
+
+### Acceptance criteria
+- php artisan test passes.
+- php artisan migrate:fresh --seed passes.
+- npm run build passes.
+- /predictions visually follows the Prode prediction mock direction.
+- Users can still save bulk predictions.
+- Existing predictions still prefill.
+- Knockout qualified-team selector still works.
+- Placeholder/closed/finished states still behave correctly.
+- Floating save button still appears when inputs change.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Redesign predictions screen from Prode mock
+
+### Ticket ID
 E11-T01
 
 ### Title
