@@ -16,18 +16,6 @@
 
     <div class="py-8">
         <div class="mx-auto max-w-3xl space-y-5 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="rounded-md bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 ring-1 ring-emerald-200">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="rounded-md bg-red-50 px-4 py-3 text-sm font-medium text-red-800 ring-1 ring-red-200">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
             <article class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-100">
                 <div class="border-b border-gray-100 bg-gray-950 px-6 py-6 text-white">
                     <p class="text-sm font-medium uppercase tracking-wide text-indigo-200">

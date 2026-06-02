@@ -15,12 +15,6 @@
 
     <div class="py-8">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if ($errors->has('result'))
-                <div class="mb-4 rounded-md bg-red-50 p-4 text-sm font-medium text-red-700">
-                    {{ $errors->first('result') }}
-                </div>
-            @endif
-
             <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                 <div class="p-4 sm:p-6">
                     <div class="rounded-md bg-amber-50 p-4 text-sm text-amber-900">

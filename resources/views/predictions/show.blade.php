@@ -15,12 +15,6 @@
 
     <div class="py-8">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="mb-4 rounded-md bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
-                    {{ session('status') }}
-                </div>
-            @endif
-
             <div class="bg-white border border-gray-200 shadow-sm sm:rounded-lg">
                 <div class="p-4 sm:p-6">
                     <div class="flex flex-col gap-2 text-sm text-gray-500">

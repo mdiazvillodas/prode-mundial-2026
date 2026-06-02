@@ -12,12 +12,6 @@
 
     <div class="py-8">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="mb-4 rounded-md bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
-                    {{ session('status') }}
-                </div>
-            @endif
-
             @if ($matches->isEmpty())
                 <div class="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-700 shadow-sm">
                     {{ __('Todavia no hay partidos cargados.') }}

@@ -20,18 +20,6 @@
 
     <div class="py-8">
         <div class="mx-auto max-w-4xl space-y-5 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="rounded-md bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 ring-1 ring-emerald-200">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="rounded-md bg-red-50 px-4 py-3 text-sm font-medium text-red-800 ring-1 ring-red-200">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
             <section class="rounded-lg bg-white p-5 shadow-sm ring-1 ring-gray-100">
                 <form method="GET" action="{{ route('private-leagues.search') }}" class="space-y-4">
                     <div>

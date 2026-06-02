@@ -12,10 +12,6 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @php
-                        $ownedPrivateLeague = Auth::user()?->ownedPrivateLeague;
-                    @endphp
-
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
@@ -30,14 +26,8 @@
                     <x-nav-link :href="route('predictions.index')" :active="request()->routeIs('predictions.*')">
                         {{ __('Predicciones') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('leaderboard.index')" :active="request()->routeIs('leaderboard.index')">
-                        {{ __('Ranking') }}
-                    </x-nav-link>
-                    <x-nav-link :href="$ownedPrivateLeague ? route('private-leagues.show', $ownedPrivateLeague) : route('private-leagues.create')" :active="request()->routeIs('private-leagues.show') || request()->routeIs('private-leagues.create')">
-                        {{ __('Liga') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('private-leagues.search')" :active="request()->routeIs('private-leagues.search')">
-                        {{ __('Buscar liga') }}
+                    <x-nav-link :href="route('leagues.index')" :active="request()->routeIs('leagues.index') || request()->routeIs('leaderboard.index') || request()->routeIs('private-leagues.*')">
+                        {{ __('Ligas') }}
                     </x-nav-link>
                     <x-nav-link :href="route('calendar.index')" :active="request()->routeIs('calendar.index')">
                         {{ __('Calendario') }}
@@ -94,10 +84,6 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @php
-                $ownedPrivateLeague = Auth::user()?->ownedPrivateLeague;
-            @endphp
-
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
@@ -112,14 +98,8 @@
             <x-responsive-nav-link :href="route('predictions.index')" :active="request()->routeIs('predictions.*')">
                 {{ __('Predicciones') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('leaderboard.index')" :active="request()->routeIs('leaderboard.index')">
-                {{ __('Ranking') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="$ownedPrivateLeague ? route('private-leagues.show', $ownedPrivateLeague) : route('private-leagues.create')" :active="request()->routeIs('private-leagues.show') || request()->routeIs('private-leagues.create')">
-                {{ __('Liga') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('private-leagues.search')" :active="request()->routeIs('private-leagues.search')">
-                {{ __('Buscar liga') }}
+            <x-responsive-nav-link :href="route('leagues.index')" :active="request()->routeIs('leagues.index') || request()->routeIs('leaderboard.index') || request()->routeIs('private-leagues.*')">
+                {{ __('Ligas') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('calendar.index')" :active="request()->routeIs('calendar.index')">
                 {{ __('Calendario') }}

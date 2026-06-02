@@ -15,28 +15,6 @@
 
     <div class="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50/70 py-6">
         <div class="mx-auto max-w-5xl space-y-6 px-4 pb-32 sm:px-6 lg:px-8">
-            <div id="prediction-toasts" class="fixed inset-x-0 top-4 z-50 mx-auto flex max-w-md flex-col gap-3 px-4 sm:right-4 sm:left-auto sm:mx-0 sm:px-0">
-                @if (session('status'))
-                    <div class="prediction-toast flex items-start gap-3 rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-900 shadow-2xl shadow-emerald-950/10 ring-1 ring-emerald-100 transition duration-200" role="status">
-                        <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
-                        <p class="flex-1">{{ session('status') }}</p>
-                        <button type="button" class="-mr-1 rounded-full px-2 text-lg leading-none text-emerald-700 hover:bg-emerald-50" data-toast-dismiss aria-label="{{ __('Cerrar') }}">
-                            &times;
-                        </button>
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="prediction-toast flex items-start gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm font-bold text-red-800 shadow-2xl shadow-red-950/10 ring-1 ring-red-100 transition duration-200" role="alert">
-                        <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500"></span>
-                        <p class="flex-1">{{ __('Revisá los campos marcados antes de guardar tus cambios.') }}</p>
-                        <button type="button" class="-mr-1 rounded-full px-2 text-lg leading-none text-red-700 hover:bg-red-50" data-toast-dismiss aria-label="{{ __('Cerrar') }}">
-                            &times;
-                        </button>
-                    </div>
-                @endif
-            </div>
-
             <section class="rounded-[1.25rem] border border-white bg-white/75 p-3 shadow-md shadow-blue-900/5 ring-1 ring-blue-100/70 backdrop-blur">
                 <div class="flex gap-2 overflow-x-auto pb-1">
                     @foreach ([
@@ -346,16 +324,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.prediction-toast').forEach((toast) => {
-                const dismiss = () => {
-                    toast.classList.add('opacity-0', 'translate-y-[-0.5rem]');
-                    window.setTimeout(() => toast.remove(), 200);
-                };
-
-                toast.querySelector('[data-toast-dismiss]')?.addEventListener('click', dismiss);
-                window.setTimeout(dismiss, 3800);
-            });
-
             const form = document.getElementById('predictions-form');
             const floatingSave = document.getElementById('floating-save');
             const floatingSaveButton = document.getElementById('floating-save-button');
