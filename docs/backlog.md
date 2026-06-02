@@ -1941,6 +1941,50 @@ Note: Implemented using a dedicated MySQL testing database instead of SQLite. Th
 Configure local test environment
 
 ### Ticket ID
+E12-T01A
+
+### Title
+Core v1 prediction/auth coverage
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add focused feature test coverage for the core v1 prediction/auth flow.
+
+### Note
+Implemented with CorePredictionFlowTest covering authenticated/guest prediction access, inline bulk save and prefill, single-match fallback save, deadline enforcement, locked/finished/placeholder blocking, prediction history pending/scored states, group-stage behavior without qualified team, and knockout qualified-team validation/persistence. Full php artisan test passes with 69 tests and 160 assertions.
+
+### Scope
+- Cover authenticated and guest access to prediction routes.
+- Cover inline prediction bulk save and prefill.
+- Cover single-match prediction fallback.
+- Cover prediction deadline and non-predictable match blocking.
+- Cover prediction history pending and scored states.
+- Cover group-stage and knockout qualified-team behavior.
+
+### Out of scope
+- No private league tests.
+- No UI redesign.
+- No product feature changes.
+- No deployment work.
+
+### Acceptance criteria
+- php artisan test passes.
+- Core prediction/auth flows have meaningful feature coverage.
+- Existing tests continue to pass.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add core prediction feature coverage
+
+### Ticket ID
 E12-T01
 
 ### Title
