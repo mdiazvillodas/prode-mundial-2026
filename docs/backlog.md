@@ -2020,10 +2020,10 @@ Redesign predictions screen from Prode mock
 E11-T02A
 
 ### Title
-Rework calendar into team schedule view
+Team-focused calendar view
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 7
@@ -2033,6 +2033,9 @@ High
 
 ### Objective
 Make the calendar useful and non-redundant by turning it into a team-focused schedule screen, while removing "Partidos" from the main navigation.
+
+### Note
+Implemented /calendar as a team-focused schedule view using /calendar?team_id={id}. It lists only assigned matches for the selected team, handles no selection, invalid team and no known matches with clear empty states, shows opponent, group/stage, status, local date/time enhancement and finished results. /matches remains available directly, but Partidos was removed as a primary navigation item. Added CalendarTeamScheduleTest. Full php artisan test passes with 120 tests and 378 assertions.
 
 ### Scope
 - Remove "Partidos" from primary navigation.
