@@ -1,201 +1,315 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col gap-1">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                {{ __('Prode Mundial 2026') }}
+            </p>
+            <h2 class="text-2xl font-black leading-tight text-blue-950">
                 {{ __('Predicciones') }}
             </h2>
-            <p class="text-sm text-gray-500">
-                {{ __('Carga o edita varios marcadores desde la lista de partidos.') }}
+            <p class="text-sm text-slate-500">
+                {{ __('Completá tus pronósticos antes de que empiece cada partido.') }}
             </p>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="mb-4 rounded-md bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
-                    {{ session('status') }}
+    <div class="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50/70 py-6">
+        <div class="mx-auto max-w-5xl space-y-6 px-4 pb-32 sm:px-6 lg:px-8">
+            <div id="prediction-toasts" class="fixed inset-x-0 top-4 z-50 mx-auto flex max-w-md flex-col gap-3 px-4 sm:right-4 sm:left-auto sm:mx-0 sm:px-0">
+                @if (session('status'))
+                    <div class="prediction-toast flex items-start gap-3 rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-900 shadow-2xl shadow-emerald-950/10 ring-1 ring-emerald-100 transition duration-200" role="status">
+                        <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
+                        <p class="flex-1">{{ session('status') }}</p>
+                        <button type="button" class="-mr-1 rounded-full px-2 text-lg leading-none text-emerald-700 hover:bg-emerald-50" data-toast-dismiss aria-label="{{ __('Cerrar') }}">
+                            &times;
+                        </button>
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="prediction-toast flex items-start gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm font-bold text-red-800 shadow-2xl shadow-red-950/10 ring-1 ring-red-100 transition duration-200" role="alert">
+                        <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500"></span>
+                        <p class="flex-1">{{ __('Revisá los campos marcados antes de guardar tus cambios.') }}</p>
+                        <button type="button" class="-mr-1 rounded-full px-2 text-lg leading-none text-red-700 hover:bg-red-50" data-toast-dismiss aria-label="{{ __('Cerrar') }}">
+                            &times;
+                        </button>
+                    </div>
+                @endif
+            </div>
+
+            <section class="rounded-[1.25rem] border border-white bg-white/75 p-3 shadow-md shadow-blue-900/5 ring-1 ring-blue-100/70 backdrop-blur">
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                    @foreach ([
+                        ['label' => __('Hoy'), 'active' => false],
+                        ['label' => __('Mañana'), 'active' => false],
+                        ['label' => __('Esta semana'), 'active' => false],
+                        ['label' => __('Todos'), 'active' => true],
+                    ] as $filter)
+                        <button
+                            type="button"
+                            @disabled(! $filter['active'])
+                            @class([
+                                'shrink-0 rounded-full px-4 py-2 text-sm font-bold transition',
+                                'bg-blue-700 text-white shadow-md shadow-blue-700/20' => $filter['active'],
+                                'bg-blue-50 text-blue-800 opacity-75' => ! $filter['active'],
+                            ])
+                            title="{{ $filter['active'] ? __('Vista actual') : __('Filtro visual pendiente de implementación') }}"
+                        >
+                            {{ $filter['label'] }}
+                        </button>
+                    @endforeach
                 </div>
-            @endif
+            </section>
 
             @if ($matchesByDate->isEmpty())
-                <div class="bg-white border border-gray-200 shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-sm text-gray-700">
-                        {{ __('Todavia no hay partidos cargados.') }}
-                    </div>
+                <div class="rounded-[1.5rem] border border-dashed border-blue-200 bg-white p-8 text-center shadow-lg shadow-blue-900/5">
+                    <p class="text-lg font-black text-blue-950">
+                        {{ __('Todavía no hay partidos cargados') }}
+                    </p>
+                    <p class="mt-2 text-sm text-slate-600">
+                        {{ __('Cuando el calendario tenga partidos, vas a poder completar tus predicciones desde acá.') }}
+                    </p>
                 </div>
             @else
-                <form method="POST" action="{{ route('predictions.bulk-store') }}" id="predictions-form" class="space-y-6">
+                <form method="POST" action="{{ route('predictions.bulk-store') }}" id="predictions-form" class="space-y-8">
                     @csrf
 
                     @foreach ($matchesByDate as $date => $matches)
-                        <section class="space-y-3">
-                            <div class="sticky top-0 z-10 border-y border-gray-200 bg-gray-50 px-3 py-2 sm:rounded-md sm:border">
-                                <h3 class="text-sm font-semibold uppercase text-gray-700">
-                                    {{ $date === 'unscheduled' ? __('Fecha por definir') : \Illuminate\Support\Carbon::parse($date)->translatedFormat('l d/m/Y') }}
-                                </h3>
+                        <section class="space-y-4">
+                            <div class="sticky top-0 z-10 -mx-4 bg-sky-50/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-[1.25rem] sm:bg-transparent sm:px-0">
+                                <div class="flex items-end justify-between gap-4 border-b-2 border-blue-200 pb-3">
+                                    <div>
+                                        <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-600">
+                                            {{ __('Jornada') }}
+                                        </p>
+                                        <h3 class="mt-1 text-xl font-black text-blue-950">
+                                            {{ $date === 'unscheduled' ? __('Fecha por definir') : \Illuminate\Support\Carbon::parse($date)->translatedFormat('l d/m/Y') }}
+                                        </h3>
+                                    </div>
+
+                                    <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800">
+                                        {{ trans_choice(':count partido|:count partidos', $matches->count(), ['count' => $matches->count()]) }}
+                                    </span>
+                                </div>
                             </div>
 
-                            <div class="space-y-4">
+                            <div class="space-y-5">
                                 @foreach ($matches as $match)
                                     @php
                                         $prediction = $match->predictions->first();
                                         $canPredict = $match->isPredictable();
                                         $isPlaceholder = $match->status === 'placeholder' || ! $match->teamA || ! $match->teamB;
-                                        $teamAName = $match->teamA?->name ?? 'Equipo por definir';
-                                        $teamBName = $match->teamB?->name ?? 'Equipo por definir';
+                                        $teamAName = $match->teamA?->name ?? __('Equipo por definir');
+                                        $teamBName = $match->teamB?->name ?? __('Equipo por definir');
+                                        $teamACode = $match->teamA?->country_code ?? 'TBD';
+                                        $teamBCode = $match->teamB?->country_code ?? 'TBD';
+                                        $closesAt = $match->predictionClosesAt();
+                                        $isClosingSoon = $canPredict && $closesAt && $closesAt->isFuture() && $closesAt->diffInMinutes(now()) <= 60;
+                                        $hasResult = $match->status === 'finished' && $match->team_a_score !== null && $match->team_b_score !== null;
+
                                         $statusLabels = [
-                                            'scheduled' => 'Programado',
-                                            'open' => 'Abierto',
-                                            'locked' => 'Cerrado',
-                                            'finished' => 'Terminado',
-                                            'placeholder' => 'Por definir',
+                                            'scheduled' => __('Programado'),
+                                            'open' => __('Abierto'),
+                                            'locked' => __('Cerrado'),
+                                            'finished' => __('Finalizado'),
+                                            'placeholder' => __('Equipos por definir'),
                                         ];
-                                        $statusClasses = [
-                                            'scheduled' => 'bg-sky-50 text-sky-700 ring-sky-600/20',
-                                            'open' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-                                            'locked' => 'bg-amber-50 text-amber-700 ring-amber-600/20',
-                                            'finished' => 'bg-gray-100 text-gray-700 ring-gray-500/20',
-                                            'placeholder' => 'bg-violet-50 text-violet-700 ring-violet-600/20',
-                                        ];
-                                        $statusLabel = $statusLabels[$match->status] ?? ucfirst($match->status);
-                                        $statusClass = $statusClasses[$match->status] ?? 'bg-gray-100 text-gray-700 ring-gray-500/20';
+                                        $statusLabel = $isClosingSoon ? __('Cierra pronto') : ($statusLabels[$match->status] ?? ucfirst($match->status));
+
+                                        if ($isPlaceholder) {
+                                            $statusClass = 'bg-sky-100 text-sky-800 ring-sky-200';
+                                            $dotClass = 'bg-sky-500';
+                                        } elseif ($hasResult || $match->status === 'finished') {
+                                            $statusClass = 'bg-slate-100 text-slate-700 ring-slate-200';
+                                            $dotClass = 'bg-slate-400';
+                                        } elseif ($isClosingSoon) {
+                                            $statusClass = 'bg-orange-100 text-orange-800 ring-orange-200';
+                                            $dotClass = 'bg-orange-500';
+                                        } elseif ($canPredict) {
+                                            $statusClass = 'bg-emerald-100 text-emerald-800 ring-emerald-200';
+                                            $dotClass = 'bg-emerald-500';
+                                        } else {
+                                            $statusClass = 'bg-slate-100 text-slate-700 ring-slate-200';
+                                            $dotClass = 'bg-slate-400';
+                                        }
+
                                         $teamAError = $errors->first("predictions.{$match->id}.team_a_score");
                                         $teamBError = $errors->first("predictions.{$match->id}.team_b_score");
+                                        $qualifiedTeamError = $errors->first("predictions.{$match->id}.predicted_qualified_team_id");
                                     @endphp
 
-                                    <article class="bg-white border border-gray-200 shadow-sm sm:rounded-lg">
-                                        <div class="p-4 sm:p-5">
-                                            <div class="flex flex-col gap-4">
-                                                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                                    <div class="min-w-0">
-                                                        <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                                            <span>{{ $match->starts_at ? $match->starts_at->format('H:i') : __('Hora por definir') }}</span>
+                                    <article @class([
+                                        'overflow-hidden rounded-[1.75rem] border bg-white shadow-xl shadow-blue-900/5 ring-1 transition',
+                                        'border-blue-100 ring-blue-100/80' => $canPredict,
+                                        'border-slate-200 opacity-90 ring-slate-100' => ! $canPredict,
+                                    ])>
+                                        <div class="p-4 sm:p-6">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black ring-1 {{ $statusClass }}">
+                                                    <span class="h-2 w-2 rounded-full {{ $dotClass }}"></span>
+                                                    {{ $statusLabel }}
+                                                </span>
 
-                                                            @if ($match->stage)
-                                                                <span aria-hidden="true">-</span>
-                                                                <span>{{ __('Fase') }}: {{ str_replace('_', ' ', $match->stage) }}</span>
-                                                            @endif
-
-                                                            @if ($match->group)
-                                                                <span aria-hidden="true">-</span>
-                                                                <span>{{ __('Grupo') }} {{ $match->group }}</span>
-                                                            @endif
-                                                        </div>
-
-                                                        <div class="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                                                            <div class="min-w-0">
-                                                                <p class="truncate text-base font-semibold text-gray-900">{{ $teamAName }}</p>
-                                                                @if ($match->teamA?->short_name)
-                                                                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamA->short_name }}</p>
-                                                                @endif
-                                                            </div>
-
-                                                            <div class="text-center text-sm font-semibold text-gray-500">
-                                                                @if ($match->status === 'finished')
-                                                                    <span class="inline-flex min-w-14 justify-center rounded-md bg-gray-900 px-2 py-1 text-white">
-                                                                        {{ $match->team_a_score }} - {{ $match->team_b_score }}
-                                                                    </span>
-                                                                @else
-                                                                    <span>{{ __('vs') }}</span>
-                                                                @endif
-                                                            </div>
-
-                                                            <div class="min-w-0 text-right">
-                                                                <p class="truncate text-base font-semibold text-gray-900">{{ $teamBName }}</p>
-                                                                @if ($match->teamB?->short_name)
-                                                                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamB->short_name }}</p>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <span class="inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset {{ $statusClass }}">
-                                                        {{ $statusLabel }}
+                                                @if ($prediction && $canPredict)
+                                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
+                                                        {{ __('Guardada') }}
                                                     </span>
+                                                @endif
+                                            </div>
+
+                                            <div class="mt-4 text-center">
+                                                <p class="text-sm font-black text-blue-950">
+                                                    {{ $match->starts_at ? $match->starts_at->format('H:i') : __('Hora por definir') }}
+                                                </p>
+                                                <div class="mt-1 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-slate-500">
+                                                    @if ($match->stage)
+                                                        <span>{{ __('Fase') }}: {{ str_replace('_', ' ', $match->stage) }}</span>
+                                                    @endif
+
+                                                    @if ($match->group)
+                                                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                                        <span>{{ __('Grupo') }} {{ $match->group }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-6 grid grid-cols-[1fr_auto_1fr] items-start gap-3">
+                                                <div class="min-w-0 text-center">
+                                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-sky-50 text-sm font-black uppercase text-blue-900 ring-4 ring-blue-50">
+                                                        {{ $teamACode }}
+                                                    </div>
+                                                    <p class="mt-3 truncate text-sm font-black text-blue-950 sm:text-base">{{ $teamAName }}</p>
+                                                    @if ($match->teamA?->short_name)
+                                                        <p class="mt-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">{{ $match->teamA->short_name }}</p>
+                                                    @endif
                                                 </div>
 
-                                                @if ($canPredict)
-                                                    <input type="hidden" name="predictions[{{ $match->id }}][changed]" value="{{ old("predictions.{$match->id}.changed", '0') }}" data-changed-input>
+                                                <div class="min-w-[7rem] text-center">
+                                                    @if ($canPredict)
+                                                        <input type="hidden" name="predictions[{{ $match->id }}][changed]" value="{{ old("predictions.{$match->id}.changed", '0') }}" data-changed-input>
 
-                                                    <div class="grid grid-cols-2 gap-3 rounded-md bg-gray-50 p-3">
-                                                        <div>
-                                                            <label for="prediction-{{ $match->id }}-team-a" class="block text-xs font-medium text-gray-600">
-                                                                {{ $match->teamA?->short_name ?: $teamAName }}
-                                                            </label>
-                                                            <input
-                                                                id="prediction-{{ $match->id }}-team-a"
-                                                                name="predictions[{{ $match->id }}][team_a_score]"
-                                                                type="number"
-                                                                min="0"
-                                                                max="99"
-                                                                inputmode="numeric"
-                                                                value="{{ old("predictions.{$match->id}.team_a_score", $prediction?->team_a_score) }}"
-                                                                class="mt-1 block w-full rounded-md border-gray-300 text-center text-base font-semibold shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                data-prediction-input
-                                                            >
-                                                            @if ($teamAError)
-                                                                <p class="mt-1 text-xs text-red-600">{{ $teamAError }}</p>
-                                                            @endif
+                                                        <div class="flex items-center justify-center gap-2">
+                                                            <div>
+                                                                <label for="prediction-{{ $match->id }}-team-a" class="sr-only">
+                                                                    {{ __('Goles de :team', ['team' => $teamAName]) }}
+                                                                </label>
+                                                                <input
+                                                                    id="prediction-{{ $match->id }}-team-a"
+                                                                    name="predictions[{{ $match->id }}][team_a_score]"
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max="99"
+                                                                    inputmode="numeric"
+                                                                    value="{{ old("predictions.{$match->id}.team_a_score", $prediction?->team_a_score) }}"
+                                                                    class="h-16 w-14 rounded-2xl border-2 border-blue-100 bg-blue-50/70 text-center text-2xl font-black text-blue-950 shadow-inner transition focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                                    data-prediction-input
+                                                                >
+                                                            </div>
+
+                                                            <span class="text-xl font-black text-slate-300">-</span>
+
+                                                            <div>
+                                                                <label for="prediction-{{ $match->id }}-team-b" class="sr-only">
+                                                                    {{ __('Goles de :team', ['team' => $teamBName]) }}
+                                                                </label>
+                                                                <input
+                                                                    id="prediction-{{ $match->id }}-team-b"
+                                                                    name="predictions[{{ $match->id }}][team_b_score]"
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max="99"
+                                                                    inputmode="numeric"
+                                                                    value="{{ old("predictions.{$match->id}.team_b_score", $prediction?->team_b_score) }}"
+                                                                    class="h-16 w-14 rounded-2xl border-2 border-blue-100 bg-blue-50/70 text-center text-2xl font-black text-blue-950 shadow-inner transition focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                                    data-prediction-input
+                                                                >
+                                                            </div>
                                                         </div>
 
-                                                        <div>
-                                                            <label for="prediction-{{ $match->id }}-team-b" class="block text-right text-xs font-medium text-gray-600">
-                                                                {{ $match->teamB?->short_name ?: $teamBName }}
-                                                            </label>
-                                                            <input
-                                                                id="prediction-{{ $match->id }}-team-b"
-                                                                name="predictions[{{ $match->id }}][team_b_score]"
-                                                                type="number"
-                                                                min="0"
-                                                                max="99"
-                                                                inputmode="numeric"
-                                                                value="{{ old("predictions.{$match->id}.team_b_score", $prediction?->team_b_score) }}"
-                                                                class="mt-1 block w-full rounded-md border-gray-300 text-center text-base font-semibold shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                data-prediction-input
-                                                            >
-                                                            @if ($teamBError)
-                                                                <p class="mt-1 text-xs text-right text-red-600">{{ $teamBError }}</p>
-                                                            @endif
+                                                        @if ($teamAError || $teamBError)
+                                                            <div class="mt-2 space-y-1 text-xs font-semibold text-red-600">
+                                                                @if ($teamAError)
+                                                                    <p>{{ $teamAError }}</p>
+                                                                @endif
+                                                                @if ($teamBError)
+                                                                    <p>{{ $teamBError }}</p>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                    @elseif ($hasResult)
+                                                        <div class="rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-lg shadow-slate-950/20">
+                                                            <p class="text-xs font-bold uppercase tracking-wide text-slate-300">
+                                                                {{ __('Resultado') }}
+                                                            </p>
+                                                            <p class="mt-1 text-3xl font-black">
+                                                                {{ $match->team_a_score }} - {{ $match->team_b_score }}
+                                                            </p>
                                                         </div>
-                                                    </div>
-
-                                                    @if ($match->requiresQualifiedTeamPrediction())
-                                                        <div class="mt-3 rounded-md bg-gray-50 p-3">
-                                                            <label for="prediction-{{ $match->id }}-qualified-team" class="block text-xs font-medium text-gray-600">
-                                                                {{ __('Equipo clasificado') }}
-                                                            </label>
-                                                            <select
-                                                                id="prediction-{{ $match->id }}-qualified-team"
-                                                                name="predictions[{{ $match->id }}][predicted_qualified_team_id]"
-                                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                                data-prediction-input
-                                                            >
-                                                                <option value="">{{ __('Selecciona el equipo clasificado') }}</option>
-                                                                <option value="{{ $match->team_a_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_a_id ? 'selected' : '' }}>
-                                                                    {{ $teamAName }}
-                                                                </option>
-                                                                <option value="{{ $match->team_b_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_b_id ? 'selected' : '' }}>
-                                                                    {{ $teamBName }}
-                                                                </option>
-                                                            </select>
-                                                            @if ($errors->first("predictions.{$match->id}.predicted_qualified_team_id"))
-                                                                <p class="mt-1 text-xs text-red-600">{{ $errors->first("predictions.{$match->id}.predicted_qualified_team_id") }}</p>
-                                                            @endif
+                                                    @else
+                                                        <div class="rounded-2xl bg-slate-100 px-4 py-4 text-sm font-black text-slate-500">
+                                                            {{ __('vs') }}
                                                         </div>
                                                     @endif
-                                                @else
-                                                    <div class="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
-                                                        @if ($isPlaceholder)
-                                                            {{ __('Este partido se completara cuando los equipos esten definidos.') }}
-                                                        @elseif ($match->status === 'finished')
-                                                            {{ __('Partido terminado. La prediccion ya no se puede editar.') }}
-                                                        @elseif ($match->status === 'locked')
-                                                            {{ __('Predicciones cerradas para este partido.') }}
-                                                        @else
-                                                            {{ __('Este partido no esta disponible para predicciones.') }}
-                                                        @endif
+                                                </div>
+
+                                                <div class="min-w-0 text-center">
+                                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-sky-50 text-sm font-black uppercase text-blue-900 ring-4 ring-blue-50">
+                                                        {{ $teamBCode }}
                                                     </div>
+                                                    <p class="mt-3 truncate text-sm font-black text-blue-950 sm:text-base">{{ $teamBName }}</p>
+                                                    @if ($match->teamB?->short_name)
+                                                        <p class="mt-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">{{ $match->teamB->short_name }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            @if ($canPredict && $match->requiresQualifiedTeamPrediction())
+                                                <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                                                    <label for="prediction-{{ $match->id }}-qualified-team" class="block text-sm font-black text-blue-950">
+                                                        {{ __('Equipo clasificado') }}
+                                                    </label>
+                                                    <p class="mt-1 text-xs font-medium text-blue-700">
+                                                        {{ __('En eliminatorias también tenés que elegir quién avanza.') }}
+                                                    </p>
+                                                    <select
+                                                        id="prediction-{{ $match->id }}-qualified-team"
+                                                        name="predictions[{{ $match->id }}][predicted_qualified_team_id]"
+                                                        class="mt-3 block w-full rounded-2xl border-2 border-blue-100 bg-white px-4 py-3 text-sm font-bold text-blue-950 shadow-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                        data-prediction-input
+                                                    >
+                                                        <option value="">{{ __('Seleccioná el equipo clasificado') }}</option>
+                                                        <option value="{{ $match->team_a_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_a_id ? 'selected' : '' }}>
+                                                            {{ $teamAName }}
+                                                        </option>
+                                                        <option value="{{ $match->team_b_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_b_id ? 'selected' : '' }}>
+                                                            {{ $teamBName }}
+                                                        </option>
+                                                    </select>
+                                                    @if ($qualifiedTeamError)
+                                                        <p class="mt-2 text-xs font-semibold text-red-600">{{ $qualifiedTeamError }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+
+                                            <div class="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+                                                @if ($canPredict)
+                                                    @if ($prediction)
+                                                        <span class="text-blue-700">{{ __('Tu predicción guardada.') }}</span>
+                                                    @else
+                                                        <span class="text-emerald-700">{{ __('Abierto para completar.') }}</span>
+                                                    @endif
+
+                                                    @if ($closesAt)
+                                                        <span>{{ __('Editar hasta') }} {{ $closesAt->format('H:i') }}.</span>
+                                                    @endif
+                                                @elseif ($isPlaceholder)
+                                                    <span class="text-sky-700">{{ __('Equipos por definir. Este partido se habilita cuando estén confirmados.') }}</span>
+                                                @elseif ($match->status === 'finished')
+                                                    <span>{{ __('Finalizado. La predicción ya no se puede editar.') }}</span>
+                                                @elseif ($match->status === 'locked')
+                                                    <span>{{ __('Predicciones cerradas para este partido.') }}</span>
+                                                @else
+                                                    <span>{{ __('Este partido no está disponible para predicciones.') }}</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -205,15 +319,24 @@
                         </section>
                     @endforeach
 
-                    <div id="floating-save" class="fixed inset-x-0 bottom-0 z-30 hidden border-t border-gray-200 bg-white/95 p-4 shadow-lg backdrop-blur">
+                    <div id="floating-save" class="fixed inset-x-0 bottom-0 z-30 hidden border-t border-blue-100 bg-white/95 p-4 shadow-2xl shadow-blue-950/20 backdrop-blur">
                         <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
-                            <p class="text-sm font-medium text-gray-700">
-                                {{ __('Tenes cambios sin guardar.') }}
-                            </p>
+                            <div>
+                                <p class="text-sm font-black text-blue-950">
+                                    {{ __('Tenés cambios sin guardar') }}
+                                </p>
+                                <p class="text-xs font-medium text-slate-500">
+                                    {{ __('Guardá tus predicciones antes de salir.') }}
+                                </p>
+                            </div>
 
-                            <x-primary-button>
+                            <button
+                                type="submit"
+                                id="floating-save-button"
+                                class="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-700/25 transition hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200"
+                            >
                                 {{ __('Guardar cambios') }}
-                            </x-primary-button>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -223,8 +346,19 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.prediction-toast').forEach((toast) => {
+                const dismiss = () => {
+                    toast.classList.add('opacity-0', 'translate-y-[-0.5rem]');
+                    window.setTimeout(() => toast.remove(), 200);
+                };
+
+                toast.querySelector('[data-toast-dismiss]')?.addEventListener('click', dismiss);
+                window.setTimeout(dismiss, 3800);
+            });
+
             const form = document.getElementById('predictions-form');
             const floatingSave = document.getElementById('floating-save');
+            const floatingSaveButton = document.getElementById('floating-save-button');
 
             if (! form || ! floatingSave) {
                 return;
@@ -243,6 +377,13 @@
 
                     floatingSave.classList.remove('hidden');
                 });
+            });
+
+            form.addEventListener('submit', () => {
+                if (floatingSaveButton) {
+                    floatingSaveButton.disabled = true;
+                    floatingSaveButton.textContent = @json(__('Guardando...'));
+                }
             });
         });
     </script>
