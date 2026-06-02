@@ -10,6 +10,8 @@ These rules apply to future Codex work in this repository.
 - Always check `docs/backlog.md` for the current ticket.
 - Before UI work, always read `docs/ui-guidelines.md`.
 - Before UI work, always read `docs/design-system.md` and use only approved tokens. If tokens are missing, document them as pending decision instead of inventing values.
+- UI work must follow the Prode prediction mock-derived components and hierarchy documented in `docs/design-system.md`.
+- UI work must not invent final brand colors, typography, shadows, radius, spacing, or status tokens when they are marked pending decision.
 - Work on only one ticket at a time.
 - Confirm or document ambiguous requirements before implementing.
 - If a requirement is ambiguous, update `docs/decisions-log.md` or ask before implementing.

@@ -6,6 +6,8 @@ These guidelines define the visual direction for the Prode Mundial 2026 platform
 
 For concrete design-system categories and token status, read `docs/design-system.md` before UI implementation. If a token is marked `pending decision`, do not invent a replacement without product approval.
 
+The Prode prediction mock is the visual source for the first UI polish pass. Future work should use the mock-derived hierarchy and components documented in `docs/design-system.md`, starting with the `/predictions` screen.
+
 ## Direction
 
 - Build mobile-first.
@@ -14,6 +16,7 @@ For concrete design-system categories and token status, read `docs/design-system
 - Bring FIFA World Cup inspired energy without copying protected branding, official marks, logos, mascots, typography, or tournament identity.
 - Avoid the generic Laravel Breeze look as the product UI matures.
 - Keep Blade, Tailwind CSS, and vanilla JavaScript.
+- Use the mock-derived design system as the source of truth for app shell, match cards, score inputs, status badges, floating save actions, and mobile hierarchy.
 
 ## Layout Principles
 

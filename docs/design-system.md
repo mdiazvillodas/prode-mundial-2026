@@ -2,228 +2,252 @@
 
 Last updated: 2026-06-02
 
-This document is the design system foundation for Prode Mundial 2026. Future UI work must read this file before editing Blade views, Tailwind classes, or frontend assets.
+This document is the visual system foundation for Prode Mundial 2026. Future UI work must read this file before editing Blade views, Tailwind classes, or frontend assets.
 
-## Current Status
+The current visual source is the Prode prediction mock. It defines the intended direction for the primary `/predictions` screen and should guide the first UI polish pass. Exact token values remain pending where they were not explicitly provided by product.
 
-The product owner prompt referenced design tokens, but the actual token values were not included. No new colors, typography, spacing scale, shadows, or Tailwind tokens should be invented until those values are provided.
+## Visual Identity Summary
 
-All sections below define the required token categories and current implementation status. Values marked `pending decision` must be supplied or explicitly approved before they are added to `tailwind.config.js` or applied across screens.
-
-## Principles
-
-- Mobile-first.
-- Modern sports prediction platform.
-- Competitive but friendly.
-- Clear hierarchy for partido, prediccion, puntos, ranking, liga, team names, scores, statuses, and actions.
-- Avoid gambling or betting language.
-- Avoid copying protected FIFA branding, official marks, logos, mascots, typography, or tournament identity.
-- Keep Blade, Tailwind CSS, and vanilla JavaScript.
+- Premium mobile sports prediction app.
+- Light app background with a subtle blue atmosphere.
+- Strong blue/navy structure inspired by international football energy, without copying protected FIFA branding, marks, logos, mascots, typography, or tournament identity.
+- White rounded cards with soft shadows and subtle borders.
+- Clean, high-contrast hierarchy for partido, predicción, pronóstico, puntos, liga, ranking, teams, scores, statuses, and actions.
+- Friendly and competitive tone.
+- Entertainment only. Never imply gambling, betting, odds, wagers, cash prizes, or real-money mechanics.
 
 ## Typography
 
-### Font Family
+### Font Direction
 
-- Primary font: pending decision.
-- Secondary font: pending decision.
-- Numeric / score font: pending decision.
-- Web font loading strategy: pending decision.
+- Primary recommendation: Plus Jakarta Sans.
+- Acceptable alternative: Inter.
+- Use a public web font only if it is safely available.
+- Do not commit proprietary or licensed font files.
+- If the exact official/custom font becomes legally available later, document it as a future replacement option before implementing.
 
-Do not commit proprietary or licensed font files. If a web font is approved later, load it through a safe external stylesheet or documented deployment strategy.
+### Usage
 
-### Font Weights
+- Page titles: large, bold, readable on mobile.
+- Section titles: semibold to bold, compact enough for dense match screens.
+- UI labels and metadata: medium weight, short, and scannable.
+- Team names: strong weight; uppercase only where it improves scanning.
+- Scores, times, and ranking points: strong numeric treatment using the same font family with heavier weight unless a better public numeric font is approved later.
+- Body text: avoid condensed or aggressive sports fonts; prioritize mobile readability.
 
-- Regular: pending decision.
-- Medium: pending decision.
-- Semibold: pending decision.
-- Bold / display: pending decision.
+### Pending Decisions
 
-### Heading Scale
+- Exact font family final choice.
+- Exact heading scale.
+- Exact body text scale.
+- Exact score/numeric size and weight.
 
-- Page title: pending decision.
-- Section title: pending decision.
-- Card title: pending decision.
-- Compact metadata title: pending decision.
+## Color System
 
-### Body Text Scale
+Exact HEX values are pending decision. Use the semantic roles below as the implementation direction until approved values are supplied.
 
-- Body: pending decision.
-- Small body: pending decision.
-- Caption / metadata: pending decision.
-- Form helper text: pending decision.
+### Brand And Structure
 
-### Numeric And Score Styling
+- Primary blue: main active state, primary CTA, focused controls, selected navigation, saved confirmation when appropriate.
+- Deep navy text: page titles, important labels, app shell text, strong card headings.
+- Light app background: overall screen background, with subtle blue atmosphere rather than plain Breeze gray.
+- Card background: white.
+- Muted text: secondary copy, metadata, helper text.
+- Border/subtle divider: soft card borders, separators, grouped metadata.
+- White: cards, top surfaces, contrast text on dark/blue backgrounds.
 
-- Match scores should be visually prominent and easy to scan.
-- Prediction score inputs should be compact, touch-friendly, and visually paired with the two teams.
-- Ranking points should use a stronger numeric treatment than surrounding metadata.
-- Exact font size, weight, spacing, and color tokens: pending decision.
+### Semantic States
 
-## Color Tokens
+- Open/success green: predictable matches, access approved, positive saved states.
+- Urgent/closing orange: closing soon, pending action, warning state.
+- Placeholder blue: teams or knockout slots not defined yet.
+- Finished/disabled gray: finished matches, locked/disabled controls, read-only state.
+- Error red: validation errors and destructive warnings.
 
-### Brand Palette
+### Pending Decisions
 
-- Brand primary: pending decision.
-- Brand secondary: pending decision.
-- Brand accent: pending decision.
-- Brand dark: pending decision.
-- Brand light: pending decision.
+- Exact HEX values for each semantic role.
+- Hover/focus variants.
+- Dark text contrast values.
+- Approved status badge palette.
 
-### Neutral Palette
+## App Shell
 
-- Background: pending decision.
-- Surface: pending decision.
-- Surface muted: pending decision.
-- Border: pending decision.
-- Text primary: pending decision.
-- Text secondary: pending decision.
-- Text muted: pending decision.
+Target app feel:
 
-### Semantic Colors
+- Mobile-first shell with a polished app-like frame.
+- Top app bar with:
+  - menu icon or compact navigation trigger
+  - centered brand/logo area
+  - user/avatar or account area
+- Bottom navigation for primary user sections:
+  - Inicio
+  - Predicciones
+  - Ligas
+  - Ranking
+  - Historial
+- `Predicciones` should be treated as the primary active destination for the v1 user experience.
+- Desktop navigation can expand, but should keep the same hierarchy and avoid a crowded Breeze-style link row.
 
-- Success / saved: pending decision.
-- Warning / pending: pending decision.
-- Error / validation: pending decision.
-- Info / neutral notice: pending decision.
-- Open / predictable: pending decision.
-- Locked / closed: pending decision.
-- Finished: pending decision.
-- Placeholder: pending decision.
+## Predictions Page Structure
 
-## Semantic Usage
+The `/predictions` screen is the first implementation target for visual polish.
 
-- Open or predictable matches must make the action available and obvious.
-- Locked, closed, finished, and placeholder matches must remain readable but clearly non-editable.
-- Saved states should feel calm and reliable.
-- Validation errors should be visible near the related input or action.
-- Admin and destructive actions must use distinct, cautious styling.
+Target hierarchy:
 
-Exact semantic token mapping is pending decision.
+- Top app bar.
+- Page header with title `Predicciones`.
+- Short explanatory subtitle.
+- Secondary `Calendario` action.
+- Date/filter pill row:
+  - Hoy
+  - Mañana
+  - Esta semana
+  - Todos
+- Status legend:
+  - Abierto
+  - Cierra pronto
+  - Equipos por definir
+  - Finalizado
+- Day section header:
+  - date title
+  - number of matches
+- Match cards grouped by day.
 
-## Spacing And Layout
+## Match Card Component
 
-### Spacing Scale
+Target structure:
 
-- Base spacing unit: pending decision.
-- Card padding mobile: pending decision.
-- Card padding desktop: pending decision.
-- Section gap: pending decision.
-- Form field gap: pending decision.
-- Dense metadata gap: pending decision.
+- White rounded card.
+- Soft shadow and subtle border.
+- Status badge top-left.
+- Optional chevron/action top-right.
+- Time and group/stage shown as compact centered metadata.
+- Team A on the left and Team B on the right.
+- Circular flag/avatar space or country-code fallback.
+- Score inputs centered and visually prominent.
+- Status/feedback row below score:
+  - `Tu predicción guardada`
+  - `Editar hasta HH:mm`
+  - `Se cierra en MM:SS`
+  - `Equipos por definir`
+  - `Finalizado`
+- For knockout matches with teams, include the qualified-team selector inside the card.
 
-### Layout Rules
+Cards should make the main state obvious at a glance: who plays, when, whether it can be predicted, what the current prediction is, and whether there are unsaved changes.
 
-- Build mobile-first.
-- Prefer single-column layouts on small screens.
-- Use compact but readable cards for match-heavy screens.
-- Avoid nested cards.
-- Use constrained content widths for dashboards and admin pages.
-- Keep interactive controls touch-friendly.
+## Score Input Component
 
-Exact breakpoints and container widths should follow Tailwind defaults until product-approved tokens say otherwise.
+- Large numeric inputs.
+- Clear paired layout: team A score - team B score.
+- Strong focus state using primary blue.
+- Touch-friendly tap targets on mobile.
+- Avoid tiny controls.
+- Keep labels close to the relevant team.
+- Existing values should feel intentionally pre-filled, not like placeholder text.
+- Validation errors should appear near the affected input.
 
-## Border Radius
+## Status Badges
 
-- Small radius: pending decision.
-- Card radius: pending decision.
-- Button radius: pending decision.
-- Input radius: pending decision.
-- Badge radius: pending decision.
+Semantic badge direction:
 
-Existing guidance: cards should generally stay at 8px radius or less unless the design system later approves a different token.
+- Abierto: green dot or green soft pill.
+- Cierra pronto: orange dot or orange soft pill.
+- Equipos por definir: blue dot or light blue soft pill.
+- Finalizado: gray dot or gray soft pill.
+- Guardado: blue check or calm confirmation text.
+- Error de validación: red text/pill near the related action or field.
 
-## Shadows
+Exact background, text, border, and icon values are pending decision.
 
-- Card shadow: pending decision.
-- Raised action shadow: pending decision.
-- Floating save action shadow: pending decision.
-- Modal / overlay shadow: pending decision.
+## Floating Save Button
 
-Use shadows sparingly. Screens should feel clean and sports-focused, not heavy or decorative.
+- Appears only when there are unsaved changes.
+- Fixed near the bottom of the mobile viewport, above bottom navigation.
+- Strong primary blue or green CTA.
+- Mobile-friendly height and width.
+- Clear copy states:
+  - `Guardar cambios`
+  - `Guardando...`
+  - `Cambios guardados`
+- Should not hide important form inputs on small screens.
 
-## Buttons
+## Placeholder And Knockout States
 
-### Primary Button
+- Placeholder cards must look intentional, not broken.
+- Use a shield/trophy placeholder icon or neutral emblem in future UI polish.
+- Text examples:
+  - `Ganador Grupo A`
+  - `Tercero Grupo C/D/E`
+  - `Equipos por definir`
+- Do not show prediction inputs until teams are assigned.
+- Knockout matches with teams must show a qualified-team selector.
+- Placeholder state should use the placeholder blue semantic treatment, not only muted gray.
 
-- Background: pending decision.
-- Text: pending decision.
-- Hover: pending decision.
-- Focus ring: pending decision.
-- Disabled: pending decision.
+## Buttons And CTAs
 
-### Secondary Button
+- Primary CTA: strong filled blue or green.
+- Secondary CTA: white or soft surface button with icon if useful.
+- Destructive actions: cautious red treatment, and future confirmation behavior for private league/admin polish.
+- Buttons should have generous radius and touch-friendly targets.
+- Labels should be direct and Spanish-first.
 
-- Background: pending decision.
-- Border: pending decision.
-- Text: pending decision.
-- Hover: pending decision.
-- Focus ring: pending decision.
+Examples:
 
-### Destructive Button
+- `Guardar cambios`
+- `Cargar predicciones`
+- `Ver ranking`
+- `Solicitar acceso`
+- `Guardar resultado`
 
-- Background / border: pending decision.
-- Text: pending decision.
-- Hover: pending decision.
-- Focus ring: pending decision.
+## Cards And Surfaces
 
-Button labels should be direct and action-oriented.
+- Use white cards over the light app background.
+- Use large radius, soft shadows, and subtle borders.
+- Avoid dense table-like layouts on mobile.
+- Avoid nested cards where a section layout would be clearer.
+- Match-heavy screens should prioritize scan speed over decoration.
+- Admin screens can be denser, but should keep clear action zones.
 
-## Inputs
+## Empty, Success, And Error States
 
-- Text input background: pending decision.
-- Text input border: pending decision.
-- Focus border / ring: pending decision.
-- Disabled state: pending decision.
-- Error state: pending decision.
-- Score input dimensions: pending decision.
+- Empty states should explain what happens next and provide one clear action when available.
+- Success states should be calm and reliable.
+- Validation errors should be field-level where possible, plus a concise summary only when useful.
+- Error copy should explain what the user can do next.
 
-Score inputs must remain readable and easy to tap on mobile.
+## Team Flag Or Code Display
 
-## Cards
+- Reserve circular visual space for future flags/logos.
+- Use `country_code` fallback for now.
+- Do not integrate external flag/logo APIs yet.
+- Do not use official federation, FIFA, or protected marks unless properly licensed.
 
-- Match card background: pending decision.
-- Match card border: pending decision.
-- Dashboard card background: pending decision.
-- Admin card background: pending decision.
-- Leaderboard row background: pending decision.
-- First-place highlight: pending decision.
+## Copy Style
 
-Cards should support quick scanning: teams, time, status, result, prediction inputs, and primary action.
+- UI copy should be Spanish-first.
+- Avoid English terms in app-controlled UI such as `Owner`, `Register`, `Log Out`, and `Profile`.
+- Avoid gambling/betting language.
+- Prefer:
+  - predicción
+  - pronóstico
+  - puntos
+  - liga
+  - ranking
+  - partido
+  - clasificado
+  - resultado
 
-## Badges And Status States
+## Implementation Notes For Future Tickets
 
-Required statuses:
-
-- scheduled
-- open
-- locked
-- finished
-- placeholder
-- submitted
-- scored
-- pending
-- accepted
-- rejected
-- active
-- removed
-- saved
-- validation error
-
-For each status, the following tokens are pending decision:
-
-- Background color.
-- Text color.
-- Border color.
-- Icon usage, if any.
-
-## Mobile-First Rules
-
-- Start every UI layout at mobile width.
-- Avoid horizontal overflow.
-- Keep buttons and form controls touch-friendly.
-- Keep match cards scannable without relying on hover.
-- Use responsive grids only when desktop space helps comparison.
-- Do not hide critical actions on mobile.
+- Do not redesign all screens at once.
+- First implementation target: `/predictions`.
+- Then dashboard, navigation, history, and leaderboard.
+- Then private league screens.
+- Then admin screens.
+- Keep business logic unchanged during visual tickets.
+- Do not add React, Vue, Inertia, or unnecessary frontend dependencies.
+- Do not add Tailwind tokens until exact values are approved.
 
 ## Tailwind Configuration
 
@@ -231,20 +255,18 @@ Tailwind should not be changed until approved token values are provided.
 
 Current status:
 
-- No new Tailwind tokens were added in E11-T00.
-- `tailwind.config.js` remains unchanged.
-- Future token implementation should add only approved tokens.
+- No final HEX colors are approved.
+- No final typography scale is approved.
+- No final radius/shadow scale is approved.
+- Future Tailwind configuration should add only approved tokens.
 
 ## Pending Product Decisions
 
-- Actual font family.
-- Approved brand color palette.
-- Neutral color scale.
-- Semantic status colors.
-- Spacing scale.
-- Radius scale.
-- Shadow scale.
-- Button variants.
-- Input variants.
-- Badge/status variants.
-- Score-specific typography.
+- Exact HEX colors for brand and semantic states.
+- Final official/custom font if legally available.
+- Final public font choice between Plus Jakarta Sans and Inter.
+- Exact typography scale.
+- Exact spacing scale.
+- Exact border radius values.
+- Exact shadow values.
+- Icon strategy for status badges, bottom navigation, and placeholder cards.
