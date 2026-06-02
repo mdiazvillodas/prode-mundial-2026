@@ -1814,6 +1814,11 @@ High
 ### Objective
 Define the visual design system foundation for Prode using the provided design tokens, so future UI work is consistent and aligned with the intended look and feel.
 
+### Note
+A design-system documentation scaffold exists in docs/design-system.md, and docs/ui-guidelines.md / docs/codex-rules.md were updated to reference it. Actual visual tokens such as typography, colors, spacing, radius and shadows are still pending decision.
+
+Future UI polish should not assume final visual values until actual design tokens are provided.
+
 ### Scope
 - Document the design tokens in docs/ui-guidelines.md or a dedicated docs/design-system.md.
 - Define typography rules.
