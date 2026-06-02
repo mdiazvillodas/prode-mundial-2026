@@ -2029,6 +2029,51 @@ Implemented with PrivateLeagueFlowTest and PrivateLeagueLeaderboardTest covering
 Add private league feature coverage
 
 ### Ticket ID
+E12-T01C
+
+### Title
+Admin/result/settlement coverage
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add focused feature test coverage for admin, result loading/correction, settlement and leaderboard integration.
+
+### Note
+Implemented with AdminDashboardTest and AdminResultSettlementTest covering admin access, dashboard environment/mode/counts, admin matches listing, manual result save/correction, winner/draw logic, idempotent rescoring, settlement points/status, placeholder blocking, placeholder team assignment, and leaderboard updates after settlement. Full php artisan test passes with 112 tests and 344 assertions.
+
+### Scope
+- Cover admin dashboard access, environment/mode display, counts and links.
+- Cover admin matches listing access and match display.
+- Cover manual result save/correction and winner/draw logic.
+- Cover idempotent prediction settlement and rescoring.
+- Cover placeholder result blocking and placeholder team assignment.
+- Cover global and private league leaderboard updates after settlement.
+
+### Out of scope
+- No new product features.
+- No UI redesign.
+- No private league feature changes.
+- No scoring rule changes.
+- No deployment work.
+
+### Acceptance criteria
+- php artisan test passes.
+- Admin/result/settlement flows have meaningful feature coverage.
+- Existing tests continue to pass.
+- No out-of-scope features are implemented.
+
+### Suggested commit message
+Add admin settlement feature coverage
+
+### Ticket ID
 E12-T01
 
 ### Title
