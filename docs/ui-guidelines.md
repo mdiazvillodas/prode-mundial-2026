@@ -36,17 +36,19 @@ The Prode prediction mock is the visual source for the first UI polish pass. Fut
 
 Design attention should focus first on:
 
-- Dashboard.
+- Inicio / Panel.
 - Inline predictions page.
 - Matches page.
 - Calendar.
-- Leaderboard.
-- Private leagues.
+- Ligas.
+- Ligas privadas.
 
 Navigation direction:
 
 - `Predicciones` is the primary match-action destination.
 - `Ligas` is the primary ranking and league destination.
+- The general ranking should be presented as the `Liga general`.
+- Private league rankings should be presented as a `Ranking de la liga` or `Tabla de posiciones` inside each league.
 - `Partidos` should not be a primary navigation item because it duplicates the match list already present in `Predicciones`.
 - `/matches` may remain available for compatibility or internal access, but it should not compete as a main user destination.
 
@@ -67,6 +69,10 @@ Use product language centered on sports prediction and points:
 - ranking
 - liga
 - partido
+- Liga general
+- Liga privada
+- Tabla de posiciones
+- Solicitud de ingreso
 
 Avoid gambling or betting language, including:
 

@@ -10,7 +10,7 @@
             <div class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-100">
                 <div class="border-b border-gray-100 bg-indigo-50 px-6 py-5">
                     <p class="text-sm font-medium text-indigo-800">
-                        {{ __('Crea una liga para competir por puntos y ranking con tu grupo.') }}
+                        {{ __('Crea una liga para comparar puntos y tabla de posiciones con tu grupo.') }}
                     </p>
                     <p class="mt-1 text-sm text-indigo-700">
                         {{ __('Vas a recibir un codigo visible para compartir cuando el flujo de solicitudes este disponible.') }}

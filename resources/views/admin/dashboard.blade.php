@@ -88,7 +88,7 @@
                         href="{{ route('leaderboard.index') }}"
                         class="rounded-lg border border-amber-100 bg-amber-50 p-4 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                     >
-                        <p class="font-bold text-amber-950">{{ __('Ranking general') }}</p>
+                        <p class="font-bold text-amber-950">{{ __('Liga general') }}</p>
                         <p class="mt-1 text-sm text-amber-800">{{ __('Puntos y posiciones globales') }}</p>
                     </a>
 

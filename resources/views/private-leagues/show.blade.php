@@ -6,7 +6,7 @@
                     {{ __('Liga privada') }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    {{ __('Ranking de miembros activos y gestion de la liga.') }}
+                    {{ __('Tabla de posiciones de miembros activos y gestion de la liga.') }}
                 </p>
             </div>
 
@@ -68,7 +68,7 @@
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-indigo-700">
-                            {{ __('Ranking de liga') }}
+                            {{ __('Ranking de la liga') }}
                         </p>
                         <h3 class="mt-1 text-2xl font-black text-gray-950">
                             {{ __('Puntos de miembros activos') }}
@@ -110,7 +110,7 @@
                                                 {{ (int) $entry->total_points }}
                                             </p>
                                             <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('puntos') }}
+                                            {{ __('Puntos') }}
                                             </p>
                                         </div>
                                     </div>
@@ -118,7 +118,7 @@
                                     <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
                                         <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
                                             <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Exactos') }}
+                                                {{ __('Resultados exactos') }}
                                             </dt>
                                             <dd class="mt-1 text-lg font-black text-gray-950">
                                                 {{ (int) $entry->exact_results_count }}
@@ -136,7 +136,7 @@
 
                                         <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
                                             <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Puntuadas') }}
+                                                {{ __('Predicciones puntuadas') }}
                                             </dt>
                                             <dd class="mt-1 text-lg font-black text-gray-950">
                                                 {{ (int) $entry->scored_predictions_count }}
@@ -158,7 +158,7 @@
                                 {{ __('Gestionar liga') }}
                             </p>
                             <h3 class="mt-1 text-lg font-black text-gray-950">
-                                {{ __('Invitaciones, solicitudes y miembros') }}
+                                {{ __('Invitaciones, solicitudes de ingreso y miembros') }}
                             </h3>
                         </div>
                         <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-bold text-gray-700 transition group-open:bg-indigo-600 group-open:text-white">
@@ -211,12 +211,12 @@
 
                         <section>
                             <h4 class="text-base font-black text-gray-950">
-                                {{ __('Solicitudes pendientes') }}
+                                {{ __('Solicitudes de ingreso pendientes') }}
                             </h4>
 
                             @if ($privateLeague->joinRequests->isEmpty())
                                 <p class="mt-2 text-sm text-gray-600">
-                                    {{ __('Todavia no hay solicitudes para esta liga.') }}
+                                    {{ __('Todavia no hay solicitudes de ingreso para esta liga.') }}
                                 </p>
                             @else
                                 <div class="mt-4 space-y-3">
@@ -228,7 +228,7 @@
                                                         {{ '@'.$joinRequest->user->username }}
                                                     </p>
                                                     <p class="text-xs text-gray-500">
-                                                        {{ __('Solicito acceso el') }} {{ $joinRequest->created_at->format('d/m/Y H:i') }}
+                                                        {{ __('Solicitud de ingreso enviada el') }} {{ $joinRequest->created_at->format('d/m/Y H:i') }}
                                                     </p>
                                                 </div>
 

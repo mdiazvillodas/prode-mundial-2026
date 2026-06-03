@@ -48,7 +48,7 @@
             <section class="space-y-3">
                 @if ($query === '')
                     <div class="rounded-lg border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-600">
-                        {{ __('Busca por nombre o codigo para encontrar una liga privada y solicitar acceso.') }}
+                        {{ __('Busca por nombre o codigo para encontrar una liga privada y solicitar ingreso.') }}
                     </div>
                 @elseif ($privateLeagues->isEmpty())
                     <div class="rounded-lg border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-600">
@@ -79,7 +79,7 @@
                                 </div>
 
                                 <p class="mt-2 text-sm text-gray-600">
-                                    {{ __('Owner') }}: {{ '@'.$privateLeague->owner->username }}
+                                    {{ __('Dueño') }}: {{ '@'.$privateLeague->owner->username }}
                                 </p>
                             </div>
 
@@ -100,7 +100,7 @@
                                     </a>
                                 @elseif ($hasPendingRequest)
                                     <span class="inline-flex items-center justify-center rounded-md bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-200">
-                                        {{ __('Solicitud pendiente') }}
+                                        {{ __('Solicitud de ingreso pendiente') }}
                                     </span>
                                 @elseif ($activeMembershipsCount >= 3)
                                     <span class="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
@@ -115,7 +115,7 @@
                                             type="submit"
                                             class="inline-flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                                         >
-                                            {{ __('Solicitar acceso') }}
+                                            {{ __('Solicitar ingreso') }}
                                         </button>
                                     </form>
                                 @endif

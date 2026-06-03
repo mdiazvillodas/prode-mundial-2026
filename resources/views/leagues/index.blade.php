@@ -6,7 +6,7 @@
                     {{ __('Ligas') }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    {{ __('Compara rankings en la liga general y en tus ligas con amigos.') }}
+                    {{ __('Compara la tabla de posiciones de la Liga general y de tus ligas de amigos.') }}
                 </p>
             </div>
 
@@ -29,7 +29,7 @@
                         class="league-tab-button whitespace-nowrap rounded-full bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition"
                         aria-selected="true"
                     >
-                        {{ __('General') }}
+                        {{ __('Liga general') }}
                     </button>
 
                     @foreach ($privateLeagues as $privateLeague)
@@ -77,7 +77,7 @@
                             {{ __('Liga general') }}
                         </p>
                         <h3 class="text-2xl font-black text-gray-950">
-                            {{ __('Ranking global') }}
+                            {{ __('Tabla de posiciones') }}
                         </h3>
                     </div>
                     <p class="text-sm text-gray-500">
@@ -120,7 +120,7 @@
                                         {{ (int) $entry->total_points }}
                                     </p>
                                     <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                        {{ __('puntos') }}
+                                    {{ __('Puntos') }}
                                     </p>
                                 </div>
                             </div>
@@ -129,7 +129,7 @@
                         <dl class="grid grid-cols-3 gap-2 border-t border-gray-100 p-4 text-center">
                             <div class="rounded-xl bg-emerald-50 px-2 py-3">
                                 <dt class="text-[11px] font-bold uppercase tracking-wide text-emerald-700">
-                                    {{ __('Exactos') }}
+                                    {{ __('Resultados exactos') }}
                                 </dt>
                                 <dd class="mt-1 text-xl font-black text-emerald-950">
                                     {{ (int) $entry->exact_results_count }}
@@ -145,7 +145,7 @@
                             </div>
                             <div class="rounded-xl bg-gray-50 px-2 py-3">
                                 <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                    {{ __('Puntuadas') }}
+                                    {{ __('Predicciones puntuadas') }}
                                 </dt>
                                 <dd class="mt-1 text-xl font-black text-gray-950">
                                     {{ (int) $entry->scored_predictions_count }}
@@ -156,10 +156,10 @@
                 @empty
                     <div class="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
                         <h3 class="text-lg font-bold text-gray-950">
-                            {{ __('Todavia no hay ranking general') }}
+                            {{ __('Todavia no hay tabla de posiciones') }}
                         </h3>
                         <p class="mt-2 text-sm text-gray-600">
-                            {{ __('El ranking se va a completar cuando haya predicciones puntuadas.') }}
+                            {{ __('La tabla de posiciones se va a completar cuando haya predicciones puntuadas.') }}
                         </p>
                     </div>
                 @endforelse
@@ -176,7 +176,7 @@
                                 {{ $privateLeague->name }}
                             </h3>
                             <p class="mt-1 text-sm text-gray-500">
-                                {{ __('Ranking de miembros activos') }}
+                                {{ __('Tabla de posiciones de la liga') }}
                             </p>
                         </div>
                         <a
@@ -217,7 +217,7 @@
                                                 {{ (int) $entry->total_points }}
                                             </p>
                                             <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('puntos') }}
+                                                {{ __('Puntos') }}
                                             </p>
                                         </div>
                                     </div>
@@ -225,7 +225,7 @@
                                     <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
                                         <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
                                             <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Exactos') }}
+                                                {{ __('Resultados exactos') }}
                                             </dt>
                                             <dd class="mt-1 text-lg font-black text-gray-950">
                                                 {{ (int) $entry->exact_results_count }}
@@ -241,7 +241,7 @@
                                         </div>
                                         <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
                                             <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Puntuadas') }}
+                                                {{ __('Predicciones puntuadas') }}
                                             </dt>
                                             <dd class="mt-1 text-lg font-black text-gray-950">
                                                 {{ (int) $entry->scored_predictions_count }}

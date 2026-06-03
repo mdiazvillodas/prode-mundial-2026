@@ -25,7 +25,7 @@
                         {{ $privateLeague->name }}
                     </h3>
                     <p class="mt-2 text-sm text-gray-300">
-                        {{ __('Owner') }}: {{ '@'.$privateLeague->owner->username }}
+                        {{ __('Dueño') }}: {{ '@'.$privateLeague->owner->username }}
                     </p>
                 </div>
 
@@ -52,7 +52,7 @@
 
                     @if ($isOwner)
                         <div class="rounded-md bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
-                            {{ __('Esta es tu liga. No necesitas solicitar acceso.') }}
+                            {{ __('Esta es tu liga. No necesitas solicitar ingreso.') }}
                         </div>
 
                         <a
@@ -74,7 +74,7 @@
                         </a>
                     @elseif ($pendingJoinRequest)
                         <div class="rounded-md bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
-                            {{ __('Ya tenes una solicitud pendiente para esta liga. El owner debe aprobarla.') }}
+                            {{ __('Ya tenes una solicitud de ingreso pendiente para esta liga. El dueño debe aprobarla.') }}
                         </div>
                     @elseif ($activeMembershipsCount >= 3)
                         <div class="rounded-md bg-gray-100 p-4 text-sm text-gray-700">
@@ -83,12 +83,12 @@
                     @else
                         @if ($wasRemoved)
                             <div class="rounded-md bg-gray-100 p-4 text-sm text-gray-700">
-                                {{ __('Habias sido removido de esta liga. Podes enviar una nueva solicitud, pero el owner debe aprobarla nuevamente.') }}
+                                {{ __('Habias sido removido de esta liga. Podes enviar una nueva solicitud de ingreso, pero el dueño debe aprobarla nuevamente.') }}
                             </div>
                         @endif
 
                         <p class="text-sm text-gray-600">
-                            {{ __('Enviar una solicitud no te agrega automaticamente. El owner de la liga tiene que aprobar tu acceso.') }}
+                            {{ __('Enviar una solicitud de ingreso no te agrega automaticamente. El dueño de la liga tiene que aprobar tu acceso.') }}
                         </p>
 
                         <form method="POST" action="{{ route('private-leagues.join-requests.store', $privateLeague) }}">
@@ -97,7 +97,7 @@
                                 type="submit"
                                 class="inline-flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 sm:w-auto"
                             >
-                                {{ __('Solicitar acceso') }}
+                                {{ __('Solicitar ingreso') }}
                             </button>
                         </form>
                     @endif

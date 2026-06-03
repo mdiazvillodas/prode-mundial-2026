@@ -310,8 +310,8 @@ class PrivateLeagueFlowTest extends TestCase
 
         $this->actingAs($owner)->get($url)->assertOk()->assertSee('Esta es tu liga');
         $this->actingAs($member)->get($url)->assertOk()->assertSee('Ya sos miembro activo');
-        $this->actingAs($pendingUser)->get($url)->assertOk()->assertSee('solicitud pendiente');
-        $this->actingAs($newRequester)->get($url)->assertOk()->assertSee('Solicitar acceso');
+        $this->actingAs($pendingUser)->get($url)->assertOk()->assertSee('solicitud de ingreso pendiente');
+        $this->actingAs($newRequester)->get($url)->assertOk()->assertSee('Solicitar ingreso');
     }
 
     public function test_owner_can_remove_member_and_removal_is_audited(): void

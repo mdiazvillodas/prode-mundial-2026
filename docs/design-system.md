@@ -84,9 +84,10 @@ Target app feel:
   - Inicio
   - Predicciones
   - Ligas
-  - Ranking
   - Historial
 - `Predicciones` should be treated as the primary active destination for the v1 user experience.
+- `Ligas` should be treated as the primary ranking and league destination.
+- Do not expose `Ranking` as a competing primary navigation item when `Ligas` already covers the league and ranking experience.
 - Desktop navigation can expand, but should keep the same hierarchy and avoid a crowded Breeze-style link row.
 
 ## Predictions Page Structure
@@ -196,8 +197,9 @@ Examples:
 
 - `Guardar cambios`
 - `Cargar predicciones`
-- `Ver ranking`
-- `Solicitar acceso`
+- `Ver ligas`
+- `Ver tabla`
+- `Solicitar ingreso`
 - `Guardar resultado`
 
 ## Cards And Surfaces
@@ -226,6 +228,9 @@ Examples:
 ## Copy Style
 
 - UI copy should be Spanish-first.
+- Use `Ligas` as the main navigation concept.
+- Use `Liga general` for the global competition and `Liga privada` or `liga de amigos` for private leagues.
+- Use `Ranking de la liga` or `Tabla de posiciones` inside league views.
 - Avoid English terms in app-controlled UI such as `Owner`, `Register`, `Log Out`, and `Profile`.
 - Avoid gambling/betting language.
 - Prefer:
@@ -234,6 +239,10 @@ Examples:
   - puntos
   - liga
   - ranking
+  - Liga general
+  - Liga privada
+  - Tabla de posiciones
+  - Solicitud de ingreso
   - partido
   - clasificado
   - resultado
@@ -242,7 +251,7 @@ Examples:
 
 - Do not redesign all screens at once.
 - First implementation target: `/predictions`.
-- Then dashboard, navigation, history, and leaderboard.
+- Then Inicio, navigation, history, and leagues.
 - Then private league screens.
 - Then admin screens.
 - Keep business logic unchanged during visual tickets.

@@ -3,10 +3,10 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Ranking general') }}
+                    {{ __('Liga general') }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    {{ __('Usuarios ordenados por puntos de predicciones puntuadas.') }}
+                    {{ __('Tabla de posiciones de la liga general, ordenada por puntos de predicciones puntuadas.') }}
                 </p>
             </div>
 
@@ -56,7 +56,7 @@
                                         </p>
                                     @else
                                         <p class="text-sm text-gray-500">
-                                            {{ __('Ranking general') }}
+                                            {{ __('Liga general') }}
                                         </p>
                                     @endif
                                 </div>
@@ -105,10 +105,10 @@
             @empty
                 <div class="rounded-lg bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
                     <h3 class="text-lg font-semibold text-gray-900">
-                        {{ __('Todavia no hay ranking') }}
+                        {{ __('Todavia no hay tabla de posiciones') }}
                     </h3>
                     <p class="mt-2 text-sm text-gray-600">
-                        {{ __('El ranking se va a completar cuando haya predicciones puntuadas.') }}
+                        {{ __('La tabla de posiciones se va a completar cuando haya predicciones puntuadas.') }}
                     </p>
                     <a
                         href="{{ route('predictions.index') }}"
