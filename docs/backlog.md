@@ -2017,6 +2017,59 @@ Redesign the primary /predictions screen using the Prode prediction mock and doc
 Redesign predictions screen from Prode mock
 
 ### Ticket ID
+E11-T01B-1
+
+### Title
+Create unified leagues hub and simplify private league detail UX
+
+### Status
+Done
+
+### Sprint
+Sprint 7
+
+### Priority
+High
+
+### Objective
+Create a unified leagues hub where users can switch between the General League and their active private leagues, and simplify private league detail so ranking is primary while owner management is collapsed.
+
+### Note
+Implementation was already present and verified. /leagues exists as leagues.index, Ligas is the primary navigation destination, General and up to 3 active private leagues are shown in a switcher, /leaderboard remains available, and private league detail prioritizes ranking with owner management collapsed under Gestionar liga.
+
+### Scope
+- Add a unified authenticated leagues hub at /leagues.
+- Show General and up to 3 active private leagues in a mobile-friendly switcher.
+- Keep /leaderboard available for compatibility.
+- Make Ligas the primary navigation destination for ranking and leagues.
+- Prioritize private league ranking and collapse owner-only management content.
+
+### Out of scope
+- No scoring changes.
+- No prediction flow changes.
+- No admin flow changes.
+- No database schema changes.
+- No separate settings route.
+
+### Acceptance criteria
+- Authenticated user can access /leagues.
+- Guest is redirected from /leagues.
+- /leagues defaults to General ranking.
+- /leagues shows up to 3 active private league options for the user.
+- Private league switcher options show private league rankings.
+- User with no private leagues sees useful create/search actions.
+- Navigation exposes Ligas as the primary ranking/leagues destination.
+- /leaderboard still works.
+- Private league detail prioritizes ranking.
+- Owner management information is collapsed or hidden behind a clear section/menu.
+- Owner can still invite, accept/reject requests, remove members and view recent audit activity.
+- Members still see league ranking.
+- Non-members/removed access rules remain enforced.
+
+### Suggested commit message
+Create unified leagues hub
+
+### Ticket ID
 E11-T02A
 
 ### Title
