@@ -137,6 +137,40 @@ Target structure:
 
 Cards should make the main state obvious at a glance: who plays, when, whether it can be predicted, what the current prediction is, and whether there are unsaved changes.
 
+## Semantic group and phase colors
+
+Match-card accent colors must be semantic. Do not assign random colors per match.
+
+For group-stage matches, the card accent color comes from the match group. The group color should be used consistently in:
+
+- the left group band
+- group badge or label
+- subtle background texture/accent
+- small UI accents where appropriate
+
+The color identifies the match context, not the teams and not the individual match. Team colors should not override group colors in match-card structure.
+
+If the group is missing or unknown, use the default neutral/navy style.
+
+For knockout matches, use a neutral knockout / fase eliminatoria style unless a specific phase color map is later defined. Do not invent random phase colors. Use phase labels such as `Octavos`, `Cuartos`, `Semifinal`, and `Final`.
+
+Initial group color map:
+
+- Grupo A: green.
+- Grupo B: blue.
+- Grupo C: red.
+- Grupo D: yellow/gold.
+- Grupo E: navy/deep blue.
+- Grupo F: purple or violet — pending exact token.
+- Grupo G: orange — pending exact token.
+- Grupo H: teal/cyan — pending exact token.
+
+Exact HEX values are still pending unless already defined elsewhere in this document or a future approved token update.
+
+Implementation note:
+
+Future match-card UI work should expose a simple helper or mapping for group colors, for example by group letter/name, instead of scattering conditional Tailwind classes across many views. Keep the implementation simple and compatible with Blade + Tailwind.
+
 ## Score Input Component
 
 - Large numeric inputs.
