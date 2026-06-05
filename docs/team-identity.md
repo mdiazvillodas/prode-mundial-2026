@@ -15,10 +15,31 @@ Flags represent the national identity of each team and are used throughout the U
 ### Implementation
 
 - **Field**: `teams.flag_path` (nullable string)
-- **Format**: Local asset path, e.g., `flags/ar.svg` or `flags/br.png`
-- **Storage**: SVG or PNG files stored in `public/` or `resources/assets/`
+- **Format**: Local asset path, e.g., `flags/arg.svg` or `flags/bra.svg`
+- **Storage**: SVG files stored in `public/flags/`
 - **Type**: Scalable (SVG preferred) or raster
 - **Source**: Curated local collection, not downloaded from API
+
+### Local Asset Convention
+
+Team flags live under:
+
+```text
+public/flags/
+```
+
+Use lowercase SVG filenames based on the football team code or a documented country-code edge case:
+
+```text
+flags/arg.svg
+flags/bra.svg
+flags/eng.svg
+flags/wal.svg
+flags/usa.svg
+flags/mex.svg
+```
+
+The committed SVGs are local static assets. Do not hotlink external flag URLs, do not use FIFA or tournament branding, and do not store image binaries in the database.
 
 ### No Binary Storage
 
@@ -32,9 +53,44 @@ Flags are **never** stored as binary data in the database. This keeps queries fa
 
 To add a team flag:
 
-1. Add the flag file to the assets directory (e.g., `public/flags/ar.svg`)
-2. Update the team record with the relative path: `flag_path = 'flags/ar.svg'`
-3. Use the path in UI templates: `<img src="{{$team->flag_path}}" />`
+1. Add the flag file to `public/flags/` (e.g., `public/flags/arg.svg`)
+2. Update `config/team-flags.php` with the team code, `country_code`, and relative flag path
+3. Run the mapping command to update team records
+4. Use the path in UI templates through the model helper or `asset($team->flag_path)`.
+
+```bash
+php artisan teams:apply-flag-mapping --dry-run
+php artisan teams:apply-flag-mapping --force
+```
+
+Use `--force-update` only when intentionally replacing existing manual `country_code` or `flag_path` values:
+
+```bash
+php artisan teams:apply-flag-mapping --force --force-update
+```
+
+### Code Mapping
+
+`config/team-flags.php` maps known football team codes to local identity fields:
+
+```php
+'ARG' => ['country_code' => 'ARG', 'flag_path' => 'flags/arg.svg'],
+```
+
+The mapping command:
+
+- Sets `country_code` and `flag_path` for known teams.
+- Preserves existing values by default.
+- Reports missing mappings and missing assets without failing the whole run.
+- Does not modify `logo_url`.
+
+Documented edge cases:
+
+- API-Football may use `COS` for Costa Rica; map both `COS` and `CRC` to `flags/crc.svg`.
+- England uses `ENG` and `flags/eng.svg`, not a generic Great Britain flag.
+- Wales uses `WAL` and `flags/wal.svg`, not a generic Great Britain flag.
+- South Korea uses `KOR`.
+- Saudi Arabia uses `KSA`.
 
 ## Logo Management
 
@@ -84,14 +140,18 @@ API response: team.country     -> database: teams.country
 API response: team.code        -> database: teams.short_name
 ```
 
-`teams.country_code` remains a local visual identity field. It is not overwritten by API-Football team sync. The API-Football `venue.country` field describes the team's home stadium location, not the team's national identity, and is not used.
+`teams.country_code` remains a local visual identity field. API-Football team sync may populate it from `config/team-flags.php` only when the field is currently null. It does not overwrite manually set local identity values. The API-Football `venue.country` field describes the team's home stadium location, not the team's national identity, and is not used.
 
 ## User Interface
 
 ### Displaying Flags
 
 ```blade
-<img src="{{ $team->flag_path }}" alt="{{ $team->name }}" class="team-flag" />
+@if ($team->hasFlag())
+    <img src="{{ $team->flagUrl() }}" alt="{{ $team->name }}" class="team-flag" />
+@else
+    <span>{{ $team->displayCode() }}</span>
+@endif
 ```
 
 ### Displaying Logos
@@ -116,9 +176,15 @@ If an asset is missing or unavailable:
    - Populate `logo_url` from `team.logo`
    - Populate `country` from `team.country`
    - Record `last_synced_at`
-   - Preserve `country_code` and `flag_path`
+   - Populate `country_code` and `flag_path` from local mapping only when null
+   - Preserve existing manual `country_code` and `flag_path`
 
-2. **UI rendering**: Read from database
+2. **Flag mapping command** (E15-T03): Apply local mappings to existing teams
+   - Run `php artisan teams:apply-flag-mapping --dry-run`
+   - Run `php artisan teams:apply-flag-mapping --force`
+   - Use `--force-update` only for deliberate manual replacement
+
+3. **UI rendering**: Read from database
    - Display `flag_path` for national flag (local asset)
    - Display `logo_url` for team brand logo (external URL)
    - Display `name` as team name
@@ -127,7 +193,7 @@ If an asset is missing or unavailable:
 ## Constraints
 
 - Flags must be created/maintained locally; do not depend on API
-- API team sync must not overwrite `flag_path` or `country_code`
+- API team sync must not overwrite non-null `flag_path` or `country_code`
 - Logos must never be stored as binary data
 - URLs and paths must be valid and accessible from the browser
 - Do not store credentials or authentication tokens in logo/flag URLs

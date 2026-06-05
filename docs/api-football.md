@@ -117,6 +117,8 @@ The command:
 - Detects top-level API-Football `errors`, including HTTP 200 logical errors.
 - Creates, updates, links, or skips teams conservatively.
 - Does not delete local teams missing from the API response.
+- May populate local `country_code` and `flag_path` from `config/team-flags.php` only when those fields are null.
+- Preserves existing manual `country_code` and `flag_path`.
 - Ignores `venue.*` data from the teams endpoint.
 - Does not sync fixtures, results, predictions, rankings, or admin data.
 
@@ -212,14 +214,14 @@ API-Football `/teams?league=1&season=2026` returns:
 response[]
   team.id           -> database: api_team_id
   team.name         -> database: name
-  team.code         -> database: short_name. This value is considered an external/API short code and is **not** used as the app's canonical `country_code` or `flag_path`. `teams.country_code` and `teams.flag_path` are local visual identity helpers and are not overwritten by team sync.
+  team.code         -> database: short_name. This value is considered an external/API short code and is **not** stored directly as the app's canonical `country_code` or `flag_path`. `teams.country_code` and `teams.flag_path` are local visual identity helpers populated from local mapping only when null.
   team.country      -> database: country
   team.national     -> database: (unused - boolean flag)
-  team.logo         -> database: logo_url (external URL reference only)
+  team.logo         -> database: logo_url (external URL reference only, not the local team flag)
   venue.*           -> database: (unused - venue data is not used for national team identity)
 ```
 
-**Important**: The `venue` data in the teams endpoint describes the team's home stadium, not the team's country. It is not used for national team identity. The app tracks team flags separately via `flag_path` (local asset) and `logo_url` (external reference).
+**Important**: The `venue` data in the teams endpoint describes the team's home stadium, not the team's country. It is not used for national team identity. The app tracks team flags separately via `flag_path` (local asset) and `logo_url` (external API-Football reference). `logo_url` is not a substitute for the local `flag_path`.
 
 **Teams mapping into database**:
 
@@ -229,8 +231,8 @@ response[]
 - `short_name`: team.code (string, API short code)
 - `country`: team.country (string, from API response)
 - `logo_url`: team.logo (string, external URL reference)
-- `country_code`: preserved local field, not overwritten by API sync
-- `flag_path`: preserved local field, local asset path such as flags/ar.svg
+- `country_code`: local field populated from `config/team-flags.php` only when null, not overwritten by API sync
+- `flag_path`: local asset path such as `flags/arg.svg`, populated from `config/team-flags.php` only when null
 - `last_synced_at`: (datetime, timestamp of last sync)
 
 A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_team_id'])`.

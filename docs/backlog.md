@@ -2944,6 +2944,76 @@ Run the staging QA process and produce a concise report for release readiness.
 ### Suggested commit message
 Run staging QA report
 
+## EPIC 15 - Team identity and local assets
+
+### Ticket ID
+E15-T03
+
+### Title
+Add local flag assets and team flag mapping
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add a local flag asset strategy and maintainable team-code mapping so teams can display stable local national flags without depending on API-Football logo URLs.
+
+### Note
+Implemented with local SVG assets in `public/flags/`, `config/team-flags.php`, `App\Support\TeamFlagMapping`, `Team` display helpers, and `php artisan teams:apply-flag-mapping`. API-Football team sync now applies mapped `country_code` and `flag_path` only when those local fields are null, while preserving existing manual values and `logo_url`.
+
+### Scope
+- Add local SVG flag assets under `public/flags/`.
+- Add mapping for current seeded teams and the 2022 API-tested World Cup teams.
+- Support API-Football edge cases including `COS`/`CRC`, `ENG`, `WAL`, `KOR`, and `KSA`.
+- Add `teams:apply-flag-mapping` with `--dry-run`, `--force`, and `--force-update`.
+- Add model/helper methods for flag URL, flag presence, and display code fallback.
+- Integrate safe null-only mapping into API team sync.
+- Update team identity and API-Football documentation.
+- Add tests for mapping, command behavior, preservation, and API sync integration.
+
+### Out of scope
+- No UI flag display changes beyond helper methods.
+- No prediction, scoring, league, admin, route, or fixture-sync behavior changes.
+- No external APIs, packages, snapshots, or protected tournament branding.
+- No image binaries in the database.
+
+### Acceptance criteria
+- `public/flags` contains local SVG flag assets for mapped teams.
+- `teams:apply-flag-mapping` exists and works.
+- Existing synced teams can receive `country_code` and `flag_path`.
+- Existing manual `country_code` and `flag_path` are preserved by default.
+- Tests cover mapping and command behavior.
+
+### Suggested commit message
+Add local team flag mapping
+
+### Ticket ID
+E15-T04
+
+### Title
+Show flags in match cards and team UI
+
+### Status
+Todo
+
+### Sprint
+Future
+
+### Priority
+Medium
+
+### Objective
+Use local team flags in match cards, predictions, calendar, rankings, and team-facing UI where they improve scan speed.
+
+### Suggested commit message
+Show local team flags
+
 ## EPIC 16 - API-Football integration
 
 ### Ticket ID

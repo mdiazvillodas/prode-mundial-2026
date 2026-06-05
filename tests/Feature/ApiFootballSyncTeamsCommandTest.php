@@ -190,6 +190,63 @@ class ApiFootballSyncTeamsCommandTest extends TestCase
         $this->assertSame('https://media.example/arg.png', $team->logo_url);
     }
 
+    public function test_flag_mapping_is_applied_when_local_identity_fields_are_null(): void
+    {
+        $this->configureApiFootball();
+
+        Team::factory()->create([
+            'name' => 'Argentina',
+            'short_name' => 'ARG',
+            'country_code' => null,
+            'flag_path' => null,
+            'api_provider' => null,
+            'api_team_id' => null,
+        ]);
+
+        Http::fake([
+            'https://example.test/teams*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->teamPayload(10, 'Argentina', 'ARG', 'Argentina', 'https://media.example/arg.png'),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-teams --force')
+            ->assertSuccessful();
+
+        $team = Team::query()->firstOrFail();
+
+        $this->assertSame('ARG', $team->country_code);
+        $this->assertSame('flags/arg.svg', $team->flag_path);
+        $this->assertSame('https://media.example/arg.png', $team->logo_url);
+    }
+
+    public function test_created_api_team_receives_flag_mapping_when_available(): void
+    {
+        $this->configureApiFootball();
+
+        Http::fake([
+            'https://example.test/teams*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->teamPayload(20, 'Brazil', 'BRA', 'Brazil', 'https://media.example/bra.png'),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-teams --force')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('teams', [
+            'api_provider' => 'api-football',
+            'api_team_id' => 20,
+            'country_code' => 'BRA',
+            'flag_path' => 'flags/bra.svg',
+            'logo_url' => 'https://media.example/bra.png',
+        ]);
+    }
+
     public function test_venue_data_is_ignored(): void
     {
         $this->configureApiFootball();
@@ -216,7 +273,8 @@ class ApiFootballSyncTeamsCommandTest extends TestCase
         $this->assertSame('Argentina', $team->country);
         $this->assertSame('Argentina', $team->name);
         $this->assertSame('ARG', $team->short_name);
-        $this->assertNull($team->country_code);
+        $this->assertSame('ARG', $team->country_code);
+        $this->assertSame('flags/arg.svg', $team->flag_path);
     }
 
     public function test_command_makes_only_expected_api_request(): void

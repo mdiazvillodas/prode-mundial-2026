@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Team;
+use App\Support\TeamFlagMapping;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -256,7 +257,13 @@ class ApiFootballSyncTeamsCommand extends Command
             'last_synced_at' => now(),
         ];
 
+        $flagMapping = TeamFlagMapping::forCode($shortName);
+
         if (! $existing) {
+            if ($flagMapping !== null && TeamFlagMapping::assetExists($flagMapping['flag_path'])) {
+                $values += $flagMapping;
+            }
+
             if (! $dryRun) {
                 Team::query()->create($values);
             }
@@ -273,6 +280,16 @@ class ApiFootballSyncTeamsCommand extends Command
         $values['short_name'] = $shortName ?? $existing->short_name;
         $values['country'] = $country ?? $existing->country;
         $values['logo_url'] = $logoUrl ?? $existing->logo_url;
+
+        if ($flagMapping !== null && TeamFlagMapping::assetExists($flagMapping['flag_path'])) {
+            if (blank($existing->country_code)) {
+                $values['country_code'] = $flagMapping['country_code'];
+            }
+
+            if (blank($existing->flag_path)) {
+                $values['flag_path'] = $flagMapping['flag_path'];
+            }
+        }
 
         if ($existing->api_team_id !== null && (int) $existing->api_team_id !== $apiTeamId) {
             return [

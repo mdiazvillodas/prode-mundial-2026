@@ -28,4 +28,24 @@ class Team extends Model
             'last_synced_at' => 'datetime',
         ];
     }
+
+    public function hasFlag(): bool
+    {
+        return filled($this->flag_path);
+    }
+
+    public function flagUrl(): ?string
+    {
+        if (! $this->hasFlag()) {
+            return null;
+        }
+
+        return asset($this->flag_path);
+    }
+
+    public function displayCode(): string
+    {
+        return $this->short_name
+            ?: ($this->country_code ?: strtoupper(substr($this->name, 0, 3)));
+    }
 }
