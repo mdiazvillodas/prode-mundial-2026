@@ -28,6 +28,13 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+        'transactional_from_email' => env('BREVO_TRANSACTIONAL_FROM_EMAIL', env('MAIL_FROM_ADDRESS')),
+        'transactional_from_name' => env('BREVO_TRANSACTIONAL_FROM_NAME', env('MAIL_FROM_NAME', 'Mi Prode')),
+        'api_timeout' => (int) env('BREVO_API_TIMEOUT', 10),
+    ],
+
     'api_football' => [
         'base_url' => env('API_FOOTBALL_BASE_URL', 'https://v3.football.api-sports.io'),
         'key' => env('API_FOOTBALL_KEY'),

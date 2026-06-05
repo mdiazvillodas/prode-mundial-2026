@@ -2,18 +2,21 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Mail\EmailVerificationCodeMail;
 use App\Models\User;
-use App\Services\EmailVerificationCodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use RuntimeException;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    private array $brevoPayloads = [];
 
     public function test_registration_screen_can_be_rendered(): void
     {
@@ -24,7 +27,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $response = $this->post('/register', [
             'name' => 'Test User',
@@ -36,7 +40,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('verification.code.show', absolute: false));
-        Mail::assertSent(EmailVerificationCodeMail::class);
+        $this->assertBrevoSentTo('test@example.com', 'Test User');
     }
 
     public function test_register_page_includes_csrf_token(): void
@@ -49,7 +53,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register_with_fresh_session_csrf_token(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
         $this->withMiddleware();
 
         $this->get('/register')->assertOk();
@@ -67,42 +72,81 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('verification.code.show', absolute: false));
         $this->assertDatabaseHas('users', ['email' => 'fresh@example.com']);
-        Mail::assertSent(EmailVerificationCodeMail::class);
+        $this->assertBrevoSentTo('fresh@example.com', 'Fresh Session');
     }
 
-    public function test_registration_mail_failure_redirects_to_verification_without_500(): void
+    public function test_registration_missing_brevo_api_key_redirects_to_verification_without_500(): void
     {
-        Log::spy();
-
-        $this->mock(EmailVerificationCodeService::class, function ($mock): void {
-            $mock->shouldReceive('sendCode')
-                ->once()
-                ->andThrow(new RuntimeException('SMTP failed'));
-        });
+        config(['services.brevo.api_key' => null]);
+        Http::fake();
 
         $response = $this->post('/register', [
-            'name' => 'Mail Failure',
-            'username' => 'mailfailure',
-            'email' => 'mail-failure@example.com',
+            'name' => 'Missing Brevo',
+            'username' => 'missingbrevo',
+            'email' => 'missing-brevo@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
-        $user = User::query()->where('email', 'mail-failure@example.com')->firstOrFail();
+        $user = User::query()->where('email', 'missing-brevo@example.com')->firstOrFail();
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('verification.code.show', absolute: false));
         $response->assertSessionHas('error', 'Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.');
-        Log::shouldHaveReceived('error')
-            ->once()
-            ->withArgs(fn (string $message, array $context): bool => $message === 'Failed to send verification code after registration.'
-                && ($context['user_id'] ?? null) === $user->id
-                && ($context['exception'] ?? null) instanceof RuntimeException);
+        Http::assertNothingSent();
+    }
+
+    public function test_registration_brevo_non_2xx_response_redirects_to_verification_without_500(): void
+    {
+        $this->configureBrevo();
+
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => Http::response(['message' => 'Unauthorized'], 401),
+        ]);
+
+        $response = $this->post('/register', [
+            'name' => 'Brevo Error',
+            'username' => 'brevoerror',
+            'email' => 'brevo-error@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::query()->where('email', 'brevo-error@example.com')->firstOrFail();
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('verification.code.show', absolute: false));
+        $response->assertSessionHas('error', 'Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.');
+        Http::assertSentCount(1);
+    }
+
+    public function test_registration_brevo_connection_exception_redirects_to_verification_without_500(): void
+    {
+        $this->configureBrevo();
+
+        Http::fake(function (): never {
+            throw new ConnectionException('Connection timed out');
+        });
+
+        $response = $this->post('/register', [
+            'name' => 'Brevo Timeout',
+            'username' => 'brevotimeout',
+            'email' => 'brevo-timeout@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::query()->where('email', 'brevo-timeout@example.com')->firstOrFail();
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('verification.code.show', absolute: false));
+        $response->assertSessionHas('error', 'Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.');
     }
 
     public function test_users_can_not_register_with_duplicate_username(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $this->post('/register', [
             'name' => 'Test User',
@@ -123,5 +167,43 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('username');
+    }
+
+    private function configureBrevo(): void
+    {
+        config([
+            'services.brevo.api_key' => 'fake-brevo-key',
+            'services.brevo.transactional_from_email' => 'no-reply@miprode.es',
+            'services.brevo.transactional_from_name' => 'Mi Prode',
+            'services.brevo.api_timeout' => 10,
+        ]);
+    }
+
+    private function fakeSuccessfulBrevo(): void
+    {
+        $this->brevoPayloads = [];
+
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => function (Request $request) {
+                $this->brevoPayloads[] = $request->data();
+
+                return Http::response(['messageId' => 'brevo-message-id'], 201);
+            },
+        ]);
+    }
+
+    private function assertBrevoSentTo(string $email, string $name): void
+    {
+        Http::assertSentCount(count($this->brevoPayloads));
+
+        $this->assertNotEmpty($this->brevoPayloads);
+        $payload = end($this->brevoPayloads);
+
+        $this->assertSame('no-reply@miprode.es', $payload['sender']['email']);
+        $this->assertSame('Mi Prode', $payload['sender']['name']);
+        $this->assertSame($email, $payload['to'][0]['email']);
+        $this->assertSame($name, $payload['to'][0]['name']);
+        $this->assertSame('Tu código de verificación de Mi Prode', $payload['subject']);
+        $this->assertMatchesRegularExpression('/\b\d{6}\b/', $payload['textContent']);
     }
 }

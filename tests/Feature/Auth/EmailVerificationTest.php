@@ -2,25 +2,29 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Mail\EmailVerificationCodeMail;
 use App\Models\EmailVerificationCode;
 use App\Models\User;
-use App\Services\EmailVerificationCodeService;
 use Database\Seeders\StagingDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use RuntimeException;
 use Tests\TestCase;
 
 class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_creates_and_sends_verification_code_mail(): void
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    private array $brevoPayloads = [];
+
+    public function test_registration_creates_and_sends_verification_code_through_brevo_api(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $this->post('/register', [
             'name' => 'Test User',
@@ -32,15 +36,12 @@ class EmailVerificationTest extends TestCase
 
         $user = User::query()->where('email', 'test@example.com')->firstOrFail();
         $verificationCode = EmailVerificationCode::query()->whereBelongsTo($user)->firstOrFail();
+        $plainCode = $this->latestBrevoCode();
 
-        Mail::assertSent(EmailVerificationCodeMail::class, function (EmailVerificationCodeMail $mail) use ($user, $verificationCode): bool {
-            $this->assertSame($user->email, $mail->hasTo($user->email) ? $user->email : null);
-            $this->assertMatchesRegularExpression('/^\d{6}$/', $mail->code);
-            $this->assertNotSame($mail->code, $verificationCode->code_hash);
-            $this->assertTrue(Hash::check($mail->code, $verificationCode->code_hash));
-
-            return $mail->user->is($user);
-        });
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $plainCode);
+        $this->assertNotSame($plainCode, $verificationCode->code_hash);
+        $this->assertTrue(Hash::check($plainCode, $verificationCode->code_hash));
+        $this->assertSame('test@example.com', $this->latestBrevoPayload()['to'][0]['email']);
 
         $this->assertAuthenticatedAs($user);
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
@@ -70,7 +71,8 @@ class EmailVerificationTest extends TestCase
 
     public function test_valid_code_verifies_email(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $user = User::factory()->unverified()->create();
         $plainCode = $this->sendAndCaptureCode($user);
@@ -85,7 +87,8 @@ class EmailVerificationTest extends TestCase
 
     public function test_invalid_code_fails(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $user = User::factory()->unverified()->create();
         $this->sendAndCaptureCode($user);
@@ -117,7 +120,8 @@ class EmailVerificationTest extends TestCase
 
     public function test_used_code_cannot_be_reused(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $user = User::factory()->unverified()->create();
         $plainCode = $this->sendAndCaptureCode($user);
@@ -135,9 +139,10 @@ class EmailVerificationTest extends TestCase
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
 
-    public function test_resend_code_sends_new_mail_and_supersedes_previous_code(): void
+    public function test_resend_code_sends_new_brevo_email_and_supersedes_previous_code(): void
     {
-        Mail::fake();
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
 
         $user = User::factory()->unverified()->create();
         $oldCode = $this->sendAndCaptureCode($user);
@@ -146,7 +151,7 @@ class EmailVerificationTest extends TestCase
             ->post(route('verification.code.resend'))
             ->assertRedirect();
 
-        Mail::assertSent(EmailVerificationCodeMail::class, 2);
+        Http::assertSentCount(2);
 
         $this->actingAs($user)
             ->post(route('verification.code.verify'), ['code' => $oldCode])
@@ -157,52 +162,65 @@ class EmailVerificationTest extends TestCase
         $this->assertSame(1, EmailVerificationCode::query()->whereBelongsTo($user)->whereNull('used_at')->count());
     }
 
-    public function test_resend_code_mail_failure_redirects_without_500(): void
+    public function test_resend_code_missing_brevo_api_key_redirects_without_500(): void
     {
-        Log::spy();
-
         $user = User::factory()->unverified()->create();
-
-        $this->mock(EmailVerificationCodeService::class, function ($mock): void {
-            $mock->shouldReceive('sendCode')
-                ->once()
-                ->andThrow(new RuntimeException('SMTP failed'));
-        });
+        config(['services.brevo.api_key' => null]);
+        Http::fake();
 
         $this->actingAs($user)
             ->post(route('verification.code.resend'))
             ->assertRedirect()
             ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
 
-        Log::shouldHaveReceived('error')
-            ->once()
-            ->withArgs(fn (string $message, array $context): bool => $message === 'Failed to resend verification code.'
-                && ($context['user_id'] ?? null) === $user->id
-                && ($context['exception'] ?? null) instanceof RuntimeException);
+        Http::assertNothingSent();
     }
 
-    public function test_verification_notification_mail_failure_redirects_without_500(): void
+    public function test_resend_code_brevo_non_2xx_response_redirects_without_500(): void
     {
-        Log::spy();
-
+        $this->configureBrevo();
         $user = User::factory()->unverified()->create();
 
-        $this->mock(EmailVerificationCodeService::class, function ($mock): void {
-            $mock->shouldReceive('sendCode')
-                ->once()
-                ->andThrow(new RuntimeException('SMTP failed'));
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => Http::response(['message' => 'Unauthorized'], 401),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_resend_code_brevo_connection_exception_redirects_without_500(): void
+    {
+        $this->configureBrevo();
+        $user = User::factory()->unverified()->create();
+
+        Http::fake(function (): never {
+            throw new ConnectionException('Connection timed out');
         });
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+    }
+
+    public function test_verification_notification_brevo_failure_redirects_without_500(): void
+    {
+        $this->configureBrevo();
+        $user = User::factory()->unverified()->create();
+
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => Http::response(['message' => 'Unauthorized'], 401),
+        ]);
 
         $this->actingAs($user)
             ->post(route('verification.send'))
             ->assertRedirect()
             ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
-
-        Log::shouldHaveReceived('error')
-            ->once()
-            ->withArgs(fn (string $message, array $context): bool => $message === 'Failed to resend verification notification code.'
-                && ($context['user_id'] ?? null) === $user->id
-                && ($context['exception'] ?? null) instanceof RuntimeException);
     }
 
     public function test_demo_seeded_users_are_verified(): void
@@ -230,20 +248,54 @@ class EmailVerificationTest extends TestCase
     {
         app(\App\Services\EmailVerificationCodeService::class)->sendCode($user);
 
-        $plainCode = null;
+        return $this->latestBrevoCode();
+    }
 
-        Mail::assertSent(EmailVerificationCodeMail::class, function (EmailVerificationCodeMail $mail) use ($user, &$plainCode): bool {
-            if (! $mail->user->is($user)) {
-                return false;
-            }
+    private function configureBrevo(): void
+    {
+        config([
+            'services.brevo.api_key' => 'fake-brevo-key',
+            'services.brevo.transactional_from_email' => 'no-reply@miprode.es',
+            'services.brevo.transactional_from_name' => 'Mi Prode',
+            'services.brevo.api_timeout' => 10,
+        ]);
+    }
 
-            $plainCode = $mail->code;
+    private function fakeSuccessfulBrevo(): void
+    {
+        $this->brevoPayloads = [];
 
-            return true;
-        });
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => function (Request $request) {
+                $this->brevoPayloads[] = $request->data();
 
-        $this->assertIsString($plainCode);
+                return Http::response(['messageId' => 'brevo-message-id'], 201);
+            },
+        ]);
+    }
 
-        return $plainCode;
+    /**
+     * @return array<string, mixed>
+     */
+    private function latestBrevoPayload(): array
+    {
+        $this->assertNotEmpty($this->brevoPayloads);
+
+        $payload = end($this->brevoPayloads);
+
+        $this->assertIsArray($payload);
+
+        return $payload;
+    }
+
+    private function latestBrevoCode(): string
+    {
+        $payload = $this->latestBrevoPayload();
+
+        preg_match('/\b(\d{6})\b/', (string) $payload['textContent'], $matches);
+
+        $this->assertArrayHasKey(1, $matches);
+
+        return $matches[1];
     }
 }

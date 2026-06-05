@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Mail\EmailVerificationCodeMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
@@ -133,8 +133,17 @@ class GoogleAuthTest extends TestCase
 
     public function test_google_callback_sends_code_when_google_email_is_explicitly_unverified(): void
     {
-        Mail::fake();
         $this->configureGoogle();
+        $this->configureBrevo();
+
+        $brevoPayloads = [];
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => function (Request $request) use (&$brevoPayloads) {
+                $brevoPayloads[] = $request->data();
+
+                return Http::response(['messageId' => 'brevo-message-id'], 201);
+            },
+        ]);
 
         $this->mockGoogleUser($this->googleUser(
             id: 'google-unverified',
@@ -150,7 +159,8 @@ class GoogleAuthTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $this->assertFalse($user->hasVerifiedEmail());
-        Mail::assertSent(EmailVerificationCodeMail::class);
+        Http::assertSentCount(1);
+        $this->assertSame('pendiente@example.com', $brevoPayloads[0]['to'][0]['email']);
     }
 
     public function test_traditional_login_still_works(): void
@@ -206,6 +216,16 @@ class GoogleAuthTest extends TestCase
             'services.google.client_id' => 'client-id',
             'services.google.client_secret' => 'client-secret',
             'services.google.redirect' => 'http://localhost/auth/google/callback',
+        ]);
+    }
+
+    private function configureBrevo(): void
+    {
+        config([
+            'services.brevo.api_key' => 'fake-brevo-key',
+            'services.brevo.transactional_from_email' => 'no-reply@miprode.es',
+            'services.brevo.transactional_from_name' => 'Mi Prode',
+            'services.brevo.api_timeout' => 10,
         ]);
     }
 

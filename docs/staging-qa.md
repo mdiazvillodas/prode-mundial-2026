@@ -303,8 +303,14 @@ Email verification by code QA:
 - Email/password registration sends a 6-digit verification code and redirects the user to `/email/verify-code`.
 - New registered users must verify their email before accessing dashboard, predictions, leagues, calendar, history, profile, or admin areas.
 - Verification codes are stored hashed, expire after 15 minutes, and are invalidated when a new code is resent.
-- Local and automated tests use `Mail::fake()` or local mail logging and do not require Brevo.
-- Railway staging needs real SMTP variables before manual registration emails can be delivered. Current Brevo SMTP shape: `MAIL_MAILER=smtp`, `MAIL_HOST=smtp-relay.brevo.com`, `MAIL_PORT=587`, `MAIL_ENCRYPTION=tls`, `MAIL_FROM_ADDRESS=no-reply@miprode.es`, and `MAIL_FROM_NAME="Mi Prode"`. `MAIL_USERNAME` and `MAIL_PASSWORD` must be configured as Railway secrets, never hardcoded or committed.
+- Verification emails use the Brevo Transactional Email HTTP API, not SMTP. Railway staging hit socket timeouts with Brevo SMTP (`smtp-relay.brevo.com`) on ports 587 and 2525.
+- Local and automated tests use `Http::fake()` for Brevo and never call the real Brevo API.
+- Required Railway variables for verification email delivery:
+  - `BREVO_API_KEY`
+  - `BREVO_TRANSACTIONAL_FROM_EMAIL=no-reply@miprode.es`
+  - `BREVO_TRANSACTIONAL_FROM_NAME="Mi Prode"`
+  - `BREVO_API_TIMEOUT=10`
+- `MAIL_MAILER` can remain `log` unless other Laravel emails need SMTP. Verification-code delivery does not use Laravel Mail/SMTP.
 - Staging demo users remain verified after `php artisan demo:reset-staging --force`, so Playwright smoke can log in with the documented demo accounts without completing email verification.
 
 Browser and reporting targets:

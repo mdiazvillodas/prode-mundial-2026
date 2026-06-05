@@ -2,16 +2,18 @@
 
 namespace App\Services;
 
-use App\Mail\EmailVerificationCodeMail;
 use App\Models\EmailVerificationCode;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 
 class EmailVerificationCodeService
 {
     public const EXPIRES_IN_MINUTES = 15;
+
+    public function __construct(private BrevoTransactionalEmailService $brevoEmails)
+    {
+    }
 
     public function sendCode(User $user): EmailVerificationCode
     {
@@ -30,7 +32,7 @@ class EmailVerificationCodeService
             ]);
         });
 
-        Mail::to($user->email)->send(new EmailVerificationCodeMail($user, $plainCode));
+        $this->brevoEmails->sendVerificationCode($user, $plainCode);
 
         return $verificationCode;
     }
