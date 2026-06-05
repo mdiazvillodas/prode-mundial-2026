@@ -9,10 +9,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class RegisteredUserController extends Controller
 {
@@ -51,9 +53,19 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        $verificationCodes->sendCode($user);
+        try {
+            $verificationCodes->sendCode($user);
 
-        return redirect(route('verification.code.show', absolute: false))
-            ->with('status', 'verification-code-sent');
+            return redirect(route('verification.code.show', absolute: false))
+                ->with('status', 'verification-code-sent');
+        } catch (Throwable $exception) {
+            Log::error('Failed to send verification code after registration.', [
+                'user_id' => $user->id,
+                'exception' => $exception,
+            ]);
+
+            return redirect(route('verification.code.show', absolute: false))
+                ->with('error', __('Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.'));
+        }
     }
 }

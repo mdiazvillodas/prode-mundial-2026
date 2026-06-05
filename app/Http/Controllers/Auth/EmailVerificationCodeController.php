@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\EmailVerificationCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class EmailVerificationCodeController extends Controller
 {
@@ -49,8 +51,17 @@ class EmailVerificationCodeController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        $verificationCodes->sendCode($request->user());
+        try {
+            $verificationCodes->sendCode($request->user());
 
-        return back()->with('status', 'verification-code-sent');
+            return back()->with('status', 'verification-code-sent');
+        } catch (Throwable $exception) {
+            Log::error('Failed to resend verification code.', [
+                'user_id' => $request->user()->id,
+                'exception' => $exception,
+            ]);
+
+            return back()->with('error', __('No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.'));
+        }
     }
 }

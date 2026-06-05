@@ -5,10 +5,13 @@ namespace Tests\Feature\Auth;
 use App\Mail\EmailVerificationCodeMail;
 use App\Models\EmailVerificationCode;
 use App\Models\User;
+use App\Services\EmailVerificationCodeService;
 use Database\Seeders\StagingDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 use Tests\TestCase;
 
 class EmailVerificationTest extends TestCase
@@ -152,6 +155,54 @@ class EmailVerificationTest extends TestCase
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
         $this->assertSame(2, EmailVerificationCode::query()->whereBelongsTo($user)->count());
         $this->assertSame(1, EmailVerificationCode::query()->whereBelongsTo($user)->whereNull('used_at')->count());
+    }
+
+    public function test_resend_code_mail_failure_redirects_without_500(): void
+    {
+        Log::spy();
+
+        $user = User::factory()->unverified()->create();
+
+        $this->mock(EmailVerificationCodeService::class, function ($mock): void {
+            $mock->shouldReceive('sendCode')
+                ->once()
+                ->andThrow(new RuntimeException('SMTP failed'));
+        });
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+
+        Log::shouldHaveReceived('error')
+            ->once()
+            ->withArgs(fn (string $message, array $context): bool => $message === 'Failed to resend verification code.'
+                && ($context['user_id'] ?? null) === $user->id
+                && ($context['exception'] ?? null) instanceof RuntimeException);
+    }
+
+    public function test_verification_notification_mail_failure_redirects_without_500(): void
+    {
+        Log::spy();
+
+        $user = User::factory()->unverified()->create();
+
+        $this->mock(EmailVerificationCodeService::class, function ($mock): void {
+            $mock->shouldReceive('sendCode')
+                ->once()
+                ->andThrow(new RuntimeException('SMTP failed'));
+        });
+
+        $this->actingAs($user)
+            ->post(route('verification.send'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+
+        Log::shouldHaveReceived('error')
+            ->once()
+            ->withArgs(fn (string $message, array $context): bool => $message === 'Failed to resend verification notification code.'
+                && ($context['user_id'] ?? null) === $user->id
+                && ($context['exception'] ?? null) instanceof RuntimeException);
     }
 
     public function test_demo_seeded_users_are_verified(): void
