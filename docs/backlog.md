@@ -2552,3 +2552,196 @@ Prepare the Laravel app for deployment on Railway with Caddy / FrankenPHP.
 
 ### Suggested commit message
 chore: prepare railway deployment
+
+### Ticket ID
+E14-T02A
+
+### Title
+Document staging QA strategy
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Create a maintainable staging QA strategy for validating the product on Railway staging before production.
+
+### Scope
+- Create `docs/staging-qa.md`.
+- Document staging/local/production environment separation.
+- Document safety rules for demo data and destructive commands.
+- Define future demo data, result simulation, reset/seed flow, and Playwright QA strategy.
+- Add follow-up QA tickets for implementation.
+
+### Out of scope
+- No application code.
+- No seeders.
+- No Artisan commands.
+- No Playwright installation.
+- No migrations, models, controllers, routes, or views.
+
+### Acceptance criteria
+- `docs/staging-qa.md` exists.
+- Staging QA phases, safety rules, future commands, and manual smoke checklist are documented.
+- Follow-up QA tickets are listed in the backlog.
+- Future feature work has a QA maintenance rule.
+
+### Suggested commit message
+Document staging QA strategy
+
+### Ticket ID
+E14-T02B
+
+### Title
+Add staging demo seed and safe reset command
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Create deterministic staging demo data and a safe reset flow for Railway staging QA.
+
+### Scope
+- Add a staging demo seeder or equivalent deterministic demo data flow.
+- Include demo users, tournament data, matches, predictions, private leagues, memberships, and useful join requests.
+- Add a safe reset command or documented command flow for staging.
+- Block destructive reset behavior outside local, testing, and staging.
+
+### Out of scope
+- No Playwright tests.
+- No production data changes.
+- No external API integration.
+
+### Acceptance criteria
+- Staging can be reset to a known QA state.
+- Demo data supports pre-results and post-results QA scenarios.
+- Destructive commands cannot run in production/live.
+
+### Suggested commit message
+Add staging demo data reset
+
+### Ticket ID
+E14-T02C
+
+### Title
+Add demo result simulation command
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Simulate API-like match result arrival for staging QA.
+
+### Scope
+- Add a command such as `php artisan demo:simulate-results --scenario=group-day-1`.
+- Apply result data to selected matches.
+- Set `winner_team_id`.
+- Mark matches finished.
+- Reuse existing settlement/scoring logic.
+- Keep repeated execution safe where possible.
+
+### Out of scope
+- No external API provider.
+- No scoring rule changes.
+- No Playwright tests.
+
+### Acceptance criteria
+- Simulated results update matches and prediction points.
+- Rankings and history reflect simulated results.
+- Command is blocked in production/live.
+
+### Suggested commit message
+Add demo result simulation
+
+### Ticket ID
+E14-T02D
+
+### Title
+Add Playwright staging QA smoke suite
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add a Playwright smoke suite that can run against Railway staging with a configurable `BASE_URL`.
+
+### Scope
+- Add Playwright setup.
+- Cover auth smoke, prediction pre-results flow, private league flow, admin result flow, post-results ranking/history flow, and navigation/mobile smoke.
+- Use Chromium first.
+- Capture screenshots/traces on failure.
+- Generate an HTML report.
+
+### Out of scope
+- No production execution by default.
+- No exhaustive browser matrix.
+- No load testing.
+
+### Acceptance criteria
+- Playwright smoke suite runs against staging.
+- Tests use stable staging demo users/data.
+- Report artifacts are generated.
+
+### Suggested commit message
+Add staging Playwright smoke tests
+
+### Ticket ID
+E14-T02E
+
+### Title
+Run staging QA and produce report
+
+### Status
+Todo
+
+### Sprint
+Sprint 8
+
+### Priority
+Medium
+
+### Objective
+Run the staging QA process and produce a concise report for release readiness.
+
+### Scope
+- Reset staging demo data.
+- Run pre-results checks.
+- Simulate results.
+- Run post-results checks.
+- Run Playwright smoke suite.
+- Record failures, screenshots/traces, and release risks.
+
+### Out of scope
+- No new feature implementation.
+- No production deployment.
+
+### Acceptance criteria
+- Staging QA report is produced.
+- Failures and release blockers are documented.
+- Follow-up tickets are created for unresolved issues.
+
+### Suggested commit message
+Run staging QA report

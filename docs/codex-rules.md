@@ -49,3 +49,4 @@ These rules apply to future Codex work in this repository.
 - Keep `docs/backlog.md` updated when ticket scope changes.
 - Keep `docs/sprints.md` updated when ticket sequencing changes.
 - Record confirmed product or technical decisions in `docs/decisions-log.md`.
+- When a feature changes a user-visible flow, admin flow, scoring behavior, league behavior, navigation, or result lifecycle, review and update the related staging QA documentation and/or Playwright coverage in the same ticket or a follow-up QA ticket.
