@@ -37,6 +37,13 @@ class TournamentMatch extends Model
         'team_a_score',
         'team_b_score',
         'winner_team_id',
+        'api_provider',
+        'api_fixture_id',
+        'api_status',
+        'round',
+        'venue_name',
+        'venue_city',
+        'last_synced_at',
     ];
 
     protected function casts(): array
@@ -46,6 +53,7 @@ class TournamentMatch extends Model
             'prediction_closes_at' => 'datetime',
             'team_a_score' => 'integer',
             'team_b_score' => 'integer',
+            'last_synced_at' => 'datetime',
         ];
     }
 

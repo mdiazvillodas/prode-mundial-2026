@@ -28,6 +28,13 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'api_football' => [
+        'base_url' => env('API_FOOTBALL_BASE_URL', 'https://v3.football.api-sports.io'),
+        'key' => env('API_FOOTBALL_KEY'),
+        'world_cup_league_id' => (int) env('API_FOOTBALL_WORLD_CUP_LEAGUE_ID', 1),
+        'world_cup_season' => (int) env('API_FOOTBALL_WORLD_CUP_SEASON', 2026),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

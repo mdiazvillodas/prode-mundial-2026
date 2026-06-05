@@ -1,6 +1,6 @@
 # Prode Mundial 2026 - v1 Backlog
 
-Last updated: 2026-05-30
+Last updated: 2026-06-05
 
 Statuses: `Todo`, `In Progress`, `Done`, `Blocked`
 
@@ -2943,3 +2943,224 @@ Run the staging QA process and produce a concise report for release readiness.
 
 ### Suggested commit message
 Run staging QA report
+
+## EPIC 16 - API-Football integration
+
+### Ticket ID
+E16-T00
+
+### Title
+API-Football World Cup 2026 discovery command
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add a safe, read-only discovery command for API-Football World Cup 2026 data using league `1` and season `2026`.
+
+### Note
+Implemented with `php artisan api-football:discover-world-cup`, Laravel HTTP client configuration, conservative endpoint selection, league/season overrides, confirmation/production safety checks, optional raw JSON snapshots under private storage, API HTTP and logical error handling, useful terminal summaries, and HTTP-faked feature tests. The command does not mutate teams, matches, predictions, scores, rankings, leagues, or users.
+
+### Scope
+- Configure API-Football environment variables.
+- Support discovery endpoints for teams, fixtures, rounds, standings, or all.
+- Support `--league` and `--season` overrides for free-plan structure testing.
+- Treat non-empty top-level API-Football `errors` as endpoint failures even when HTTP status is 200.
+- Limit `--endpoint=all` to at most 4 API requests.
+- Save raw snapshots only when `--save` is passed.
+- Ignore saved snapshots from Git.
+- Document command usage and API request budget warnings.
+- Add tests with `Http::fake()`.
+
+### Out of scope
+- No database sync.
+- No API mapping fields yet.
+- No prediction, scoring, league, or admin behavior changes.
+- No real API calls in tests.
+- No external packages.
+
+### Acceptance criteria
+- Command exists and fails safely when configuration is missing.
+- Endpoint requests use the API-Sports key header.
+- `--endpoint=all` makes the expected 4 fakeable calls.
+- `--save` writes snapshots to ignored private storage.
+- API logical errors exit non-zero and can still save raw error snapshots.
+- Command does not modify app data.
+- Documentation explains usage and future sync path.
+
+### Suggested commit message
+Add API-Football discovery command
+
+### Ticket ID
+E16-T01
+
+### Title
+Add API mapping fields
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add database fields needed to map local teams, tournaments, phases, and matches to API-Football records.
+
+### Scope
+- Add API mapping fields to `teams` table:
+  - `api_provider` (nullable string)
+  - `api_team_id` (nullable unsigned big integer)
+  - `country` (nullable string)
+  - `logo_url` (nullable string)
+  - `last_synced_at` (nullable timestamp)
+  - Unique constraint: `['api_provider', 'api_team_id']`
+- Add API mapping fields to `matches` table:
+  - `api_provider` (nullable string)
+  - `api_fixture_id` (nullable unsigned big integer)
+  - `api_status` (nullable string)
+  - `round` (nullable string)
+  - `venue_name` (nullable string)
+  - `venue_city` (nullable string)
+  - `last_synced_at` (nullable timestamp)
+  - Unique constraint: `['api_provider', 'api_fixture_id']`
+- Update Team model fillable and casts.
+- Update TournamentMatch model fillable and casts.
+- Add comprehensive tests for all new fields.
+- Update `docs/api-football.md` with API response mapping and field documentation.
+- Create `docs/team-identity.md` for flag and logo strategy.
+
+### Out of scope
+- No database sync.
+- No API calls.
+- No prediction, scoring, league, or admin behavior changes.
+- No image downloads or binary storage.
+
+### Acceptance criteria
+- Migration adds all required fields with correct types and constraints.
+- Team and TournamentMatch models include new fields in fillable/casts.
+- Tests confirm fields can be stored and are nullable.
+- Unique constraints prevent duplicate API mappings.
+- Existing seeders and tests continue to pass.
+- `php artisan migrate:fresh --seed` succeeds.
+- `php artisan demo:reset-staging --force` succeeds.
+- Documentation is updated with mapping information.
+
+### Suggested commit message
+Add API-Football mapping fields
+
+### Ticket ID
+E16-T01B
+
+### Title
+Add missing team flag mapping fields
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+Low
+
+### Objective
+Ensure `teams` contains `country_code` and `flag_path` local identity fields used for flags and short codes.
+
+### Note
+These fields were present in the original team model/migration. This follow-up confirms tests and documentation cover them.
+
+### Suggested commit message
+Add team flag mapping fields
+
+### Ticket ID
+E16-T02
+
+### Title
+Sync teams from API-Football
+
+### Status
+Todo
+
+### Sprint
+Future
+
+### Priority
+High
+
+### Objective
+Create a safe sync flow for teams using API-Football data and local mapping fields.
+
+### Suggested commit message
+Sync teams from API-Football
+
+### Ticket ID
+E16-T03
+
+### Title
+Sync fixtures from API-Football
+
+### Status
+Todo
+
+### Sprint
+Future
+
+### Priority
+High
+
+### Objective
+Create a safe sync flow for World Cup 2026 fixtures without disrupting prediction rules.
+
+### Suggested commit message
+Sync fixtures from API-Football
+
+### Ticket ID
+E16-T04
+
+### Title
+Sync results and settle predictions
+
+### Status
+Todo
+
+### Sprint
+Future
+
+### Priority
+High
+
+### Objective
+Create a controlled result sync flow that updates finished matches and reuses existing prediction settlement logic.
+
+### Suggested commit message
+Sync API results and settle predictions
+
+### Ticket ID
+E16-T05
+
+### Title
+API sync logs/admin visibility
+
+### Status
+Todo
+
+### Sprint
+Future
+
+### Priority
+Medium
+
+### Objective
+Expose API sync history, errors, and last-run status for safe operational visibility.
+
+### Suggested commit message
+Add API sync visibility

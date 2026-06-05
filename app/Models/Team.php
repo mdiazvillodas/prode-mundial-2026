@@ -15,5 +15,17 @@ class Team extends Model
         'short_name',
         'country_code',
         'flag_path',
+        'api_provider',
+        'api_team_id',
+        'country',
+        'logo_url',
+        'last_synced_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'last_synced_at' => 'datetime',
+        ];
+    }
 }
