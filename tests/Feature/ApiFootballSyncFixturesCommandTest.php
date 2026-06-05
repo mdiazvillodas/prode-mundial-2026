@@ -1,0 +1,325 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Prediction;
+use App\Models\Team;
+use App\Models\Tournament;
+use App\Models\TournamentMatch;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class ApiFootballSyncFixturesCommandTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_missing_api_key_fails_unless_snapshot_mode_is_used(): void
+    {
+        $this->createTournament();
+        config(['services.api_football.key' => null]);
+        Http::fake();
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('Missing API_FOOTBALL_KEY')
+            ->assertFailed();
+
+        Http::assertNothingSent();
+    }
+
+    public function test_snapshot_mode_does_not_require_api_key_or_send_request(): void
+    {
+        $this->createTournament();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        config(['services.api_football.key' => null]);
+        Storage::fake('local');
+        Http::fake();
+
+        Storage::disk('local')->put('api-football/world-cup-2026/fixtures-latest.json', json_encode([
+            'results' => 1,
+            'response' => [
+                $this->fixturePayload(1001, 10, 20),
+            ],
+        ]));
+
+        $this->artisan('api-football:sync-fixtures --from-snapshot=api-football/world-cup-2026/fixtures-latest.json --force')
+            ->expectsOutputToContain('Planned API requests: 0')
+            ->assertSuccessful();
+
+        Http::assertNothingSent();
+        $this->assertDatabaseHas('matches', [
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1001,
+        ]);
+    }
+
+    public function test_api_errors_are_detected_and_no_database_mutation_occurs(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'errors' => [
+                    'plan' => 'Free plans do not have access to this season.',
+                ],
+                'response' => [
+                    $this->fixturePayload(1001, 10, 20),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('errors.plan: Free plans do not have access to this season.')
+            ->assertFailed();
+
+        $this->assertSame(0, TournamentMatch::query()->count());
+    }
+
+    public function test_successful_response_creates_fixture_when_teams_exist(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+        $this->fakeFixturesResponse();
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('created')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('matches', [
+            'tournament_id' => $tournament->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1001,
+            'api_status' => 'NS',
+            'round' => 'Group Stage - 1',
+            'venue_name' => 'MetLife Stadium',
+            'venue_city' => 'East Rutherford',
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'stage' => 'group',
+            'status' => TournamentMatch::STATUS_SCHEDULED,
+        ]);
+    }
+
+    public function test_missing_teams_are_skipped_with_clear_output(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->fakeFixturesResponse();
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('Team not found. Run api-football:sync-teams first.')
+            ->expectsOutputToContain('missing_teams=1')
+            ->assertSuccessful();
+
+        $this->assertSame(0, TournamentMatch::query()->count());
+    }
+
+    public function test_re_running_updates_existing_fixture_without_duplicates(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1001,
+            'api_status' => 'TBD',
+            'venue_name' => 'Old Venue',
+            'round' => 'Old Round',
+            'status' => TournamentMatch::STATUS_OPEN,
+        ]);
+
+        $this->fakeFixturesResponse();
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('updated')
+            ->assertSuccessful();
+
+        $this->assertSame(1, TournamentMatch::query()->where('api_fixture_id', 1001)->count());
+        $this->assertDatabaseHas('matches', [
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1001,
+            'api_status' => 'NS',
+            'venue_name' => 'MetLife Stadium',
+            'round' => 'Group Stage - 1',
+            'status' => TournamentMatch::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_dry_run_does_not_mutate_database(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+        $this->fakeFixturesResponse();
+
+        $this->artisan('api-football:sync-fixtures --dry-run --force')
+            ->expectsOutputToContain('Dry run complete')
+            ->assertSuccessful();
+
+        $this->assertSame(0, TournamentMatch::query()->count());
+    }
+
+    public function test_finished_fixture_stores_scores_without_settling_predictions(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1001,
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+        ]);
+
+        $prediction = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(1001, 10, 20, status: 'FT', homeGoals: 2, awayGoals: 1),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->assertSuccessful();
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(2, $match->team_a_score);
+        $this->assertSame(1, $match->team_b_score);
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $prediction->status);
+        $this->assertNull($prediction->points_awarded);
+    }
+
+    public function test_command_makes_only_expected_api_request_with_overrides(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+        $this->fakeFixturesResponse();
+
+        $this->artisan('api-football:sync-fixtures --season=2022 --league=1 --force')
+            ->assertSuccessful();
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn (Request $request): bool => $request->url() === 'https://example.test/fixtures?league=1&season=2022'
+            && $request->hasHeader('x-apisports-key', 'fake-api-key'));
+    }
+
+    private function configureApiFootball(): void
+    {
+        config([
+            'services.api_football.base_url' => 'https://example.test',
+            'services.api_football.key' => 'fake-api-key',
+            'services.api_football.world_cup_league_id' => 1,
+            'services.api_football.world_cup_season' => 2026,
+        ]);
+    }
+
+    private function createTournament(): Tournament
+    {
+        return Tournament::factory()->create([
+            'name' => 'FIFA World Cup 2026',
+            'slug' => 'fifa-world-cup-2026',
+            'year' => 2026,
+        ]);
+    }
+
+    private function createApiTeam(int $apiTeamId, string $name, string $shortName): Team
+    {
+        return Team::factory()->create([
+            'name' => $name,
+            'short_name' => $shortName,
+            'api_provider' => 'api-football',
+            'api_team_id' => $apiTeamId,
+        ]);
+    }
+
+    private function fakeFixturesResponse(): void
+    {
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(1001, 10, 20),
+                ],
+            ]),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function fixturePayload(
+        int $fixtureId,
+        int $homeTeamId,
+        int $awayTeamId,
+        string $date = '2026-06-11T20:00:00+00:00',
+        string $status = 'NS',
+        ?int $homeGoals = null,
+        ?int $awayGoals = null,
+    ): array {
+        return [
+            'fixture' => [
+                'id' => $fixtureId,
+                'date' => $date,
+                'venue' => [
+                    'name' => 'MetLife Stadium',
+                    'city' => 'East Rutherford',
+                ],
+                'status' => [
+                    'short' => $status,
+                ],
+            ],
+            'league' => [
+                'id' => 1,
+                'season' => 2026,
+                'round' => 'Group Stage - 1',
+            ],
+            'teams' => [
+                'home' => [
+                    'id' => $homeTeamId,
+                    'name' => 'Argentina',
+                ],
+                'away' => [
+                    'id' => $awayTeamId,
+                    'name' => 'Brazil',
+                ],
+            ],
+            'goals' => [
+                'home' => $homeGoals,
+                'away' => $awayGoals,
+            ],
+        ];
+    }
+}

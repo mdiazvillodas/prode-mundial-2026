@@ -120,6 +120,57 @@ The command:
 - Ignores `venue.*` data from the teams endpoint.
 - Does not sync fixtures, results, predictions, rankings, or admin data.
 
+### Fixture Sync
+
+Sync fixtures from API-Football into the local `matches` table after teams have been synced:
+
+```bash
+php artisan api-football:sync-fixtures --force
+```
+
+Run a dry run without writing to the database:
+
+```bash
+php artisan api-football:sync-fixtures --dry-run --force
+```
+
+Validate the fixture-sync shape with an accessible free-plan season such as `2022`:
+
+```bash
+php artisan api-football:sync-fixtures --season=2022 --dry-run --force
+```
+
+Load fixtures from a previously saved snapshot without spending API requests:
+
+```bash
+php artisan api-football:sync-fixtures --from-snapshot=api-football/world-cup-2026/fixtures-latest.json --dry-run --force
+```
+
+Run order matters:
+
+```bash
+php artisan api-football:sync-teams --force
+php artisan api-football:sync-fixtures --force
+```
+
+`api-football:sync-fixtures` makes at most 1 API request when not using `--from-snapshot`.
+
+The command:
+
+- Uses `x-apisports-key`.
+- Fails when `API_FOOTBALL_KEY` is missing, unless `--from-snapshot` is used.
+- Detects top-level API-Football `errors`, including HTTP 200 logical errors.
+- Requires local teams matched by `api_provider='api-football'` and `api_team_id`.
+- Skips fixtures with missing teams and prints `Team not found. Run api-football:sync-teams first.`
+- Upserts local `TournamentMatch` rows using `api_provider` and `api_fixture_id`.
+- Maps API home team to `team_a_id` and API away team to `team_b_id`.
+- Stores `fixture.date`, `fixture.status.short`, `league.round`, venue name/city, and `last_synced_at`.
+- Stores scores only for finished API statuses (`FT`, `AET`, `PEN`).
+- Does not settle predictions and does not call `MatchPredictionSettlementService`.
+- Does not create teams, sync rankings, sync leagues, change admin flows, or delete local matches.
+
+Group letters are not inferred from `league.round`. The raw API round is stored in `round`; `stage` is mapped only when the round label is clear, and `group` remains unchanged/null.
+
 ## Snapshots
 
 When `--save` is passed, raw JSON snapshots are stored on the local disk under:
@@ -222,13 +273,13 @@ response[]
 
 A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_fixture_id'])`.
 
-**Note**: `starts_at`, `team_a_score`, `team_b_score`, and `winner_team_id` are already in the app database and will be updated/verified during sync, not created.
+**Note**: `starts_at`, `team_a_score`, and `team_b_score` are already in the app database and are updated during fixture sync when safe. `winner_team_id` is not set by fixture sync; prediction settlement remains a separate future command.
 
 ### Data Flow
 
 1. **Discovery phase** (E16-T01, complete): Add database fields to track API mappings. Database is prepared but no sync occurs.
 2. **Team sync** (E16-T02, complete): Fetch teams from `/teams` endpoint and populate database fields.
-3. **Fixture sync** (E16-T03, planned): Fetch fixtures from `/fixtures` endpoint and populate database fields.
+3. **Fixture sync** (E16-T03, complete): Fetch fixtures from `/fixtures` endpoint and populate database fields without settling predictions.
 4. **Result settlement** (E16-T04, planned): Use synced data to update scores and settle predictions.
 
 ### UI Data Source
@@ -248,6 +299,6 @@ Planned follow-up tickets:
 
 - E16-T01 - Add API mapping fields. (IMPLEMENTED)
 - E16-T02 - Sync teams from API-Football. (IMPLEMENTED)
-- E16-T03 - Sync fixtures from API-Football.
+- E16-T03 - Sync fixtures from API-Football. (IMPLEMENTED)
 - E16-T04 - Sync results and settle predictions.
 - E16-T05 - API sync logs/admin visibility.

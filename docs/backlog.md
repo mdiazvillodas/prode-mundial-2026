@@ -3134,16 +3134,44 @@ E16-T03
 Sync fixtures from API-Football
 
 ### Status
-Todo
+Done
 
 ### Sprint
-Future
+Sprint 8
 
 ### Priority
 High
 
 ### Objective
 Create a safe sync flow for World Cup 2026 fixtures without disrupting prediction rules.
+
+### Note
+Implemented with `php artisan api-football:sync-fixtures`. The command supports API fetches or `--from-snapshot`, `--league`, `--season`, `--force`, and `--dry-run`; makes at most 1 API request; detects HTTP and top-level API-Football logical errors; requires teams synced first via `api_provider`/`api_team_id`; upserts `TournamentMatch` by `api_provider`/`api_fixture_id`; stores date, API status, round, venue, home/away team mapping, and safe finished scores; and includes HTTP-faked feature coverage. It does not create teams, settle predictions, call `MatchPredictionSettlementService`, sync rankings, sync leagues, or change admin behavior.
+
+### Scope
+- Fetch fixtures from API-Football `/fixtures`.
+- Upsert local `TournamentMatch` records using `api_provider` and `api_fixture_id`.
+- Map API home team to `team_a_id` and API away team to `team_b_id`.
+- Store `fixture.date`, `fixture.status.short`, `league.round`, venue name/city, and `last_synced_at`.
+- Skip fixtures whose local teams are missing, with guidance to run `api-football:sync-teams` first.
+- Support dry run and snapshot mode.
+- Keep sync blocked in production/live mode.
+- Add tests with `Http::fake()`.
+
+### Out of scope
+- No team creation.
+- No prediction settlement.
+- No scoring rules changes.
+- No private league, ranking, route, or admin behavior changes.
+- No direct real API calls in tests.
+
+### Acceptance criteria
+- Command exists and fails safely when configuration is missing.
+- Successful fake response creates and updates fixtures idempotently.
+- Missing teams are skipped with clear output.
+- Dry run does not mutate the database.
+- Finished fixtures can store scores without settling predictions.
+- Tests do not call the real API.
 
 ### Suggested commit message
 Sync fixtures from API-Football
