@@ -2,7 +2,7 @@
 
 Last updated: 2026-06-05
 
-This document defines the staging QA subproject for Prode Mundial 2026. It guides demo seed data, safe reset commands, simulated result updates, and future Playwright end-to-end smoke tests.
+This document defines the staging QA subproject for Prode Mundial 2026. It guides demo seed data, safe reset commands, simulated result updates, and Playwright end-to-end smoke tests.
 
 ## Purpose
 
@@ -219,7 +219,7 @@ Use this flow for local or Railway staging QA:
 php artisan demo:reset-staging --force
 ```
 
-2. Run manual or future Playwright pre-results QA.
+2. Run manual or Playwright pre-results QA.
 
 3. Simulate API-like result arrival:
 
@@ -227,9 +227,9 @@ php artisan demo:reset-staging --force
 php artisan demo:simulate-results --scenario=group-day-1 --force
 ```
 
-4. Run manual or future Playwright post-results QA.
+4. Run manual or Playwright post-results QA.
 
-This validates both the pre-results prediction experience and the post-results history/ranking experience. E14-T02D will add Playwright QA later.
+This validates both the pre-results prediction experience and the post-results history/ranking experience.
 
 ## Staging Reset And Seed Flow
 
@@ -248,30 +248,91 @@ php artisan db:seed --class=StagingDemoSeeder --force
 
 Any destructive reset must be blocked outside local, testing, and staging environments. Future reset commands should confirm that `APP_ENV` and `APP_MODE` are safe before running destructive operations.
 
-The current reset command prepares Phase A, the pre-results QA state. Simulated API-like result changes are intentionally left for E14-T02C.
+The current reset command prepares Phase A, the pre-results QA state. Use `demo:simulate-results` when QA needs to move from pre-results checks to post-results checks.
 
-## Playwright QA Strategy
+## Playwright QA Smoke Suite
 
-Playwright should later run against Railway staging using a configurable `BASE_URL`.
+Playwright runs from the local machine against either a local Laravel server or Railway staging. It uses `PLAYWRIGHT_BASE_URL` when provided and falls back to:
 
-Recommended suites:
+```text
+http://127.0.0.1:8000
+```
+
+Install Playwright browsers when needed:
+
+```bash
+npx playwright install chromium
+```
+
+Run against local, after serving the app locally:
+
+```bash
+npm run test:e2e
+```
+
+Run against Railway staging from PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_BASE_URL="https://YOUR-RAILWAY-URL"
+npm run test:e2e
+```
+
+Open the latest HTML report:
+
+```bash
+npm run test:e2e:report
+```
+
+Current smoke coverage:
 
 - auth smoke
 - prediction pre-results flow
-- private league flow
-- admin result flow
-- post-results ranking/history flow
-- navigation/mobile smoke
+- leagues hub and private league ranking smoke
+- history pending/scored state smoke
+- admin dashboard and admin matches smoke
 
 Browser and reporting targets:
 
 - Chromium first
-- include at least one mobile viewport
-- capture screenshots on failure
-- capture traces on failure
-- generate an HTML report
+- screenshots on failure
+- traces retained on failure
+- HTML report
 
-Playwright should not require production data. It should use stable staging demo accounts and the deterministic staging demo dataset.
+Playwright does not require direct database access. It uses stable staging demo accounts and the deterministic staging demo dataset.
+
+Recommended Playwright QA flow:
+
+1. Prepare staging data:
+
+```bash
+php artisan demo:reset-staging --force
+```
+
+2. Run pre-results E2E smoke:
+
+```bash
+npm run test:e2e
+```
+
+3. Simulate results:
+
+```bash
+php artisan demo:simulate-results --scenario=group-day-1 --force
+```
+
+4. Run post-results E2E smoke:
+
+```bash
+npm run test:e2e
+```
+
+5. Review the HTML report:
+
+```bash
+npm run test:e2e:report
+```
+
+Future features that change user flows, admin flows, navigation, prediction states, result lifecycle, league behavior, or scoring visibility should update the related Playwright tests.
 
 ## QA Maintenance Rule
 
@@ -289,7 +350,6 @@ Examples:
 - E14-T02A - Document staging QA strategy
 - E14-T02B - Add staging demo seed and safe reset command
 - E14-T02C - Add demo result simulation command
-- E14-T02D - Add Playwright staging QA smoke suite
 - E14-T02E - Run staging QA and produce report
 
 ## Manual Staging Smoke Checklist
@@ -304,15 +364,14 @@ Examples:
 - admin result save works
 - ranking updates after simulated result
 
-## Out Of Scope For E14-T02C
+## Out Of Scope For E14-T02D
 
-- No Playwright installation.
-- No test implementation.
 - No migrations.
 - No models.
 - No controllers.
 - No views.
-- No external packages.
+- No external packages beyond Playwright.
 - No Railway config changes.
 - No real API integration.
-- No Playwright suite. That belongs to E14-T02D.
+- No exhaustive browser matrix.
+- No load testing.

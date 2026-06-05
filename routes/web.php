@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\MatchController as AdminMatchController;
 use App\Http\Controllers\CalendarController;
@@ -9,15 +10,14 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\PrivateLeagueController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route(Auth::check() ? 'dashboard' : 'login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');

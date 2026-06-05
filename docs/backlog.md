@@ -1464,7 +1464,7 @@ E9-T01
 Build admin tournament management
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 5
@@ -2143,6 +2143,54 @@ Implemented /calendar as a team-focused schedule view using /calendar?team_id={i
 Rework calendar into team schedule view
 
 ### Ticket ID
+E11-T04A
+
+### Title
+Redirect root and improve dashboard UX
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Improve the first-entry experience by redirecting `/` to the right authenticated/guest destination and turning Inicio into a useful user summary.
+
+### Note
+Implemented `/` redirects for guests and authenticated users, replaced the generic dashboard button hub with a Spanish-first user home showing Liga general points/position, pending prediction count, scored prediction count, active private league summary, primary Predicciones CTA, Ligas/Historial/Calendario links, and an admin-only shortcut. Added feature coverage for root redirects, dashboard labels, and admin shortcut visibility.
+
+### Scope
+- Redirect guests visiting `/` to `/login`.
+- Redirect authenticated users visiting `/` to `/dashboard`.
+- Replace the generic dashboard hub with a useful user summary.
+- Show Liga general points and position when available.
+- Show pending/open prediction information when simple.
+- Keep Ligas as the primary league/ranking destination.
+- Keep admin shortcut visible only for admins.
+
+### Out of scope
+- No business rule changes.
+- No scoring changes.
+- No database schema changes.
+- No marketing homepage.
+- No route removals.
+- No external packages.
+
+### Acceptance criteria
+- Guest users visiting `/` are redirected to login.
+- Authenticated users visiting `/` are redirected to dashboard.
+- Dashboard shows useful Spanish-first summary content and primary CTAs.
+- Admin shortcut remains admin-only.
+- Existing tests and E2E smoke suite continue passing.
+
+### Suggested commit message
+Improve root redirect and dashboard UX
+
+### Ticket ID
 E11-T01
 
 ### Title
@@ -2683,7 +2731,7 @@ E14-T02D
 Add Playwright staging QA smoke suite
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 8
@@ -2693,6 +2741,9 @@ High
 
 ### Objective
 Add a Playwright smoke suite that can run against Railway staging with a configurable `BASE_URL`.
+
+### Note
+Implemented with `@playwright/test`, `playwright.config.js`, npm scripts for headless/headed/report runs, and focused Chromium smoke tests under `tests/e2e` covering auth, predictions, leagues, history, and admin. The suite uses `PLAYWRIGHT_BASE_URL` with local fallback, demo credentials, screenshots on failure, retained traces on failure, and an HTML report.
 
 ### Scope
 - Add Playwright setup.
