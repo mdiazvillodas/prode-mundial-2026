@@ -5,7 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Prode Mundial 2026') }}</title>
+        <link rel="icon" href="{{ asset('brand/favicon.ico') }}" sizes="any">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -24,13 +25,12 @@
 
             <div class="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-center lg:gap-12 lg:px-8">
                 <section class="flex flex-1 flex-col justify-center py-6 text-white lg:min-h-screen lg:py-10">
-                    <a href="/" class="inline-flex w-fit items-center gap-3 rounded-full bg-white/10 px-3 py-2 text-white shadow-sm ring-1 ring-white/15 transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-blue-950">
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400 text-sm font-black text-blue-950 shadow-sm shadow-emerald-950/20">
-                            P26
-                        </span>
-                        <span class="text-sm font-black uppercase tracking-wide">
-                            Prode Mundial 2026
-                        </span>
+                    <a href="/" class="inline-flex w-fit items-center rounded-2xl bg-white/10 px-3 py-2 shadow-sm ring-1 ring-white/15 transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-blue-950">
+                        <img
+                            src="{{ asset('brand/p26-logo.svg') }}"
+                            alt="{{ __('Logo de Prode') }}"
+                            class="h-12 w-auto sm:h-14"
+                        >
                     </a>
 
                     <div class="mt-10 max-w-xl">

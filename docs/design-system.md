@@ -16,6 +16,23 @@ The current visual source is the Prode prediction mock. It defines the intended 
 - Friendly and competitive tone.
 - Entertainment only. Never imply gambling, betting, odds, wagers, cash prizes, or real-money mechanics.
 
+## Brand Assets
+
+Approved brand assets live in `public/brand/`:
+
+- Main visible brand mark: `public/brand/p26-logo.svg`.
+- Browser icon: `public/brand/favicon.ico`.
+
+Usage rules:
+
+- Reference the logo from Blade with `asset('brand/p26-logo.svg')`; do not inline the SVG unless a future ticket explicitly requires it.
+- Reference the favicon in active base layouts with `asset('brand/favicon.ico')`.
+- Use meaningful image alt text such as `Prode` or `Logo de Prode`.
+- Keep the logo responsive with fixed height and automatic width so the artwork is not distorted.
+- In authenticated navigation, the logo should identify the app without competing with page content.
+- In guest/auth screens, the logo may be more prominent but should remain secondary to the form task.
+- Do not modify the SVG or favicon files unless a brand asset update is explicitly requested.
+
 ## Typography
 
 ### Font Direction

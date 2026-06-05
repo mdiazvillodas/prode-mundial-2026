@@ -1,0 +1,32 @@
+<svg width="320" height="120" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">P26 Logo</title>
+  <desc id="desc">Logo para plataforma de predicciones deportivas P26</desc>
+
+  <!-- Background shield/card -->
+  <rect x="8" y="8" width="304" height="104" rx="28" fill="#071A3D"/>
+  <rect x="14" y="14" width="292" height="92" rx="24" stroke="#33D6FF" stroke-opacity="0.35" stroke-width="2"/>
+
+  <!-- Decorative match lines -->
+  <path d="M34 30H94" stroke="#FF3B5F" stroke-width="6" stroke-linecap="round"/>
+  <path d="M226 90H286" stroke="#33D6FF" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- P -->
+  <path d="M60 84V34H91C102.6 34 111 42.1 111 53.2C111 64.3 102.6 72.3 91 72.3H77.5V84H60ZM77.5 58.1H88.4C91.9 58.1 94.2 56.1 94.2 53.2C94.2 50.2 91.9 48.2 88.4 48.2H77.5V58.1Z" fill="#FFFFFF"/>
+
+  <!-- Small prediction check inside P area -->
+  <circle cx="104" cy="78" r="13" fill="#FF3B5F"/>
+  <path d="M98.5 78.3L102.5 82.2L110.3 73.9" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 2 -->
+  <path d="M128 84V70.5L156.4 50.2C159.1 48.3 160.6 46.4 160.6 44.1C160.6 41.1 158.1 39.1 154.1 39.1C149.7 39.1 146.9 41.8 146.2 46.5L128.9 43.8C130.8 31.9 140.7 25.1 154.9 25.1C169.6 25.1 179.1 32.5 179.1 43.2C179.1 50.7 175.4 56.2 167.9 61.3L153.9 70.8H179.9V84H128Z" fill="#FFFFFF"/>
+
+  <!-- 6 -->
+  <path d="M221.2 85.2C202.8 85.2 191.1 74.1 191.1 55.7C191.1 36.6 202.9 25.1 222.3 25.1C231.1 25.1 239 27.2 244.8 31.2L237.4 44.1C233.4 41.5 228.5 39.9 222.4 39.9C214.3 39.9 209.6 43.8 208.9 51.1C213.1 47.8 218.4 46.1 224.9 46.1C238.2 46.1 247.6 53.6 247.6 65C247.6 77.3 237.1 85.2 221.2 85.2ZM221.1 71.9C226.8 71.9 230.5 69.2 230.5 65.1C230.5 61.1 226.8 58.4 221.1 58.4C215.4 58.4 211.7 61.1 211.7 65.1C211.7 69.2 215.4 71.9 221.1 71.9Z" fill="#FFFFFF"/>
+
+  <!-- Ball mark in the 6 -->
+  <circle cx="263" cy="42" r="17" fill="#33D6FF"/>
+  <path d="M263 28.5L267.4 38.2L278 39.3L270.1 46.4L272.3 56.8L263 51.4L253.7 56.8L255.9 46.4L248 39.3L258.6 38.2L263 28.5Z" fill="#071A3D" opacity="0.95"/>
+
+  <!-- Subtle bottom claim line -->
+  <text x="160" y="101" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="3" fill="#B8C7E6">PRODE MUNDIAL</text>
+</svg>

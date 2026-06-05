@@ -15,6 +15,7 @@ The Prode prediction mock is the visual source for the first UI polish pass. Fut
 - Use a competitive but friendly tone.
 - Bring FIFA World Cup inspired energy without copying protected branding, official marks, logos, mascots, typography, or tournament identity.
 - Avoid the generic Laravel Breeze look as the product UI matures.
+- Use `public/brand/p26-logo.svg` as the visible Prode/P26 brand mark and `public/brand/favicon.ico` as the browser icon.
 - Keep Blade, Tailwind CSS, and vanilla JavaScript.
 - Use the mock-derived design system as the source of truth for app shell, match cards, score inputs, status badges, floating save actions, and mobile hierarchy.
 
