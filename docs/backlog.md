@@ -2601,7 +2601,7 @@ E14-T02B
 Add staging demo seed and safe reset command
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 8
@@ -2611,6 +2611,9 @@ High
 
 ### Objective
 Create deterministic staging demo data and a safe reset flow for Railway staging QA.
+
+### Note
+Implemented with `Database\Seeders\StagingDemoSeeder` and `php artisan demo:reset-staging`. The command blocks production/live environments, runs `migrate:fresh --seed --force`, then seeds deterministic QA data for demo users, teams, matches, private league flows, pending predictions, placeholders, an assigned knockout match, and scored finished matches.
 
 ### Scope
 - Add a staging demo seeder or equivalent deterministic demo data flow.

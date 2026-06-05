@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands()
     ->withMiddleware(function (Middleware $middleware): void {
         if (in_array(env('APP_ENV'), ['production', 'staging'], true) || env('RAILWAY_ENVIRONMENT') || env('RAILWAY_PROJECT_ID')) {
             $middleware->trustProxies(

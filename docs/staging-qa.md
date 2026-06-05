@@ -2,7 +2,7 @@
 
 Last updated: 2026-06-05
 
-This document defines the staging QA subproject for Prode Mundial 2026. It guides future implementation of demo seed data, safe reset commands, simulated result updates, and Playwright end-to-end smoke tests.
+This document defines the staging QA subproject for Prode Mundial 2026. It guides demo seed data, safe reset commands, simulated result updates, and future Playwright end-to-end smoke tests.
 
 ## Purpose
 
@@ -37,11 +37,11 @@ Staging is allowed to use deterministic demo data. Production must use live data
 - Do not use real user data in staging demo seed data.
 - Demo passwords are allowed only for local and staging test users.
 - Demo credentials must never be reused from real accounts.
-- Future commands should fail loudly when `APP_ENV=production` or `APP_MODE=live`.
+- Demo reset commands fail loudly when `APP_ENV=production` or `APP_MODE=live`.
 
 ## Demo Data Strategy
 
-The future staging demo dataset should include enough data to exercise the whole v1 product:
+The staging demo dataset includes enough data to exercise the whole v1 product:
 
 - one tournament
 - teams
@@ -52,19 +52,20 @@ The future staging demo dataset should include enough data to exercise the whole
 - normal demo users
 - private leagues
 - active memberships
-- removed memberships if useful for regression coverage
-- join requests if useful
+- a pending join request
 - predictions
 - some matches with no results
 - some matches close to the prediction deadline
 - some placeholder matches
-- some finished matches after simulation
+- some finished matches with scored predictions
 
 The dataset should be deterministic so QA can rely on stable accounts, stable leagues, stable match states, and predictable expected rankings.
 
+The demo fixture is controlled QA data. It should not be treated as an official final World Cup fixture unless an official source is explicitly documented in a future ticket.
+
 ## Demo Users
 
-Future implementation should create stable demo accounts:
+The staging demo seeder creates stable demo accounts:
 
 - `admin@prode.test`
 - `mariano@prode.test`
@@ -72,6 +73,70 @@ Future implementation should create stable demo accounts:
 - `juan@prode.test`
 
 Passwords should be safe demo-only values. They must never be reused from real accounts and should be documented only in staging/local setup notes, not in production-facing UI.
+
+Current demo password for all demo accounts:
+
+```text
+password
+```
+
+## Demo Reset Command
+
+Use the safe reset command to prepare local or Railway staging for Phase A QA:
+
+```bash
+php artisan demo:reset-staging --force
+```
+
+The command:
+
+- runs `migrate:fresh --seed --force`
+- runs `Database\Seeders\StagingDemoSeeder`
+- prepares the pre-results QA state
+- refuses to run when `APP_ENV=production`
+- refuses to run when `APP_MODE=live`
+- is intended only for local, testing, and staging
+
+For local manual use, `--force` may be omitted to get an interactive confirmation:
+
+```bash
+php artisan demo:reset-staging
+```
+
+For Railway staging, run the command in the Railway staging environment using the Railway shell or command runner:
+
+```bash
+php artisan demo:reset-staging --force
+```
+
+Before running it in Railway, verify the service variables are set for staging:
+
+- `APP_ENV=staging`
+- `APP_MODE=test`
+
+Never run this command in production or live mode.
+
+## Current Seeded QA Data
+
+`Database\Seeders\StagingDemoSeeder` creates or updates:
+
+- `FIFA World Cup 2026`
+- a useful team set including Argentina, Brazil, France, Spain, Uruguay, United States, Germany, Mexico, England, and Japan
+- open group-stage matches
+- a scheduled group-stage match
+- a locked group-stage match
+- a close-to-deadline open match
+- two finished group-stage matches with scored predictions
+- one knockout placeholder
+- one assigned knockout match with a qualified-team prediction path
+- demo users listed above
+- `Liga Demo Palermo`, owned by `mariano@prode.test`
+- active memberships for Mariano and Ana
+- a pending join request for Juan
+- pending predictions for open/future matches
+- scored predictions for finished matches
+
+The seeder uses `updateOrCreate` where practical so it can be run repeatedly without uncontrolled duplicates. It does not call `migrate:fresh`, truncate tables, or connect to external APIs.
 
 ## QA Scenario Phases
 
@@ -130,12 +195,12 @@ The command should behave like the future API integration:
 
 Scenarios should be named and documented so QA knows what state each scenario creates.
 
-## Future Staging Reset And Seed Flow
+## Staging Reset And Seed Flow
 
-Desired future command or flow:
+Current command:
 
 ```bash
-php artisan demo:reset-staging
+php artisan demo:reset-staging --force
 ```
 
 Alternative explicit flow:
@@ -146,6 +211,8 @@ php artisan db:seed --class=StagingDemoSeeder --force
 ```
 
 Any destructive reset must be blocked outside local, testing, and staging environments. Future reset commands should confirm that `APP_ENV` and `APP_MODE` are safe before running destructive operations.
+
+The current reset command prepares Phase A, the pre-results QA state. Simulated API-like result changes are intentionally left for E14-T02C.
 
 ## Playwright QA Strategy
 
@@ -201,11 +268,8 @@ Examples:
 - admin result save works
 - ranking updates after simulated result
 
-## Out Of Scope For This Documentation Ticket
+## Out Of Scope For E14-T02B
 
-- No application code.
-- No seeders.
-- No Artisan commands.
 - No Playwright installation.
 - No test implementation.
 - No migrations.
@@ -214,3 +278,4 @@ Examples:
 - No views.
 - No external packages.
 - No Railway config changes.
+- No result simulation command. That belongs to E14-T02C.
