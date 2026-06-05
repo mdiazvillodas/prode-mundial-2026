@@ -1,21 +1,25 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Gracias por registrarte. Antes de empezar, verifica tu email con el enlace que te enviamos. Si no lo recibiste, podemos enviarte otro.') }}
-    </div>
+    <x-slot name="title">
+        {{ __('Verificá tu email') }}
+    </x-slot>
+
+    <x-slot name="subtitle">
+        {{ __('Antes de empezar, verificá tu email con el enlace que te enviamos. Si no lo recibiste, podemos enviarte otro.') }}
+    </x-slot>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('Enviamos un nuevo enlace de verificacion al email que usaste al registrarte.') }}
+        <div class="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 ring-1 ring-emerald-100">
+            {{ __('Enviamos un nuevo enlace de verificación al email que usaste al registrarte.') }}
         </div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
 
             <div>
-                <x-primary-button>
-                    {{ __('Reenviar email de verificacion') }}
+                <x-primary-button class="flex w-full justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-black normal-case tracking-wide text-white shadow-lg shadow-blue-900/20 hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-800 focus:ring-blue-600 sm:w-auto">
+                    {{ __('Reenviar email de verificación') }}
                 </x-primary-button>
             </div>
         </form>
@@ -23,8 +27,8 @@
         <form method="POST" action="{{ route('logout') }}">
             @csrf
 
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Cerrar sesion') }}
+            <button type="submit" class="text-sm font-black text-blue-700 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">
+                {{ __('Cerrar sesión') }}
             </button>
         </form>
     </div>

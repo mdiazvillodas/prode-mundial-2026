@@ -15,7 +15,7 @@ export async function login(page, user = demoUsers.mariano) {
     await page.goto('/login');
     await page.getByLabel('Email').fill(user.email);
     await page.getByLabel(/Contrase/).fill(user.password);
-    await page.getByRole('button', { name: /Iniciar sesion/i }).click();
+    await page.getByRole('button', { name: /Iniciar sesi.n/i }).click();
 
     await expect(page.getByRole('navigation')).toContainText('Predicciones');
 }
