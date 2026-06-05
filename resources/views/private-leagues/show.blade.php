@@ -6,7 +6,7 @@
                     {{ __('Liga privada') }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    {{ __('Tabla de posiciones de miembros activos y gestion de la liga.') }}
+                    {{ __('Tabla de posiciones y puntos de miembros activos.') }}
                 </p>
             </div>
 
@@ -20,63 +20,34 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-5xl space-y-5 px-4 sm:px-6 lg:px-8">
-            <article class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
-                <div class="border-b border-gray-100 bg-gray-950 px-6 py-6 text-white">
-                    <p class="text-sm font-bold uppercase tracking-wide text-indigo-200">
+        <div class="mx-auto max-w-5xl space-y-4 px-4 sm:px-6 lg:px-8">
+            <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100 sm:p-5">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-wide text-indigo-700">
                         {{ __('Liga privada') }}
                     </p>
-                    <h3 class="mt-2 text-3xl font-black">
+                    <h3 class="mt-1 text-2xl font-black text-blue-950 sm:text-3xl">
                         {{ $privateLeague->name }}
                     </h3>
-                    <p class="mt-2 text-sm text-gray-300">
+                    <p class="mt-1 text-sm font-medium text-slate-500">
                         {{ __('Dueño') }} {{ '@'.$privateLeague->owner->username }}
                     </p>
                 </div>
+            </section>
 
-                <div class="grid gap-4 p-5 sm:grid-cols-3">
-                    <div class="rounded-xl bg-emerald-50 p-4">
-                        <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">
-                            {{ __('Estado') }}
-                        </p>
-                        <p class="mt-2 text-xl font-black capitalize text-emerald-950">
-                            {{ $privateLeague->status }}
-                        </p>
-                    </div>
-
-                    <div class="rounded-xl bg-indigo-50 p-4">
-                        <p class="text-xs font-bold uppercase tracking-wide text-indigo-700">
-                            {{ __('Miembros activos') }}
-                        </p>
-                        <p class="mt-2 text-xl font-black text-indigo-950">
-                            {{ $privateLeague->memberships->count() }}
-                        </p>
-                    </div>
-
-                    <div class="rounded-xl bg-gray-50 p-4">
-                        <p class="text-xs font-bold uppercase tracking-wide text-gray-600">
-                            {{ __('Codigo') }}
-                        </p>
-                        <p class="mt-2 text-xl font-black tracking-wide text-gray-950">
-                            {{ $privateLeague->code }}
-                        </p>
-                    </div>
-                </div>
-            </article>
-
-            <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <section class="rounded-2xl bg-white p-5 shadow-lg shadow-blue-900/5 ring-1 ring-blue-100 sm:p-6">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-indigo-700">
                             {{ __('Ranking de la liga') }}
                         </p>
-                        <h3 class="mt-1 text-2xl font-black text-gray-950">
-                            {{ __('Puntos de miembros activos') }}
+                        <h3 class="text-2xl font-black text-blue-950 sm:text-3xl">
+                            {{ __('Tabla de posiciones') }}
                         </h3>
                     </div>
 
-                    <p class="text-sm text-gray-500">
-                        {{ __('Solo predicciones puntuadas') }}
+                    <p class="text-sm text-slate-500">
+                        {{ __('Predicciones puntuadas') }}
                     </p>
                 </div>
 
@@ -89,7 +60,7 @@
             </section>
 
             @if ($privateLeague->owner_id === auth()->id())
-                <details class="group rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+                <details class="group rounded-2xl bg-white shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5">
                         <div>
                             <p class="text-sm font-bold uppercase tracking-wide text-indigo-700">
@@ -105,6 +76,35 @@
                     </summary>
 
                     <div class="space-y-6 border-t border-gray-100 p-6">
+                        <section class="grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-xl bg-emerald-50 px-4 py-3">
+                                <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">
+                                    {{ __('Estado') }}
+                                </p>
+                                <p class="mt-1 text-sm font-black capitalize text-emerald-950">
+                                    {{ $privateLeague->status }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-xl bg-indigo-50 px-4 py-3">
+                                <p class="text-xs font-bold uppercase tracking-wide text-indigo-700">
+                                    {{ __('Miembros activos') }}
+                                </p>
+                                <p class="mt-1 text-sm font-black text-indigo-950">
+                                    {{ $privateLeague->memberships->count() }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                                <p class="text-xs font-bold uppercase tracking-wide text-slate-600">
+                                    {{ __('Codigo') }}
+                                </p>
+                                <p class="mt-1 text-sm font-black tracking-wide text-slate-950">
+                                    {{ $privateLeague->code }}
+                                </p>
+                            </div>
+                        </section>
+
                         <section>
                             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
