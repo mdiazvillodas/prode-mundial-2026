@@ -80,73 +80,11 @@
                     </p>
                 </div>
 
-                <div class="mt-5 space-y-3">
-                    @foreach ($leaderboard as $entry)
-                        <article class="{{ $loop->first ? 'border-amber-200 bg-amber-50' : 'border-gray-100 bg-gray-50' }} rounded-2xl border p-4">
-                            <div class="flex items-start gap-3">
-                                <div class="{{ $loop->first ? 'bg-amber-500 text-white' : 'bg-gray-950 text-white' }} flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black">
-                                    {{ $loop->iteration }}
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                                        <div class="min-w-0">
-                                            <h4 class="truncate font-black text-gray-950">
-                                                {{ '@'.$entry->username }}
-                                            </h4>
-                                            @if ($loop->first)
-                                                <p class="text-xs font-bold uppercase tracking-wide text-amber-700">
-                                                    {{ __('Primer puesto') }}
-                                                </p>
-                                            @else
-                                                <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                                    {{ __('Miembro activo') }}
-                                                </p>
-                                            @endif
-                                        </div>
-
-                                        <div class="text-left sm:text-right">
-                                            <p class="text-3xl font-black text-gray-950">
-                                                {{ (int) $entry->total_points }}
-                                            </p>
-                                            <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                            {{ __('Puntos') }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
-                                        <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
-                                            <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Resultados exactos') }}
-                                            </dt>
-                                            <dd class="mt-1 text-lg font-black text-gray-950">
-                                                {{ (int) $entry->exact_results_count }}
-                                            </dd>
-                                        </div>
-
-                                        <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
-                                            <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Tendencias') }}
-                                            </dt>
-                                            <dd class="mt-1 text-lg font-black text-gray-950">
-                                                {{ (int) $entry->trend_count }}
-                                            </dd>
-                                        </div>
-
-                                        <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
-                                            <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Predicciones puntuadas') }}
-                                            </dt>
-                                            <dd class="mt-1 text-lg font-black text-gray-950">
-                                                {{ (int) $entry->scored_predictions_count }}
-                                            </dd>
-                                        </div>
-                                    </dl>
-                                </div>
-                            </div>
-                        </article>
-                    @endforeach
+                <div class="mt-5">
+                    <x-ranking-table
+                        :entries="$leaderboard"
+                        :context-label="__('Miembro activo')"
+                    />
                 </div>
             </section>
 

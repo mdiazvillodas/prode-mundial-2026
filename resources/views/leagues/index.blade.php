@@ -85,84 +85,10 @@
                     </p>
                 </div>
 
-                @forelse ($globalLeaderboard as $entry)
-                    <article @class([
-                        'overflow-hidden rounded-2xl bg-white shadow-sm ring-1',
-                        'ring-amber-300 shadow-amber-100' => $loop->first,
-                        'ring-gray-100' => ! $loop->first,
-                    ])>
-                        <div @class([
-                            'p-5',
-                            'bg-amber-50' => $loop->first,
-                            'bg-white' => ! $loop->first,
-                        ])>
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="flex min-w-0 items-center gap-4">
-                                    <div @class([
-                                        'flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-black',
-                                        'bg-amber-500 text-white' => $loop->first,
-                                        'bg-gray-950 text-white' => ! $loop->first,
-                                    ])>
-                                        {{ $loop->iteration }}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <h4 class="truncate text-lg font-black text-gray-950">
-                                            {{ '@'.$entry->username }}
-                                        </h4>
-                                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                            {{ $loop->first ? __('Primer puesto') : __('Liga general') }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="text-right">
-                                    <p class="text-3xl font-black text-gray-950">
-                                        {{ (int) $entry->total_points }}
-                                    </p>
-                                    <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                    {{ __('Puntos') }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <dl class="grid grid-cols-3 gap-2 border-t border-gray-100 p-4 text-center">
-                            <div class="rounded-xl bg-emerald-50 px-2 py-3">
-                                <dt class="text-[11px] font-bold uppercase tracking-wide text-emerald-700">
-                                    {{ __('Resultados exactos') }}
-                                </dt>
-                                <dd class="mt-1 text-xl font-black text-emerald-950">
-                                    {{ (int) $entry->exact_results_count }}
-                                </dd>
-                            </div>
-                            <div class="rounded-xl bg-indigo-50 px-2 py-3">
-                                <dt class="text-[11px] font-bold uppercase tracking-wide text-indigo-700">
-                                    {{ __('Tendencias') }}
-                                </dt>
-                                <dd class="mt-1 text-xl font-black text-indigo-950">
-                                    {{ (int) $entry->trend_count }}
-                                </dd>
-                            </div>
-                            <div class="rounded-xl bg-gray-50 px-2 py-3">
-                                <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                    {{ __('Predicciones puntuadas') }}
-                                </dt>
-                                <dd class="mt-1 text-xl font-black text-gray-950">
-                                    {{ (int) $entry->scored_predictions_count }}
-                                </dd>
-                            </div>
-                        </dl>
-                    </article>
-                @empty
-                    <div class="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
-                        <h3 class="text-lg font-bold text-gray-950">
-                            {{ __('Todavia no hay tabla de posiciones') }}
-                        </h3>
-                        <p class="mt-2 text-sm text-gray-600">
-                            {{ __('La tabla de posiciones se va a completar cuando haya predicciones puntuadas.') }}
-                        </p>
-                    </div>
-                @endforelse
+                <x-ranking-table
+                    :entries="$globalLeaderboard"
+                    :context-label="__('Liga general')"
+                />
             </section>
 
             @foreach ($privateLeagues as $privateLeague)
@@ -187,71 +113,10 @@
                         </a>
                     </div>
 
-                    @foreach ($privateLeaderboards[$privateLeague->id] as $entry)
-                        <article @class([
-                            'rounded-2xl border p-4 shadow-sm',
-                            'border-amber-200 bg-amber-50' => $loop->first,
-                            'border-gray-100 bg-white' => ! $loop->first,
-                        ])>
-                            <div class="flex items-start gap-3">
-                                <div @class([
-                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black',
-                                    'bg-amber-500 text-white' => $loop->first,
-                                    'bg-gray-950 text-white' => ! $loop->first,
-                                ])>
-                                    {{ $loop->iteration }}
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div class="min-w-0">
-                                            <h4 class="truncate font-black text-gray-950">
-                                                {{ '@'.$entry->username }}
-                                            </h4>
-                                            <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                                {{ $loop->first ? __('Primer puesto') : __('Miembro activo') }}
-                                            </p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-2xl font-black text-gray-950">
-                                                {{ (int) $entry->total_points }}
-                                            </p>
-                                            <p class="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Puntos') }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
-                                        <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
-                                            <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Resultados exactos') }}
-                                            </dt>
-                                            <dd class="mt-1 text-lg font-black text-gray-950">
-                                                {{ (int) $entry->exact_results_count }}
-                                            </dd>
-                                        </div>
-                                        <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
-                                            <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Tendencias') }}
-                                            </dt>
-                                            <dd class="mt-1 text-lg font-black text-gray-950">
-                                                {{ (int) $entry->trend_count }}
-                                            </dd>
-                                        </div>
-                                        <div class="rounded-xl bg-white px-2 py-3 ring-1 ring-gray-100">
-                                            <dt class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                                                {{ __('Predicciones puntuadas') }}
-                                            </dt>
-                                            <dd class="mt-1 text-lg font-black text-gray-950">
-                                                {{ (int) $entry->scored_predictions_count }}
-                                            </dd>
-                                        </div>
-                                    </dl>
-                                </div>
-                            </div>
-                        </article>
-                    @endforeach
+                    <x-ranking-table
+                        :entries="$privateLeaderboards[$privateLeague->id]"
+                        :context-label="__('Miembro activo')"
+                    />
                 </section>
             @endforeach
         </div>

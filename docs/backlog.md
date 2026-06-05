@@ -2191,6 +2191,51 @@ Implemented `/` redirects for guests and authenticated users, replaced the gener
 Improve root redirect and dashboard UX
 
 ### Ticket ID
+E11-T04B
+
+### Title
+Polish ranking table UI
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+Medium
+
+### Objective
+Make ranking and table-of-positions views more compact, readable, and mobile-friendly without changing ranking logic.
+
+### Note
+Implemented as a visual-only Blade/Tailwind polish using a reusable `ranking-table` component for `/leagues`, private league detail rankings, and `/leaderboard`. Rankings now render as compact standings-style rows with short mobile labels, full desktop labels, stronger points column, first-place highlight, and subtle authenticated-user highlight. No queries, scoring, sorting, routes, or membership rules were changed.
+
+### Scope
+- Compact ranking rows for Liga general and private league rankings.
+- Apply the same visual treatment to `/leagues`, private league detail, and `/leaderboard`.
+- Show position, user, points, exact results, trends, and scored prediction counts.
+- Highlight first place and the authenticated user's row subtly.
+- Keep Spanish terminology and mobile-first layout.
+
+### Out of scope
+- No ranking logic changes.
+- No scoring changes.
+- No new metrics.
+- No filters, charts, pagination, API, admin, or database changes.
+
+### Acceptance criteria
+- Ranking views are more compact on mobile.
+- Rankings still show the same users and ordering.
+- `/leagues` still shows Liga general and private league rankings.
+- `/leaderboard` still works.
+- Private league rankings still exclude removed users.
+- Existing tests and E2E smoke suite continue passing.
+
+### Suggested commit message
+Polish ranking table UI
+
+### Ticket ID
 E11-T01
 
 ### Title
