@@ -4,12 +4,12 @@
     </x-slot>
 
     <x-slot name="subtitle">
-        {{ __('Antes de empezar, verificá tu email con el enlace que te enviamos. Si no lo recibiste, podemos enviarte otro.') }}
+        {{ __('Antes de empezar, verificá tu email con el código de 6 dígitos que te enviamos. Si no lo recibiste, podemos enviarte otro.') }}
     </x-slot>
 
-    @if (session('status') == 'verification-link-sent')
+    @if (session('status') == 'verification-code-sent')
         <div class="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 ring-1 ring-emerald-100">
-            {{ __('Enviamos un nuevo enlace de verificación al email que usaste al registrarte.') }}
+            {{ __('Enviamos un nuevo código de verificación al email que usaste al registrarte.') }}
         </div>
     @endif
 
@@ -19,7 +19,7 @@
 
             <div>
                 <x-primary-button class="flex w-full justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-black normal-case tracking-wide text-white shadow-lg shadow-blue-900/20 hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-800 focus:ring-blue-600 sm:w-auto">
-                    {{ __('Reenviar email de verificación') }}
+                    {{ __('Reenviar código de verificación') }}
                 </x-primary-button>
             </div>
         </form>

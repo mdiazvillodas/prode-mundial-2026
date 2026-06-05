@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Mail\EmailVerificationCodeMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -18,6 +20,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        Mail::fake();
+
         $response = $this->post('/register', [
             'name' => 'Test User',
             'username' => 'testuser',
@@ -27,11 +31,14 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.code.show', absolute: false));
+        Mail::assertSent(EmailVerificationCodeMail::class);
     }
 
     public function test_users_can_not_register_with_duplicate_username(): void
     {
+        Mail::fake();
+
         $this->post('/register', [
             'name' => 'Test User',
             'username' => 'testuser',

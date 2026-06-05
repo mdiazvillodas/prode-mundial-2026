@@ -336,6 +336,55 @@ Enable registration, login, logout, and authenticated pages.
 feat: configure user authentication
 
 ### Ticket ID
+E3-T03B
+
+### Title
+Email verification by code
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Require new email/password users to verify their email with a short code before entering the main app.
+
+### Note
+Implemented with a dedicated `email_verification_codes` table that stores hashed 6-digit codes, expires codes after 15 minutes, and marks older active codes as used when a new code is sent. Registration now sends a Spanish Prode transactional email through Laravel Mail and redirects to `/email/verify-code`. Main authenticated app areas require verified email, while the code screen, submit, resend, and logout remain available to unverified users. Google-created or Google-linked users are treated as verified, and staging/demo users remain verified for QA.
+
+### Scope
+- Store hashed email verification codes with expiration and used state.
+- Send Spanish verification-code email through Laravel Mail.
+- Add code verification, resend, and verification screen routes.
+- Use `users.email_verified_at` as the verification state.
+- Gate dashboard, predictions, leagues, calendar, history, profile, and admin routes behind verified email.
+- Keep demo users verified in seed/reset data.
+- Add focused feature tests with `Mail::fake()`.
+- Update staging QA documentation.
+
+### Out of scope
+- No Brevo secrets or SMTP credentials.
+- No removal of traditional email/password login.
+- No changes to prediction, scoring, league, or admin business logic beyond the verified-email access gate.
+- No external packages.
+- No React, Vue, or Inertia.
+
+### Acceptance criteria
+- New registered users must verify email by code before accessing the app.
+- Verification codes are not stored in plaintext.
+- Expired, invalid, and used codes fail.
+- Resend sends a new code and supersedes previous active codes.
+- Demo users remain verified for local/staging QA.
+- Automated tests do not send real email.
+
+### Suggested commit message
+Add email verification by code
+
+### Ticket ID
 TICKET-007
 
 ### Title

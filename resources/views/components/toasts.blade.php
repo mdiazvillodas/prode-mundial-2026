@@ -6,7 +6,7 @@
     $statusMessages = [
         'profile-updated' => __('Perfil actualizado.'),
         'password-updated' => __('Contraseña actualizada.'),
-        'verification-link-sent' => __('Te enviamos un nuevo enlace de verificación.'),
+        'verification-code-sent' => __('Te enviamos un nuevo código de verificación.'),
     ];
 
     $toastStyles = [

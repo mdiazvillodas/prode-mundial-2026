@@ -298,6 +298,15 @@ Google login QA:
 - Playwright smoke tests do not perform real Google OAuth login or call Google.
 - When credentials are configured in local or Railway staging, manually verify the `Continuar con Google` button appears on login/register and completes the Google OAuth flow.
 
+Email verification by code QA:
+
+- Email/password registration sends a 6-digit verification code and redirects the user to `/email/verify-code`.
+- New registered users must verify their email before accessing dashboard, predictions, leagues, calendar, history, profile, or admin areas.
+- Verification codes are stored hashed, expire after 15 minutes, and are invalidated when a new code is resent.
+- Local and automated tests use `Mail::fake()` or local mail logging and do not require Brevo.
+- Railway staging needs real SMTP variables before manual registration emails can be delivered. Current Brevo SMTP shape: `MAIL_MAILER=smtp`, `MAIL_HOST=smtp-relay.brevo.com`, `MAIL_PORT=587`, `MAIL_ENCRYPTION=tls`, `MAIL_FROM_ADDRESS=no-reply@miprode.es`, and `MAIL_FROM_NAME="Mi Prode"`. `MAIL_USERNAME` and `MAIL_PASSWORD` must be configured as Railway secrets, never hardcoded or committed.
+- Staging demo users remain verified after `php artisan demo:reset-staging --force`, so Playwright smoke can log in with the documented demo accounts without completing email verification.
+
 Browser and reporting targets:
 
 - Chromium first

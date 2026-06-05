@@ -34,7 +34,7 @@
                     {{ __('Tu email todavia no esta verificado.') }}
 
                         <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Hace clic aca para reenviar el email de verificacion.') }}
+                            {{ __('Hace clic aca para reenviar el codigo de verificacion.') }}
                         </button>
                     </p>
 

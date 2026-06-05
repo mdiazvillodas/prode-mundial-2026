@@ -12,11 +12,11 @@ class GlobalToastNotificationsTest extends TestCase
 
     public function test_guest_layout_renders_status_flash_as_global_toast(): void
     {
-        $this->withSession(['status' => 'verification-link-sent'])
+        $this->withSession(['status' => 'verification-code-sent'])
             ->get(route('login'))
             ->assertOk()
             ->assertSee('global-toasts')
-            ->assertSee('Te enviamos un nuevo enlace de verificación.');
+            ->assertSee('Te enviamos un nuevo código de verificación.');
     }
 
     public function test_app_layout_renders_success_flash_as_global_toast(): void

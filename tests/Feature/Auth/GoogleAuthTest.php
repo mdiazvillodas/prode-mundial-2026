@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Mail\EmailVerificationCodeMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
@@ -129,6 +131,28 @@ class GoogleAuthTest extends TestCase
         ]);
     }
 
+    public function test_google_callback_sends_code_when_google_email_is_explicitly_unverified(): void
+    {
+        Mail::fake();
+        $this->configureGoogle();
+
+        $this->mockGoogleUser($this->googleUser(
+            id: 'google-unverified',
+            name: 'Correo Pendiente',
+            email: 'pendiente@example.com',
+            emailVerified: false,
+        ));
+
+        $this->get(route('auth.google.callback'))
+            ->assertRedirect(route('verification.code.show'));
+
+        $user = User::query()->where('email', 'pendiente@example.com')->firstOrFail();
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertFalse($user->hasVerifiedEmail());
+        Mail::assertSent(EmailVerificationCodeMail::class);
+    }
+
     public function test_traditional_login_still_works(): void
     {
         $user = User::factory()->create();
@@ -198,13 +222,20 @@ class GoogleAuthTest extends TestCase
             ->andReturn($provider);
     }
 
-    private function googleUser(string $id, string $name, string $email, ?string $avatar = null): SocialiteUser
+    private function googleUser(
+        string $id,
+        string $name,
+        string $email,
+        ?string $avatar = null,
+        bool $emailVerified = true,
+    ): SocialiteUser
     {
         return (new SocialiteUser())->setRaw([
             'sub' => $id,
             'name' => $name,
             'email' => $email,
             'picture' => $avatar,
+            'email_verified' => $emailVerified,
         ])->map([
             'id' => $id,
             'name' => $name,
