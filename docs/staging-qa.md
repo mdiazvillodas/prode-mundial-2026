@@ -291,6 +291,13 @@ Current smoke coverage:
 - history pending/scored state smoke
 - admin dashboard and admin matches smoke
 
+Google login QA:
+
+- Google OAuth login requires environment credentials: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI`.
+- The Google login button is hidden when those credentials are missing.
+- Playwright smoke tests do not perform real Google OAuth login or call Google.
+- When credentials are configured in local or Railway staging, manually verify the `Continuar con Google` button appears on login/register and completes the Google OAuth flow.
+
 Browser and reporting targets:
 
 - Chromium first

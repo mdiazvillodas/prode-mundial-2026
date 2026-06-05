@@ -9,6 +9,8 @@
 
     <x-auth-session-status class="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 ring-1 ring-emerald-100" :status="session('status')" />
 
+    <x-google-auth-button />
+
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 

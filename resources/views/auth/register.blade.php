@@ -7,6 +7,8 @@
         {{ __('Registrate para sumar puntos, entrar a la Liga general y competir en ligas privadas.') }}
     </x-slot>
 
+    <x-google-auth-button />
+
     <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
 

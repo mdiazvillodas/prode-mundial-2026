@@ -2236,6 +2236,53 @@ Implemented as a visual-only Blade/Tailwind polish using a reusable `ranking-tab
 Polish ranking table UI
 
 ### Ticket ID
+E11-T04C
+
+### Title
+Prepare Google login with Laravel Socialite
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+Medium
+
+### Objective
+Add Google OAuth login as a low-friction authentication option while keeping traditional email/password login intact.
+
+### Note
+Implemented with Laravel Socialite for Google only. Added Google OAuth service configuration, nullable Google auth fields on users, Google redirect/callback routes, a small `GoogleAuthController`, deterministic username generation with numeric collision suffixes, and a Prode-styled `Continuar con Google` CTA that is hidden unless Google credentials are configured. Existing users are linked by email without duplication, new Google users receive secure random passwords to preserve the existing non-null password schema, and email/password login remains unchanged. Added focused feature tests with mocked Socialite responses and no real Google calls.
+
+### Scope
+- Add `laravel/socialite`.
+- Configure Google OAuth through environment variables.
+- Add nullable user fields for `google_id`, `avatar_url`, and `auth_provider`.
+- Add Google auth redirect and callback routes.
+- Create or link users from Google callback without duplicating existing email users.
+- Add Google CTA to login/register only when configured.
+- Update staging QA documentation.
+
+### Out of scope
+- No additional OAuth providers.
+- No hardcoded Google credentials.
+- No removal of email/password login.
+- No changes to scoring, predictions, leagues, admin flows, demo reset commands, or routes outside Google auth additions.
+
+### Acceptance criteria
+- Email/password login and registration continue working.
+- Google routes exist and handle missing config gracefully.
+- Google callback creates new users and links existing email users without duplication.
+- Generated usernames handle collisions deterministically.
+- Google button appears only when credentials are configured.
+- Tests mock Socialite and do not call Google.
+
+### Suggested commit message
+Prepare Google login
+
+### Ticket ID
 E11-T01
 
 ### Title
