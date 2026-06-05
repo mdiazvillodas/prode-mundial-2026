@@ -37,7 +37,7 @@ Staging is allowed to use deterministic demo data. Production must use live data
 - Do not use real user data in staging demo seed data.
 - Demo passwords are allowed only for local and staging test users.
 - Demo credentials must never be reused from real accounts.
-- Demo reset commands fail loudly when `APP_ENV=production` or `APP_MODE=live`.
+- Demo reset and result simulation commands fail loudly when `APP_ENV=production` or `APP_MODE=live`.
 
 ## Demo Data Strategy
 
@@ -154,7 +154,7 @@ Validate the product before simulated results are applied:
 
 ### Phase B - Simulated Results
 
-A future command should simulate API-like result arrival:
+The `demo:simulate-results` command simulates API-like result arrival:
 
 - update match scores
 - set `winner_team_id`
@@ -175,12 +175,12 @@ Validate the product after simulated results have been applied:
 - admin can correct results
 - rescoring remains idempotent
 
-## Future Result Simulation Command
+## Result Simulation Command
 
-Desired future command:
+Current command:
 
 ```bash
-php artisan demo:simulate-results --scenario=group-day-1
+php artisan demo:simulate-results --scenario=group-day-1 --force
 ```
 
 The command should behave like the future API integration:
@@ -193,7 +193,43 @@ The command should behave like the future API integration:
 - be safe for repeated use where possible
 - block execution in production/live
 
+For local manual use, `--force` may be omitted to get an interactive confirmation:
+
+```bash
+php artisan demo:simulate-results --scenario=group-day-1
+```
+
+For Railway staging, run it in the Railway staging environment using the Railway shell or command runner:
+
+```bash
+php artisan demo:simulate-results --scenario=group-day-1 --force
+```
+
+The current `group-day-1` scenario applies deterministic QA results to known demo matches created by `StagingDemoSeeder`, including group-stage matches and the assigned knockout demo match. It is not an official result feed and does not connect to external APIs.
+
 Scenarios should be named and documented so QA knows what state each scenario creates.
+
+## Recommended QA Flow
+
+Use this flow for local or Railway staging QA:
+
+1. Prepare staging data:
+
+```bash
+php artisan demo:reset-staging --force
+```
+
+2. Run manual or future Playwright pre-results QA.
+
+3. Simulate API-like result arrival:
+
+```bash
+php artisan demo:simulate-results --scenario=group-day-1 --force
+```
+
+4. Run manual or future Playwright post-results QA.
+
+This validates both the pre-results prediction experience and the post-results history/ranking experience. E14-T02D will add Playwright QA later.
 
 ## Staging Reset And Seed Flow
 
@@ -268,7 +304,7 @@ Examples:
 - admin result save works
 - ranking updates after simulated result
 
-## Out Of Scope For E14-T02B
+## Out Of Scope For E14-T02C
 
 - No Playwright installation.
 - No test implementation.
@@ -278,4 +314,5 @@ Examples:
 - No views.
 - No external packages.
 - No Railway config changes.
-- No result simulation command. That belongs to E14-T02C.
+- No real API integration.
+- No Playwright suite. That belongs to E14-T02D.

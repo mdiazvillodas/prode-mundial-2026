@@ -2641,7 +2641,7 @@ E14-T02C
 Add demo result simulation command
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 8
@@ -2651,6 +2651,9 @@ High
 
 ### Objective
 Simulate API-like match result arrival for staging QA.
+
+### Note
+Implemented with `php artisan demo:simulate-results --scenario=group-day-1`. The command blocks production/live environments, applies deterministic QA results to known staging demo matches, marks them finished, sets `winner_team_id`, and reuses `MatchPredictionSettlementService` so points are recalculated idempotently.
 
 ### Scope
 - Add a command such as `php artisan demo:simulate-results --scenario=group-day-1`.
