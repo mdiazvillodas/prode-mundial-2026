@@ -3088,16 +3088,41 @@ E16-T02
 Sync teams from API-Football
 
 ### Status
-Todo
+Done
 
 ### Sprint
-Future
+Sprint 8
 
 ### Priority
 High
 
 ### Objective
 Create a safe sync flow for teams using API-Football data and local mapping fields.
+
+### Note
+Implemented with `php artisan api-football:sync-teams`. The command supports API fetches or `--from-snapshot`, `--league`, `--season`, `--force`, and `--dry-run`; makes at most 1 API request; detects HTTP and top-level API-Football logical errors; creates, updates, links, or skips teams conservatively; preserves local `country_code` and `flag_path`; ignores venue data; and includes HTTP-faked feature coverage. It does not sync fixtures, results, predictions, rankings, leagues, admin data, or image binaries.
+
+### Scope
+- Fetch teams from API-Football `/teams`.
+- Upsert local `Team` records using `api_provider` and `api_team_id`.
+- Link existing unmapped teams by unique `short_name` or exact name when safe.
+- Map `team.name`, `team.code`, `team.country`, `team.logo`, and `last_synced_at`.
+- Support dry run and snapshot mode.
+- Keep sync blocked in production/live mode.
+- Add tests with `Http::fake()`.
+
+### Out of scope
+- No fixture sync.
+- No match updates.
+- No prediction, scoring, league, or admin behavior changes.
+- No image downloads or binary storage.
+
+### Acceptance criteria
+- Command exists and fails safely when configuration is missing.
+- Successful fake response creates and updates teams idempotently.
+- Existing local `country_code` and `flag_path` are preserved.
+- Venue data is ignored.
+- Tests do not call the real API.
 
 ### Suggested commit message
 Sync teams from API-Football

@@ -77,14 +77,14 @@ For v1, direct URL reference is sufficient.
 
 ### Source
 
-Both fields are populated during team sync (E16-T02) from API-Football response:
+`teams.country` is populated during team sync (E16-T02) from API-Football response:
 
 ```
 API response: team.country     -> database: teams.country
-API response: team.code        -> database: teams.country_code (may differ; verify mapping)
+API response: team.code        -> database: teams.short_name
 ```
 
-**Note**: The API-Football `venue.country` field describes the team's home stadium location, not the team's national identity, and is not used.
+`teams.country_code` remains a local visual identity field. It is not overwritten by API-Football team sync. The API-Football `venue.country` field describes the team's home stadium location, not the team's national identity, and is not used.
 
 ## User Interface
 
@@ -112,9 +112,11 @@ If an asset is missing or unavailable:
 1. **Team sync** (E16-T02): Fetch teams from API-Football
    - Populate `api_provider = 'api-football'`
    - Populate `api_team_id` from `team.id`
+   - Populate `short_name` from `team.code`
    - Populate `logo_url` from `team.logo`
    - Populate `country` from `team.country`
    - Record `last_synced_at`
+   - Preserve `country_code` and `flag_path`
 
 2. **UI rendering**: Read from database
    - Display `flag_path` for national flag (local asset)
@@ -125,6 +127,7 @@ If an asset is missing or unavailable:
 ## Constraints
 
 - Flags must be created/maintained locally; do not depend on API
+- API team sync must not overwrite `flag_path` or `country_code`
 - Logos must never be stored as binary data
 - URLs and paths must be valid and accessible from the browser
 - Do not store credentials or authentication tokens in logo/flag URLs

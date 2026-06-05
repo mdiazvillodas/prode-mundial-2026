@@ -38,6 +38,8 @@ The discovery command treats non-empty top-level `errors` as a failed endpoint e
 
 ## Command
 
+### Discovery
+
 Run all supported discovery endpoints and save snapshots:
 
 ```bash
@@ -80,6 +82,44 @@ Supported endpoints:
 
 `--endpoint=all` makes at most 4 API requests.
 
+### Team Sync
+
+Sync teams from API-Football into the local `teams` table:
+
+```bash
+php artisan api-football:sync-teams --force
+```
+
+Run a dry run without writing to the database:
+
+```bash
+php artisan api-football:sync-teams --dry-run --force
+```
+
+Validate the team-sync shape with an accessible free-plan season such as `2022`:
+
+```bash
+php artisan api-football:sync-teams --season=2022 --dry-run --force
+```
+
+Load teams from a previously saved snapshot without spending API requests:
+
+```bash
+php artisan api-football:sync-teams --from-snapshot=api-football/world-cup-2026/teams-latest.json --dry-run --force
+```
+
+`api-football:sync-teams` makes at most 1 API request when not using `--from-snapshot`.
+
+The command:
+
+- Uses `x-apisports-key`.
+- Fails when `API_FOOTBALL_KEY` is missing, unless `--from-snapshot` is used.
+- Detects top-level API-Football `errors`, including HTTP 200 logical errors.
+- Creates, updates, links, or skips teams conservatively.
+- Does not delete local teams missing from the API response.
+- Ignores `venue.*` data from the teams endpoint.
+- Does not sync fixtures, results, predictions, rankings, or admin data.
+
 ## Snapshots
 
 When `--save` is passed, raw JSON snapshots are stored on the local disk under:
@@ -120,9 +160,9 @@ API-Football `/teams?league=1&season=2026` returns:
 ```
 response[]
   team.id           -> database: api_team_id
-  team.name         -> database: name, country (API response contains country name)
-  team.code         -> database: team.code (FIFA-style short code). This value is considered an external API code and is **not** used as the app's canonical `country_code` or `flag_path`. Use `team.code` only for reference; `teams.country_code` and `teams.flag_path` are local visual identity helpers.
-  team.country      -> database: (unused - venue country is not used for team identity)
+  team.name         -> database: name
+  team.code         -> database: short_name. This value is considered an external/API short code and is **not** used as the app's canonical `country_code` or `flag_path`. `teams.country_code` and `teams.flag_path` are local visual identity helpers and are not overwritten by team sync.
+  team.country      -> database: country
   team.national     -> database: (unused - boolean flag)
   team.logo         -> database: logo_url (external URL reference only)
   venue.*           -> database: (unused - venue data is not used for national team identity)
@@ -135,9 +175,11 @@ response[]
 - `api_provider`: 'api-football' (string, marks data source)
 - `api_team_id`: team.id (unsigned big integer, API-Football team ID)
 - `name`: team.name (string, team name)
+- `short_name`: team.code (string, API short code)
 - `country`: team.country (string, from API response)
 - `logo_url`: team.logo (string, external URL reference)
-- `flag_path`: (existing field, local asset path such as flags/ar.svg)
+- `country_code`: preserved local field, not overwritten by API sync
+- `flag_path`: preserved local field, local asset path such as flags/ar.svg
 - `last_synced_at`: (datetime, timestamp of last sync)
 
 A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_team_id'])`.
@@ -185,7 +227,7 @@ A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_fixt
 ### Data Flow
 
 1. **Discovery phase** (E16-T01, complete): Add database fields to track API mappings. Database is prepared but no sync occurs.
-2. **Team sync** (E16-T02, planned): Fetch teams from `/teams` endpoint and populate database fields.
+2. **Team sync** (E16-T02, complete): Fetch teams from `/teams` endpoint and populate database fields.
 3. **Fixture sync** (E16-T03, planned): Fetch fixtures from `/fixtures` endpoint and populate database fields.
 4. **Result settlement** (E16-T04, planned): Use synced data to update scores and settle predictions.
 
@@ -205,7 +247,7 @@ When displaying team logos, use `logo_url` (external reference). When displaying
 Planned follow-up tickets:
 
 - E16-T01 - Add API mapping fields. (IMPLEMENTED)
-- E16-T02 - Sync teams from API-Football.
+- E16-T02 - Sync teams from API-Football. (IMPLEMENTED)
 - E16-T03 - Sync fixtures from API-Football.
 - E16-T04 - Sync results and settle predictions.
 - E16-T05 - API sync logs/admin visibility.
