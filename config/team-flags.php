@@ -52,7 +52,7 @@ return [
     'SWE' => ['country_code' => 'SWE', 'flag_path' => 'flags/swe.svg'],
     'TUN' => ['country_code' => 'TUN', 'flag_path' => 'flags/tun.svg'],
     'TUR' => ['country_code' => 'TUR', 'flag_path' => 'flags/tur.svg'],
-    'URU' => ['country_code' => 'URY', 'flag_path' => 'flags/uru.svg'],
+    'URU' => ['country_code' => 'URU', 'flag_path' => 'flags/uru.svg'],
     'USA' => ['country_code' => 'USA', 'flag_path' => 'flags/usa.svg'],
     'UZB' => ['country_code' => 'UZB', 'flag_path' => 'flags/uzb.svg'],
     'WAL' => ['country_code' => 'WAL', 'flag_path' => 'flags/wal.svg'],

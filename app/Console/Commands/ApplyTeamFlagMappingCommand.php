@@ -61,11 +61,15 @@ class ApplyTeamFlagMappingCommand extends Command
 
                 $changes = [];
 
-                if ($forceUpdate || blank($team->country_code)) {
+                if (
+                    $forceUpdate
+                    || blank($team->country_code)
+                    || ($team->short_name === 'URU' && $team->country_code === 'URY')
+                ) {
                     $changes['country_code'] = $mapping['country_code'];
                 }
 
-                if ($forceUpdate || blank($team->flag_path)) {
+                if ($forceUpdate || blank($team->flag_path) || ! TeamFlagMapping::assetExists((string) $team->flag_path)) {
                     $changes['flag_path'] = $mapping['flag_path'];
                 }
 

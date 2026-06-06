@@ -36,6 +36,17 @@ class TeamFlagMappingTest extends TestCase
         $this->assertSame('flags/wal.svg', TeamFlagMapping::forCode('WAL')['flag_path']);
     }
 
+    public function test_uruguay_maps_to_existing_uru_flag_asset(): void
+    {
+        $mapping = TeamFlagMapping::forCode('URU');
+
+        $this->assertSame([
+            'country_code' => 'URU',
+            'flag_path' => 'flags/uru.svg',
+        ], $mapping);
+        $this->assertTrue(TeamFlagMapping::assetExists($mapping['flag_path']));
+    }
+
     public function test_2026_missing_team_codes_have_mappings_and_assets(): void
     {
         $codes = [

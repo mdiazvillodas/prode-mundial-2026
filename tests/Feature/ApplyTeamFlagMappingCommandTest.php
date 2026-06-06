@@ -100,7 +100,7 @@ class ApplyTeamFlagMappingCommandTest extends TestCase
             'name' => 'Spain',
             'short_name' => 'ESP',
             'country_code' => 'LOC',
-            'flag_path' => 'flags/manual.svg',
+            'flag_path' => 'flags/esp.svg',
         ]);
 
         $this->artisan('teams:apply-flag-mapping --force')
@@ -110,7 +110,27 @@ class ApplyTeamFlagMappingCommandTest extends TestCase
         $this->assertDatabaseHas('teams', [
             'short_name' => 'ESP',
             'country_code' => 'LOC',
-            'flag_path' => 'flags/manual.svg',
+            'flag_path' => 'flags/esp.svg',
+        ]);
+    }
+
+    public function test_command_repairs_uruguay_broken_flag_path(): void
+    {
+        Team::factory()->create([
+            'name' => 'Uruguay',
+            'short_name' => 'URU',
+            'country_code' => 'URY',
+            'flag_path' => 'flags/ury.svg',
+        ]);
+
+        $this->artisan('teams:apply-flag-mapping --force')
+            ->expectsOutputToContain('updated=1')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('teams', [
+            'short_name' => 'URU',
+            'country_code' => 'URU',
+            'flag_path' => 'flags/uru.svg',
         ]);
     }
 
