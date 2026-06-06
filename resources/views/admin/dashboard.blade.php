@@ -93,6 +93,14 @@
                     </a>
 
                     <a
+                        href="{{ route('admin.users.index') }}"
+                        class="rounded-lg border border-blue-100 bg-blue-50 p-4 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                        <p class="font-bold text-blue-950">{{ __('Usuarios / Emails') }}</p>
+                        <p class="mt-1 text-sm text-blue-800">{{ __('Verificación manual de email') }}</p>
+                    </a>
+
+                    <a
                         href="{{ route('leaderboard.index') }}"
                         class="rounded-lg border border-amber-100 bg-amber-50 p-4 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                     >

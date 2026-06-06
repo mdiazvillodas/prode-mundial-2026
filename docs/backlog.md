@@ -2420,6 +2420,46 @@ Google OAuth now links existing users by Google ID or email, populates Google pr
 Allow Google OAuth auto-registration
 
 ### Ticket ID
+AUTH-T03
+
+### Title
+Admin manual email verification override
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Give admins a safe fallback to mark a user's email as verified when the normal Brevo/email-code flow fails or the provider limit is reached.
+
+### Note
+Implemented an admin users page at `/admin/users` and a CSRF-protected manual verification action at `/admin/users/{user}/verify-email`. The action only sets `email_verified_at` when it is null, is idempotent for already verified users, and does not change passwords, roles, Google fields, predictions, leagues, or any other user data. This is not an account approval system and does not add pending/approved/rejected account states.
+
+### Scope
+- Show users with name, username, email, role, email verification status/date, created date, and Google linked status.
+- Allow admins to manually verify unverified emails.
+- Keep the existing Brevo/email-code verification flow unchanged.
+- Keep Google-created users verified automatically.
+- Add feature coverage for admin access, non-admin denial, guest redirects, verification action, idempotent already-verified behavior, and verified-gate access after override.
+
+### Out of scope
+- No approval status, user approval workflow, rejection flow, unverify action, scoring, predictions, leagues, API-Football sync, timezone, auth provider, or Railway config changes.
+
+### Acceptance criteria
+- Admins can see users and email verification status.
+- Admins can manually mark an email as verified.
+- Manually verified users pass the existing email verification gate.
+- Guests and non-admins cannot access the users page or verification action.
+
+### Suggested commit message
+Add admin email verification override
+
+### Ticket ID
 E11-T01
 
 ### Title

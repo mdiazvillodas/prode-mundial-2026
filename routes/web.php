@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ApiHealthController as AdminApiHealthController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\MatchController as AdminMatchController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaderboardController;
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'verified', 'admin'])
     ->group(function () {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::get('/api-health', AdminApiHealthController::class)->name('api-health');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}/verify-email', [AdminUserController::class, 'verifyEmail'])->name('users.verify-email');
         Route::get('/matches', [AdminMatchController::class, 'index'])->name('matches.index');
         Route::get('/matches/{tournamentMatch}/teams', [AdminMatchController::class, 'editTeams'])->name('matches.teams.edit');
         Route::post('/matches/{tournamentMatch}/teams', [AdminMatchController::class, 'updateTeams'])->name('matches.teams.update');

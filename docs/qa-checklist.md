@@ -97,6 +97,11 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 - Open `/admin/matches`.
 - View a match result form for a match with teams.
 - Update a match result and confirm prediction settlement feedback appears.
+- Open `/admin/users`.
+- Confirm users show name, username, email, role, email verification status, Google linked status, and created date.
+- Create/register a user that remains unverified, then log in as admin and manually verify the user's email from `/admin/users`.
+- Confirm the manually verified user can access the app through the existing email verification gate.
+- Confirm this is only an email verification override, not an account approval/rejection workflow.
 - Open `/admin/api-health`.
 - Confirm API sync logs, latest success/failure, team/fixture counts, missing flag count, and fixture status counts render.
 - Confirm a normal user receives `403` for admin pages.

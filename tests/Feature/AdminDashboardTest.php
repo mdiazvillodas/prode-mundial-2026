@@ -52,6 +52,7 @@ class AdminDashboardTest extends TestCase
             ->assertSee((string) TournamentMatch::count())
             ->assertSee((string) Prediction::count())
             ->assertSee('Admin partidos')
+            ->assertSee('Usuarios / Emails')
             ->assertSee('Liga general');
     }
 
