@@ -3467,3 +3467,45 @@ Follow-up polish keeps the active date chip visible on mobile after page reload 
 
 ### Suggested commit message
 Fix predictions date navigation
+
+### Ticket ID
+QA-01
+
+### Title
+Add deep QA checklist and automated smoke coverage
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Create a production-readiness QA checklist and expand stable Playwright smoke coverage without changing product behavior.
+
+### Note
+Implemented with `docs/qa-checklist.md`, covering manual QA for auth, predictions, calendar, private leagues, leaderboards, admin, API-Football integrity, mobile/responsive behavior, and abuse protection. Playwright smoke coverage now checks login/register/forgot-password pages, dashboard access, predictions date chips and match cards, prediction date navigation, calendar, leaderboard, admin API health access, and non-admin denial for admin API health.
+
+### Scope
+- Add actionable deep QA checklist.
+- Document recommended local QA reset/build/test flow.
+- Extend e2e smoke tests using demo users and demo data.
+- Avoid real Google, Brevo, and API-Football calls in automation.
+
+### Out of scope
+- No scoring changes.
+- No prediction logic changes.
+- No API sync mapping changes.
+- No auth provider changes.
+- No league business rule changes.
+
+### Acceptance criteria
+- `docs/qa-checklist.md` exists and is actionable.
+- Existing and new e2e smoke tests are stable against demo data.
+- Laravel tests and frontend build still pass.
+
+### Suggested commit message
+Add deep QA checklist and smoke coverage

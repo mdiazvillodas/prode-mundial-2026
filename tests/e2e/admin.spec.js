@@ -13,4 +13,17 @@ test('admin smoke loads dashboard and matches listing', async ({ page }) => {
     await page.goto('/admin/matches');
     await expect(page.getByRole('heading', { name: 'Admin partidos' })).toBeVisible();
     await expect(page.getByText(/Listado minimo|Todavia no hay partidos|Fase/).first()).toBeVisible();
+
+    await page.goto('/admin/api-health');
+    await expect(page.getByRole('heading', { name: 'Estado API-Football' })).toBeVisible();
+    await expect(page.getByText('Logs recientes')).toBeVisible();
+    await expect(page.getByText('Equipos API en DB')).toBeVisible();
+    await expect(page.getByText('Fixtures API en DB')).toBeVisible();
+});
+
+test('normal user cannot access admin API health', async ({ page }) => {
+    await login(page, demoUsers.mariano);
+
+    await page.goto('/admin/api-health');
+    await expect(page.getByText(/403|Forbidden|Esta acción no está autorizada|This action is unauthorized/i).first()).toBeVisible();
 });
