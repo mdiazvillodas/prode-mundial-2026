@@ -50,6 +50,36 @@ class ApplyTeamFlagMappingCommandTest extends TestCase
         ]);
     }
 
+    public function test_command_applies_flags_to_2026_missing_team_codes_by_short_name(): void
+    {
+        $codes = [
+            'ALG', 'AUT', 'BIH', 'CPV', 'COL', 'CGO', 'CUR', 'CZE',
+            'EGY', 'HAI', 'IRQ', 'CIV', 'JOR', 'NZL', 'NOR', 'PAN',
+            'PAR', 'SCO', 'RSA', 'SWE', 'TUR', 'UZB',
+        ];
+
+        foreach ($codes as $code) {
+            Team::factory()->create([
+                'name' => 'Team '.$code,
+                'short_name' => $code,
+                'country_code' => null,
+                'flag_path' => null,
+            ]);
+        }
+
+        $this->artisan('teams:apply-flag-mapping --force')
+            ->expectsOutputToContain('updated=22')
+            ->assertSuccessful();
+
+        foreach ($codes as $code) {
+            $this->assertDatabaseHas('teams', [
+                'short_name' => $code,
+                'country_code' => $code,
+                'flag_path' => 'flags/'.strtolower($code).'.svg',
+            ]);
+        }
+    }
+
     public function test_command_reports_unmapped_teams(): void
     {
         Team::factory()->create([

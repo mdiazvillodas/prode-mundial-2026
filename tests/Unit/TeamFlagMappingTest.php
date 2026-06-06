@@ -36,6 +36,28 @@ class TeamFlagMappingTest extends TestCase
         $this->assertSame('flags/wal.svg', TeamFlagMapping::forCode('WAL')['flag_path']);
     }
 
+    public function test_2026_missing_team_codes_have_mappings_and_assets(): void
+    {
+        $codes = [
+            'ALG', 'AUT', 'BIH', 'CPV', 'COL', 'CGO', 'CUR', 'CZE',
+            'EGY', 'HAI', 'IRQ', 'CIV', 'JOR', 'NZL', 'NOR', 'PAN',
+            'PAR', 'SCO', 'RSA', 'SWE', 'TUR', 'UZB',
+        ];
+
+        foreach ($codes as $code) {
+            $mapping = TeamFlagMapping::forCode($code);
+
+            $this->assertSame([
+                'country_code' => $code,
+                'flag_path' => 'flags/'.strtolower($code).'.svg',
+            ], $mapping);
+            $this->assertTrue(
+                TeamFlagMapping::assetExists($mapping['flag_path']),
+                "Expected {$mapping['flag_path']} to exist for {$code}."
+            );
+        }
+    }
+
     public function test_team_display_helpers_prefer_local_flag_and_short_name(): void
     {
         $team = new Team([

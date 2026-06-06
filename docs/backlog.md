@@ -3041,6 +3041,48 @@ Implemented with local SVG assets in `public/flags/`, `config/team-flags.php`, `
 Add local team flag mapping
 
 ### Ticket ID
+E15-T03B
+
+### Title
+Complete 2026 team flag mappings
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Add local flag assets and mappings for the 22 API-Football 2026 teams that were still missing `flag_path`.
+
+### Note
+Implemented with SVG assets under `public/flags/` and `config/team-flags.php` mappings keyed by `teams.short_name`. The added mappings cover `ALG`, `AUT`, `BIH`, `CPV`, `COL`, `CGO`, `CUR`, `CZE`, `EGY`, `HAI`, `IRQ`, `CIV`, `JOR`, `NZL`, `NOR`, `PAN`, `PAR`, `SCO`, `RSA`, `SWE`, `TUR`, and `UZB`, using each code as the local `country_code` flag code.
+
+### Scope
+- Add missing local SVG flag assets.
+- Map 2026 short-name codes to local `flag_path` values.
+- Keep mapping based on `teams.short_name`; no `code` column is required.
+- Add tests that each mapping points to an existing asset.
+- Add command coverage proving `teams:apply-flag-mapping` applies the new codes.
+- Update team identity documentation.
+
+### Out of scope
+- No scoring, prediction, league, auth/email, or API-Football sync changes.
+- No external packages or external API calls.
+- No FIFA or tournament branding.
+
+### Acceptance criteria
+- `teams:apply-flag-mapping --force` can apply all newly mapped codes.
+- No mapped flag asset path is broken.
+- 2026 team flag coverage is documented.
+
+### Suggested commit message
+Complete 2026 team flag mappings
+
+### Ticket ID
 E15-T04
 
 ### Title

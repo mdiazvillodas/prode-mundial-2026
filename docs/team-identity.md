@@ -84,11 +84,23 @@ The mapping command:
 - Reports missing mappings and missing assets without failing the whole run.
 - Does not modify `logo_url`.
 
+For flag mapping, `country_code` is a local team flag code. It is usually an ISO 3166-1 alpha-3 country code, but it is not an ISO-2 field and it deliberately supports football/team identity codes when those are clearer for UI display and local assets.
+
+The 2026 API-Football team set has local flag coverage. After syncing 2026 teams, run:
+
+```bash
+php artisan teams:apply-flag-mapping --force
+```
+
+All mapped World Cup 2026 teams should receive a non-null `flag_path` when their `short_name` matches a configured team code and the asset exists.
+
 Documented edge cases:
 
 - API-Football may use `COS` for Costa Rica; map both `COS` and `CRC` to `flags/crc.svg`.
 - England uses `ENG` and `flags/eng.svg`, not a generic Great Britain flag.
 - Wales uses `WAL` and `flags/wal.svg`, not a generic Great Britain flag.
+- Scotland uses `SCO` and `flags/sco.svg`, not a generic Great Britain flag.
+- Curacao uses `CUR`; Cape Verde uses `CPV`; Congo DR uses `CGO`; Ivory Coast uses `CIV`; South Africa uses `RSA`.
 - South Korea uses `KOR`.
 - Saudi Arabia uses `KSA`.
 
@@ -140,7 +152,7 @@ API response: team.country     -> database: teams.country
 API response: team.code        -> database: teams.short_name
 ```
 
-`teams.country_code` remains a local visual identity field. API-Football team sync may populate it from `config/team-flags.php` only when the field is currently null. It does not overwrite manually set local identity values. The API-Football `venue.country` field describes the team's home stadium location, not the team's national identity, and is not used.
+`teams.country_code` remains a local visual identity field. It stores the configured team flag code, usually ISO alpha-3 but not ISO-2. API-Football team sync may populate it from `config/team-flags.php` only when the field is currently null. It does not overwrite manually set local identity values. The API-Football `venue.country` field describes the team's home stadium location, not the team's national identity, and is not used.
 
 ## User Interface
 
