@@ -153,7 +153,8 @@ class GoogleAuthTest extends TestCase
         ));
 
         $this->get(route('auth.google.callback'))
-            ->assertRedirect(route('verification.code.show'));
+            ->assertRedirect(route('verification.code.show'))
+            ->assertSessionHas('success', 'Te enviamos un código de verificación a tu correo.');
 
         $user = User::query()->where('email', 'pendiente@example.com')->firstOrFail();
 

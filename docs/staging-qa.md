@@ -303,7 +303,9 @@ Email verification by code QA:
 - Email/password registration sends a 6-digit verification code and redirects the user to `/email/verify-code`.
 - New registered users must verify their email before accessing dashboard, predictions, leagues, calendar, history, profile, or admin areas.
 - Verification codes are stored hashed, expire after 15 minutes, and are invalidated when a new code is resent.
+- Successful registration and resend actions should show a clear success toast confirming that the code was sent.
 - Verification emails use the Brevo Transactional Email HTTP API, not SMTP. Railway staging hit socket timeouts with Brevo SMTP (`smtp-relay.brevo.com`) on ports 587 and 2525.
+- Verification emails are intentionally lightweight HTML with inline styles, no images, and a plain-text fallback.
 - Local and automated tests use `Http::fake()` for Brevo and never call the real Brevo API.
 - Required Railway variables for verification email delivery:
   - `BREVO_API_KEY`

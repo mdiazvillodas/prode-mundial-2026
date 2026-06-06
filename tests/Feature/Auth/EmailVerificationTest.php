@@ -32,7 +32,9 @@ class EmailVerificationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-        ])->assertRedirect(route('verification.code.show', absolute: false));
+        ])
+            ->assertRedirect(route('verification.code.show', absolute: false))
+            ->assertSessionHas('success', 'Te enviamos un código de verificación a tu correo.');
 
         $user = User::query()->where('email', 'test@example.com')->firstOrFail();
         $verificationCode = EmailVerificationCode::query()->whereBelongsTo($user)->firstOrFail();
@@ -149,7 +151,8 @@ class EmailVerificationTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('verification.code.resend'))
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Te enviamos un nuevo código de verificación.');
 
         Http::assertSentCount(2);
 
@@ -171,7 +174,7 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)
             ->post(route('verification.code.resend'))
             ->assertRedirect()
-            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
 
         Http::assertNothingSent();
     }
@@ -188,7 +191,7 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)
             ->post(route('verification.code.resend'))
             ->assertRedirect()
-            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
 
         Http::assertSentCount(1);
     }
@@ -205,7 +208,7 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)
             ->post(route('verification.code.resend'))
             ->assertRedirect()
-            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
     }
 
     public function test_verification_notification_brevo_failure_redirects_without_500(): void
@@ -220,7 +223,7 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)
             ->post(route('verification.send'))
             ->assertRedirect()
-            ->assertSessionHas('error', 'No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.');
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
     }
 
     public function test_demo_seeded_users_are_verified(): void

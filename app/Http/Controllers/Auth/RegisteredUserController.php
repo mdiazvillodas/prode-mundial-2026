@@ -57,7 +57,7 @@ class RegisteredUserController extends Controller
             $verificationCodes->sendCode($user);
 
             return redirect(route('verification.code.show', absolute: false))
-                ->with('status', 'verification-code-sent');
+                ->with('success', __('Te enviamos un código de verificación a tu correo.'));
         } catch (Throwable $exception) {
             Log::error('Failed to send verification code after registration.', [
                 'user_id' => $user->id,
@@ -65,7 +65,7 @@ class RegisteredUserController extends Controller
             ]);
 
             return redirect(route('verification.code.show', absolute: false))
-                ->with('error', __('Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.'));
+                ->with('error', __('No pudimos enviar el código. Probá reenviarlo en unos minutos.'));
         }
     }
 }

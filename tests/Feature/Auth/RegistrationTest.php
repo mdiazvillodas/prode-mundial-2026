@@ -40,6 +40,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('verification.code.show', absolute: false));
+        $response->assertSessionHas('success', 'Te enviamos un código de verificación a tu correo.');
         $this->assertBrevoSentTo('test@example.com', 'Test User');
     }
 
@@ -71,6 +72,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('verification.code.show', absolute: false));
+        $response->assertSessionHas('success', 'Te enviamos un código de verificación a tu correo.');
         $this->assertDatabaseHas('users', ['email' => 'fresh@example.com']);
         $this->assertBrevoSentTo('fresh@example.com', 'Fresh Session');
     }
@@ -92,7 +94,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('verification.code.show', absolute: false));
-        $response->assertSessionHas('error', 'Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.');
+        $response->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
         Http::assertNothingSent();
     }
 
@@ -116,7 +118,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('verification.code.show', absolute: false));
-        $response->assertSessionHas('error', 'Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.');
+        $response->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
         Http::assertSentCount(1);
     }
 
@@ -140,7 +142,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('verification.code.show', absolute: false));
-        $response->assertSessionHas('error', 'Creamos tu cuenta, pero no pudimos enviar el código de verificación. Probá reenviarlo en unos minutos.');
+        $response->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
     }
 
     public function test_users_can_not_register_with_duplicate_username(): void

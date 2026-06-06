@@ -4,14 +4,8 @@
     </x-slot>
 
     <x-slot name="subtitle">
-        {{ __('Antes de empezar, verificá tu email con el código de 6 dígitos que te enviamos. Si no lo recibiste, podemos enviarte otro.') }}
+        {{ __('Antes de empezar, revisá tu correo e ingresá el código de 6 dígitos. Vence en 15 minutos; si no lo recibiste, podemos enviarte otro.') }}
     </x-slot>
-
-    @if (session('status') == 'verification-code-sent')
-        <div class="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 ring-1 ring-emerald-100">
-            {{ __('Enviamos un nuevo código de verificación al email que usaste al registrarte.') }}
-        </div>
-    @endif
 
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <form method="POST" action="{{ route('verification.send') }}">

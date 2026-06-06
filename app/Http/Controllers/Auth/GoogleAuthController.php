@@ -83,7 +83,7 @@ class GoogleAuthController extends Controller
 
             return redirect()
                 ->route('verification.code.show')
-                ->with('status', 'verification-code-sent');
+                ->with('success', __('Te enviamos un código de verificación a tu correo.'));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

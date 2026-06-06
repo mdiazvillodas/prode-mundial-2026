@@ -42,9 +42,12 @@ class BrevoTransactionalEmailServiceTest extends TestCase
                 && $payload['to'][0]['email'] === 'test@example.com'
                 && $payload['to'][0]['name'] === 'Test User'
                 && $payload['subject'] === 'Tu código de verificación de Mi Prode'
+                && str_contains($payload['htmlContent'], 'Mi Prode')
+                && str_contains($payload['htmlContent'], 'Tu código de verificación')
                 && str_contains($payload['htmlContent'], '123456')
-                && str_contains($payload['textContent'], '123456')
-                && str_contains($payload['textContent'], '15 minutos');
+                && str_contains($payload['htmlContent'], 'Este código vence en 15 minutos.')
+                && str_contains($payload['htmlContent'], 'Si no creaste una cuenta en Mi Prode')
+                && $payload['textContent'] === "Hola Test User\n\nTu código de verificación de Mi Prode es: 123456\n\nEste código vence en 15 minutos.\n\nSi no creaste una cuenta en Mi Prode, podés ignorar este mensaje.";
         });
     }
 

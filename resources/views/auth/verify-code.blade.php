@@ -4,10 +4,8 @@
     </x-slot>
 
     <x-slot name="subtitle">
-        {{ __('Te enviamos un código de 6 dígitos a :email. Ingresalo para activar tu cuenta y entrar a Mi Prode.', ['email' => auth()->user()->email]) }}
+        {{ __('Revisá :email e ingresá el código de 6 dígitos. Vence en 15 minutos; si no llega, podés pedir uno nuevo.', ['email' => auth()->user()->email]) }}
     </x-slot>
-
-    <x-auth-session-status class="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 ring-1 ring-emerald-100" :status="session('status')" />
 
     <form method="POST" action="{{ route('verification.code.verify') }}" class="space-y-5">
         @csrf

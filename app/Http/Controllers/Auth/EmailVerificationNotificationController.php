@@ -23,14 +23,14 @@ class EmailVerificationNotificationController extends Controller
         try {
             $verificationCodes->sendCode($request->user());
 
-            return back()->with('status', 'verification-code-sent');
+            return back()->with('success', __('Te enviamos un nuevo código de verificación.'));
         } catch (Throwable $exception) {
             Log::error('Failed to resend verification notification code.', [
                 'user_id' => $request->user()->id,
                 'exception' => $exception,
             ]);
 
-            return back()->with('error', __('No pudimos reenviar el código de verificación. Probá de nuevo en unos minutos.'));
+            return back()->with('error', __('No pudimos enviar el código. Probá reenviarlo en unos minutos.'));
         }
     }
 }
