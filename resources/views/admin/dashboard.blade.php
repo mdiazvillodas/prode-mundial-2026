@@ -85,6 +85,14 @@
                     </a>
 
                     <a
+                        href="{{ route('admin.api-health') }}"
+                        class="rounded-lg border border-sky-100 bg-sky-50 p-4 transition hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                    >
+                        <p class="font-bold text-sky-950">{{ __('Estado API-Football') }}</p>
+                        <p class="mt-1 text-sm text-sky-800">{{ __('Salud de sync y logs recientes') }}</p>
+                    </a>
+
+                    <a
                         href="{{ route('leaderboard.index') }}"
                         class="rounded-lg border border-amber-100 bg-amber-50 p-4 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                     >

@@ -3364,10 +3364,10 @@ E16-T04
 Sync results and settle predictions
 
 ### Status
-Todo
+Done
 
 ### Sprint
-Future
+Sprint 8
 
 ### Priority
 High
@@ -3396,5 +3396,28 @@ Medium
 ### Objective
 Expose API sync history, errors, and last-run status for safe operational visibility.
 
+### Note
+Implemented with `api_sync_logs`, `App\Models\ApiSyncLog`, safe logging integration for API-Football discovery/team/fixture commands, and the admin-only `/admin/api-health` screen. The screen shows latest successful team and fixture syncs, latest failure, API team/fixture counts, teams missing flags, fixtures by API status, recent sync logs, and read-only command hints. Sync logs store compact metadata and counters only; they do not store API keys or full raw API responses.
+
+### Scope
+- Create `api_sync_logs` for compact sync history.
+- Log success, failure, and skipped states from API-Football discovery, team sync, and fixture sync commands.
+- Capture HTTP status, rate-limit headers, duration, item counters, short errors, and small metadata.
+- Add admin-only API health page.
+- Add `API_SYNC_HEALTH_WARNING_MINUTES`.
+- Add tests for model storage, command logging, API error logging, and admin access.
+
+### Out of scope
+- No result settlement.
+- No scheduler or automatic 5-minute sync.
+- No scoring, prediction, league, auth/email, or sync mapping changes.
+- No API keys or full API response bodies in the database.
+
+### Acceptance criteria
+- Sync commands write logs without calling real APIs in tests.
+- Admin can view `/admin/api-health`.
+- Non-admin users cannot view `/admin/api-health`.
+- Health screen shows recent sync status and useful counters.
+
 ### Suggested commit message
-Add API sync visibility
+Add API sync health admin panel

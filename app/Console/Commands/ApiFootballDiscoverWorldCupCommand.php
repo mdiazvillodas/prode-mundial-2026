@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\ApiSyncLogWriter;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -33,10 +34,17 @@ class ApiFootballDiscoverWorldCupCommand extends Command
 
     public function handle(): int
     {
+        $commandStartedAt = now();
+        $commandStartedNs = hrtime(true);
+
         if (! $this->environmentAllowsDiscovery()) {
             $this->error('Refusing to run API-Football discovery in production or live mode.');
             $this->line('Current APP_ENV: '.app()->environment());
             $this->line('Current APP_MODE: '.config('app.mode'));
+
+            $this->writeDiscoveryLog('discovery', 'failed', $commandStartedAt, $commandStartedNs, [
+                'error_message' => 'Refusing to run API-Football discovery in production or live mode.',
+            ]);
 
             return self::FAILURE;
         }
@@ -46,6 +54,10 @@ class ApiFootballDiscoverWorldCupCommand extends Command
         if ($apiKey === '') {
             $this->error('Missing API_FOOTBALL_KEY. Configure it in the environment before calling API-Football.');
 
+            $this->writeDiscoveryLog('discovery', 'failed', $commandStartedAt, $commandStartedNs, [
+                'error_message' => 'Missing API_FOOTBALL_KEY.',
+            ]);
+
             return self::FAILURE;
         }
 
@@ -53,6 +65,10 @@ class ApiFootballDiscoverWorldCupCommand extends Command
 
         if ($selected === []) {
             $this->error('Invalid endpoint. Use one of: teams, fixtures, rounds, standings, all.');
+
+            $this->writeDiscoveryLog('discovery', 'failed', $commandStartedAt, $commandStartedNs, [
+                'error_message' => 'Invalid endpoint.',
+            ]);
 
             return self::FAILURE;
         }
@@ -71,11 +87,26 @@ class ApiFootballDiscoverWorldCupCommand extends Command
         if ($this->option('dry-run')) {
             $this->warn('Dry run only. No API requests were made and no snapshots were saved.');
 
+            foreach ($selected as $key => $endpoint) {
+                $this->writeDiscoveryLog($key, 'skipped', $commandStartedAt, $commandStartedNs, [
+                    'metadata' => $this->metadata($leagueId, $season, $endpoint['path']) + [
+                        'dry_run' => true,
+                    ],
+                ]);
+            }
+
             return self::SUCCESS;
         }
 
         if (! $this->option('force') && ! $this->confirm('Call API-Football now? This may consume your daily request quota.')) {
             $this->warn('API-Football discovery cancelled.');
+
+            foreach ($selected as $key => $endpoint) {
+                $this->writeDiscoveryLog($key, 'skipped', $commandStartedAt, $commandStartedNs, [
+                    'error_message' => 'API-Football discovery cancelled.',
+                    'metadata' => $this->metadata($leagueId, $season, $endpoint['path']),
+                ]);
+            }
 
             return self::FAILURE;
         }
@@ -84,6 +115,8 @@ class ApiFootballDiscoverWorldCupCommand extends Command
         $timestamp = now()->format('Ymd-His');
 
         foreach ($selected as $key => $endpoint) {
+            $endpointStartedAt = now();
+            $endpointStartedNs = hrtime(true);
             $this->newLine();
             $this->info($endpoint['label']);
             $this->line('Request: '.$endpoint['path']);
@@ -100,12 +133,17 @@ class ApiFootballDiscoverWorldCupCommand extends Command
                     ]);
             } catch (ConnectionException $exception) {
                 $this->error('Network error calling API-Football: '.$exception->getMessage());
+                $this->writeDiscoveryLog($key, 'failed', $endpointStartedAt, $endpointStartedNs, [
+                    'error_message' => 'Network error calling API-Football: '.$exception->getMessage(),
+                    'metadata' => $this->metadata($leagueId, $season, $endpoint['path']),
+                ]);
                 $failed = true;
 
                 continue;
             }
 
             $this->summarizeResponse($key, $response);
+            $responseMetrics = ApiSyncLogWriter::responseMetrics($response);
 
             $payload = $response->json();
 
@@ -115,6 +153,12 @@ class ApiFootballDiscoverWorldCupCommand extends Command
 
             if (! $response->successful()) {
                 $this->printErrorHint($response);
+                $this->writeDiscoveryLog($key, 'failed', $endpointStartedAt, $endpointStartedNs, [
+                    ...$responseMetrics,
+                    'items_received' => is_array($payload) ? $this->payloadResultCount($payload) : null,
+                    'error_message' => 'API-Football returned HTTP status '.$response->status().'.',
+                    'metadata' => $this->metadata($leagueId, $season, $endpoint['path']),
+                ]);
                 $failed = true;
 
                 continue;
@@ -122,6 +166,11 @@ class ApiFootballDiscoverWorldCupCommand extends Command
 
             if (! is_array($payload)) {
                 $this->warn('Unexpected response shape: response body was not JSON object/array.');
+                $this->writeDiscoveryLog($key, 'failed', $endpointStartedAt, $endpointStartedNs, [
+                    ...$responseMetrics,
+                    'error_message' => 'Unexpected response shape: response body was not JSON object/array.',
+                    'metadata' => $this->metadata($leagueId, $season, $endpoint['path']),
+                ]);
                 $failed = true;
 
                 continue;
@@ -129,6 +178,12 @@ class ApiFootballDiscoverWorldCupCommand extends Command
 
             if ($this->hasApiErrors($payload)) {
                 $this->printApiErrors($payload);
+                $this->writeDiscoveryLog($key, 'failed', $endpointStartedAt, $endpointStartedNs, [
+                    ...$responseMetrics,
+                    'items_received' => $this->payloadResultCount($payload),
+                    'error_message' => $this->apiErrorMessage($payload),
+                    'metadata' => $this->metadata($leagueId, $season, $endpoint['path']),
+                ]);
                 $failed = true;
 
                 continue;
@@ -139,6 +194,13 @@ class ApiFootballDiscoverWorldCupCommand extends Command
             }
 
             $this->summarizePayload($key, $payload);
+            $this->writeDiscoveryLog($key, 'success', $endpointStartedAt, $endpointStartedNs, [
+                ...$responseMetrics,
+                'items_received' => $this->payloadResultCount($payload),
+                'metadata' => $this->metadata($leagueId, $season, $endpoint['path']) + [
+                    'saved_snapshot' => (bool) $this->option('save'),
+                ],
+            ]);
         }
 
         if ($failed) {
@@ -359,7 +421,6 @@ class ApiFootballDiscoverWorldCupCommand extends Command
     }
 
     /**
-     * @param  mixed  $errors
      * @return array<string, string>
      */
     private function flattenApiErrors(mixed $errors, string $prefix = 'errors'): array
@@ -401,5 +462,52 @@ class ApiFootballDiscoverWorldCupCommand extends Command
         }
 
         return ! app()->environment('production');
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function writeDiscoveryLog(string $endpoint, string $status, mixed $startedAt, int $startedNs, array $attributes = []): void
+    {
+        ApiSyncLogWriter::write(array_merge([
+            'provider' => 'api-football',
+            'sync_type' => str_starts_with($endpoint, 'discovery') ? $endpoint : 'discovery:'.$endpoint,
+            'status' => $status,
+            'started_at' => $startedAt,
+            'finished_at' => now(),
+            'duration_ms' => (int) round((hrtime(true) - $startedNs) / 1_000_000),
+        ], $attributes));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function metadata(int $leagueId, int $season, string $path): array
+    {
+        return [
+            'league' => $leagueId,
+            'season' => $season,
+            'path' => $path,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function payloadResultCount(array $payload): ?int
+    {
+        $response = Arr::get($payload, 'response');
+
+        return is_array($response) ? count($response) : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function apiErrorMessage(array $payload): string
+    {
+        return collect($this->flattenApiErrors(Arr::get($payload, 'errors', [])))
+            ->map(fn (string $message, string $key): string => "{$key}: {$message}")
+            ->implode('; ');
     }
 }

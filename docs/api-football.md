@@ -282,7 +282,50 @@ A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_fixt
 1. **Discovery phase** (E16-T01, complete): Add database fields to track API mappings. Database is prepared but no sync occurs.
 2. **Team sync** (E16-T02, complete): Fetch teams from `/teams` endpoint and populate database fields.
 3. **Fixture sync** (E16-T03, complete): Fetch fixtures from `/fixtures` endpoint and populate database fields without settling predictions.
-4. **Result settlement** (E16-T04, planned): Use synced data to update scores and settle predictions.
+4. **Sync visibility** (E16-T05, complete): Store compact sync logs and expose an admin health screen.
+5. **Result settlement** (E16-T04, planned): Use synced data to update scores and settle predictions.
+
+## Sync Logs And Admin Health
+
+API-Football discovery and sync commands write compact operational records to `api_sync_logs`.
+
+Logged fields include:
+
+- provider and sync type, such as `api-football`, `teams`, `fixtures`, `discovery:teams`, and `discovery:fixtures`
+- status: `success`, `failed`, or `skipped`
+- HTTP status and rate-limit headers when an API response exists
+- started/finished timestamps and duration
+- item counts for received, created, updated, and skipped records
+- a short error message for failed runs
+- small metadata such as league, season, source, endpoint path, dry-run state, and missing-team count
+
+The database log must not store API keys, secrets, or full raw response bodies. Raw discovery snapshots remain in private storage only when the discovery command is run with `--save`.
+
+If writing a sync log fails, the command logs a Laravel warning and continues returning the original sync result. Logging failure must not turn a successful sync into a failed sync.
+
+Admins can view the read-only health screen at:
+
+```text
+/admin/api-health
+```
+
+The page shows:
+
+- latest successful team and fixture syncs
+- latest failed sync
+- API teams and API fixtures in the local database
+- teams missing `flag_path`
+- fixtures grouped by `api_status`
+- recent sync logs with status, duration, counts, quota, and short error messages
+- copyable command hints for manual team and fixture syncs
+
+Health freshness uses:
+
+```env
+API_SYNC_HEALTH_WARNING_MINUTES=15
+```
+
+The indicator is `OK` when the latest team and fixture syncs succeeded recently, warning when a successful sync is older than the threshold or missing, and error when the latest run failed.
 
 ### UI Data Source
 
@@ -303,4 +346,4 @@ Planned follow-up tickets:
 - E16-T02 - Sync teams from API-Football. (IMPLEMENTED)
 - E16-T03 - Sync fixtures from API-Football. (IMPLEMENTED)
 - E16-T04 - Sync results and settle predictions.
-- E16-T05 - API sync logs/admin visibility.
+- E16-T05 - API sync logs/admin visibility. (IMPLEMENTED)

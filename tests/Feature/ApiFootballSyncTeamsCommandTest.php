@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ApiSyncLog;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -47,6 +48,13 @@ class ApiFootballSyncTeamsCommandTest extends TestCase
 
         $this->assertSame(1, Team::query()->count());
         $this->assertDatabaseMissing('teams', ['name' => 'External Team']);
+        $this->assertDatabaseHas('api_sync_logs', [
+            'provider' => 'api-football',
+            'sync_type' => 'teams',
+            'status' => 'failed',
+            'http_status' => 200,
+            'items_received' => 1,
+        ]);
     }
 
     public function test_successful_response_creates_teams(): void
@@ -75,6 +83,15 @@ class ApiFootballSyncTeamsCommandTest extends TestCase
             'country' => 'Brazil',
             'logo_url' => 'https://media.example/bra.png',
         ]);
+
+        $log = ApiSyncLog::query()->latest()->firstOrFail();
+
+        $this->assertSame('api-football', $log->provider);
+        $this->assertSame('teams', $log->sync_type);
+        $this->assertSame('success', $log->status);
+        $this->assertSame(200, $log->http_status);
+        $this->assertSame(2, $log->items_received);
+        $this->assertSame(2, $log->items_created);
     }
 
     public function test_re_running_updates_existing_teams_without_duplicates(): void

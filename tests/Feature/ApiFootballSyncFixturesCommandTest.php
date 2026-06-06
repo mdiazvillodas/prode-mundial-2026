@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ApiSyncLog;
 use App\Models\Prediction;
 use App\Models\Team;
 use App\Models\Tournament;
@@ -80,6 +81,13 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
             ->assertFailed();
 
         $this->assertSame(0, TournamentMatch::query()->count());
+        $this->assertDatabaseHas('api_sync_logs', [
+            'provider' => 'api-football',
+            'sync_type' => 'fixtures',
+            'status' => 'failed',
+            'http_status' => 200,
+            'items_received' => 1,
+        ]);
     }
 
     public function test_successful_response_creates_fixture_when_teams_exist(): void
@@ -107,6 +115,15 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
             'stage' => 'group',
             'status' => TournamentMatch::STATUS_SCHEDULED,
         ]);
+
+        $log = ApiSyncLog::query()->latest()->firstOrFail();
+
+        $this->assertSame('api-football', $log->provider);
+        $this->assertSame('fixtures', $log->sync_type);
+        $this->assertSame('success', $log->status);
+        $this->assertSame(200, $log->http_status);
+        $this->assertSame(1, $log->items_received);
+        $this->assertSame(1, $log->items_created);
     }
 
     public function test_missing_teams_are_skipped_with_clear_output(): void

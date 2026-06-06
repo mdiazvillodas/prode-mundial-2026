@@ -1,15 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\ApiHealthController as AdminApiHealthController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\MatchController as AdminMatchController;
 use App\Http\Controllers\CalendarController;
-use App\Http\Controllers\LeagueController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\PrivateLeagueController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,7 @@ Route::middleware(['auth', 'verified', 'admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
+        Route::get('/api-health', AdminApiHealthController::class)->name('api-health');
         Route::get('/matches', [AdminMatchController::class, 'index'])->name('matches.index');
         Route::get('/matches/{tournamentMatch}/teams', [AdminMatchController::class, 'editTeams'])->name('matches.teams.edit');
         Route::post('/matches/{tournamentMatch}/teams', [AdminMatchController::class, 'updateTeams'])->name('matches.teams.update');

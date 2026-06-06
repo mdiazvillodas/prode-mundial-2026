@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\TournamentMatch;
+use App\Support\ApiSyncLogWriter;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -31,14 +32,24 @@ class ApiFootballSyncFixturesCommand extends Command
      */
     private array $apiStatusSamples = [];
 
+    /**
+     * @var array<string, int|null>
+     */
+    private array $lastResponseMetrics = [];
+
     public function handle(): int
     {
+        $startedAt = now();
+        $startedNs = hrtime(true);
+
         if (! $this->environmentAllowsSync()) {
             $this->error('Refusing to sync API-Football fixtures in production or live mode.');
             $this->line('Current APP_ENV: '.app()->environment());
             $this->line('Current APP_MODE: '.config('app.mode'));
 
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                'error_message' => 'Refusing to sync API-Football fixtures in production or live mode.',
+            ]);
         }
 
         $leagueId = $this->leagueId();
@@ -55,7 +66,10 @@ class ApiFootballSyncFixturesCommand extends Command
             if ($apiKey === '') {
                 $this->error('Missing API_FOOTBALL_KEY. Configure it in the environment before calling API-Football.');
 
-                return self::FAILURE;
+                return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                    'error_message' => 'Missing API_FOOTBALL_KEY.',
+                    'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+                ]);
             }
         }
 
@@ -64,7 +78,10 @@ class ApiFootballSyncFixturesCommand extends Command
             : 'Sync API-Football fixtures into the local database?')) {
             $this->warn('API-Football fixture sync cancelled.');
 
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'skipped', $startedAt, $startedNs, [
+                'error_message' => 'API-Football fixture sync cancelled.',
+                'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+            ]);
         }
 
         $tournament = Tournament::query()
@@ -74,7 +91,10 @@ class ApiFootballSyncFixturesCommand extends Command
         if (! $tournament) {
             $this->error('Tournament fifa-world-cup-2026 was not found. Run the base seeders before syncing fixtures.');
 
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                'error_message' => 'Tournament fifa-world-cup-2026 was not found.',
+                'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+            ]);
         }
 
         $payload = $usesSnapshot
@@ -82,14 +102,21 @@ class ApiFootballSyncFixturesCommand extends Command
             : $this->payloadFromApi($leagueId, $season, (string) config('services.api_football.key'));
 
         if ($payload === null) {
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                'error_message' => 'Could not load API-Football fixtures payload.',
+                'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+            ]);
         }
 
         if ($this->hasApiErrors($payload)) {
             $this->printApiErrors($payload);
             $this->warn('No fixtures were synced.');
 
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                'items_received' => $this->payloadResultCount($payload),
+                'error_message' => $this->apiErrorMessage($payload),
+                'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+            ]);
         }
 
         $items = Arr::get($payload, 'response', []);
@@ -97,13 +124,20 @@ class ApiFootballSyncFixturesCommand extends Command
         if (! is_array($items)) {
             $this->error('Unexpected API-Football response shape: missing response array.');
 
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                'error_message' => 'Unexpected API-Football response shape: missing response array.',
+                'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+            ]);
         }
 
         if ($items === []) {
             $this->warn('API-Football returned an empty fixtures response. No fixtures were synced.');
 
-            return self::FAILURE;
+            return $this->finishSyncLog(self::FAILURE, 'failed', $startedAt, $startedNs, [
+                'items_received' => 0,
+                'error_message' => 'API-Football returned an empty fixtures response.',
+                'metadata' => $this->metadata($leagueId, $season, $usesSnapshot),
+            ]);
         }
 
         $rows = [];
@@ -160,7 +194,17 @@ class ApiFootballSyncFixturesCommand extends Command
             $this->components->info('API-Football fixture sync complete.');
         }
 
-        return self::SUCCESS;
+        return $this->finishSyncLog(self::SUCCESS, $this->option('dry-run') ? 'skipped' : 'success', $startedAt, $startedNs, [
+            'items_received' => count($items),
+            'items_created' => $counts['created'],
+            'items_updated' => $counts['updated'],
+            'items_skipped' => $counts['skipped'],
+            'metadata' => $this->metadata($leagueId, $season, $usesSnapshot) + [
+                'dry_run' => (bool) $this->option('dry-run'),
+                'missing_teams' => $counts['missing_teams'],
+                'api_status_samples' => array_values(array_unique($this->apiStatusSamples)),
+            ],
+        ]);
     }
 
     private function payloadFromApi(int $leagueId, int $season, string $apiKey): ?array
@@ -184,6 +228,7 @@ class ApiFootballSyncFixturesCommand extends Command
             return null;
         }
 
+        $this->lastResponseMetrics = ApiSyncLogWriter::responseMetrics($response);
         $this->summarizeResponse($response);
 
         if (! $response->successful()) {
@@ -233,7 +278,6 @@ class ApiFootballSyncFixturesCommand extends Command
     }
 
     /**
-     * @param  mixed  $item
      * @return array{action: string, api_fixture_id?: int|string|null, api_status?: string|null, home?: string|null, away?: string|null, reason: string, missing_team?: bool}
      */
     private function syncFixture(mixed $item, Tournament $tournament, bool $dryRun): array
@@ -452,7 +496,6 @@ class ApiFootballSyncFixturesCommand extends Command
     }
 
     /**
-     * @param  mixed  $errors
      * @return array<string, string>
      */
     private function flattenApiErrors(mixed $errors, string $prefix = 'errors'): array
@@ -532,5 +575,56 @@ class ApiFootballSyncFixturesCommand extends Command
         }
 
         return ! app()->environment('production');
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function finishSyncLog(int $exitCode, string $status, mixed $startedAt, int $startedNs, array $attributes = []): int
+    {
+        $finishedAt = now();
+
+        ApiSyncLogWriter::write(array_merge([
+            'provider' => self::PROVIDER,
+            'sync_type' => 'fixtures',
+            'status' => $status,
+            'started_at' => $startedAt,
+            'finished_at' => $finishedAt,
+            'duration_ms' => (int) round((hrtime(true) - $startedNs) / 1_000_000),
+        ], $this->lastResponseMetrics, $attributes));
+
+        return $exitCode;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function metadata(int $leagueId, int $season, bool $usesSnapshot): array
+    {
+        return [
+            'league' => $leagueId,
+            'season' => $season,
+            'source' => $usesSnapshot ? 'snapshot' : 'api',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function payloadResultCount(array $payload): ?int
+    {
+        $response = Arr::get($payload, 'response');
+
+        return is_array($response) ? count($response) : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function apiErrorMessage(array $payload): string
+    {
+        return collect($this->flattenApiErrors(Arr::get($payload, 'errors', [])))
+            ->map(fn (string $message, string $key): string => "{$key}: {$message}")
+            ->implode('; ');
     }
 }
