@@ -2379,6 +2379,47 @@ Implemented with Laravel Socialite for Google only. Added Google OAuth service c
 Prepare Google login
 
 ### Ticket ID
+AUTH-T02
+
+### Title
+Google OAuth auto-registration
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Make `Continuar con Google` work as a true login-or-register flow for verified Google accounts.
+
+### Note
+Google OAuth now links existing users by Google ID or email, populates Google profile fields, verifies matching traditional accounts when Google confirms the email, and creates new verified users automatically when no app account exists. New Google-created users skip the Brevo email-code verification flow. If Google does not return an email, or explicitly reports the email as unverified, the callback fails gracefully back to login with a Spanish validation error.
+
+### Scope
+- Create new users from verified Google profiles.
+- Generate unique usernames from the Google display name, falling back to the email local part.
+- Preserve traditional email/password registration and verification behavior.
+- Link existing users and populate `google_id`, `avatar_url`, and `auth_provider`.
+- Add feature tests using mocked Socialite responses with no real Google calls.
+
+### Out of scope
+- No scoring, predictions, leagues, API-Football sync, Brevo delivery, Railway, or production config changes.
+- OAuth-specific registration rate limiting remains a future hardening option.
+
+### Acceptance criteria
+- Existing Google users can log in.
+- New Google users are created, verified, authenticated, and redirected to dashboard.
+- Google-created users do not receive verification-code emails.
+- Missing or explicitly unverified Google emails are rejected gracefully.
+
+### Suggested commit message
+Allow Google OAuth auto-registration
+
+### Ticket ID
 E11-T01
 
 ### Title

@@ -2,11 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\EmailVerificationCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
@@ -64,7 +63,7 @@ class GoogleAuthTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'name' => 'Mariano Demo',
-            'username' => 'mariano',
+            'username' => 'mariano_demo',
             'email' => 'mariano@example.com',
             'google_id' => 'google-123',
             'avatar_url' => 'https://example.com/avatar.jpg',
@@ -73,6 +72,8 @@ class GoogleAuthTest extends TestCase
 
         $user = User::query()->where('email', 'mariano@example.com')->firstOrFail();
         $this->assertNotNull($user->password);
+        $this->assertTrue($user->hasVerifiedEmail());
+        $this->assertSame(0, EmailVerificationCode::query()->whereBelongsTo($user)->count());
     }
 
     public function test_google_callback_links_existing_email_user_without_duplicate(): void
@@ -108,12 +109,62 @@ class GoogleAuthTest extends TestCase
         ]);
     }
 
+    public function test_google_callback_verifies_and_populates_google_fields_for_existing_email_user(): void
+    {
+        $this->configureGoogle();
+
+        $user = User::factory()->unverified()->create([
+            'email' => 'existing@example.com',
+            'google_id' => null,
+            'avatar_url' => null,
+            'auth_provider' => null,
+        ]);
+
+        $this->mockGoogleUser($this->googleUser(
+            id: 'google-existing',
+            name: 'Existing User',
+            email: 'existing@example.com',
+            avatar: 'https://example.com/existing.jpg',
+        ));
+
+        $this->get(route('auth.google.callback'))
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $user->refresh();
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertTrue($user->hasVerifiedEmail());
+        $this->assertSame('google-existing', $user->google_id);
+        $this->assertSame('https://example.com/existing.jpg', $user->avatar_url);
+        $this->assertSame('google', $user->auth_provider);
+        $this->assertSame(0, EmailVerificationCode::query()->whereBelongsTo($user)->count());
+    }
+
+    public function test_google_callback_creates_verified_user_and_does_not_send_verification_code(): void
+    {
+        $this->configureGoogle();
+        $this->mockGoogleUser($this->googleUser(
+            id: 'google-verified',
+            name: 'Usuario Verificado',
+            email: 'verificado@example.com',
+        ));
+
+        $this->get(route('auth.google.callback'))
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $user = User::query()->where('email', 'verificado@example.com')->firstOrFail();
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertTrue($user->hasVerifiedEmail());
+        $this->assertSame(0, EmailVerificationCode::query()->whereBelongsTo($user)->count());
+    }
+
     public function test_google_callback_handles_username_collision(): void
     {
         $this->configureGoogle();
 
-        User::factory()->create(['username' => 'mariano']);
-        User::factory()->create(['username' => 'mariano2']);
+        User::factory()->create(['username' => 'mariano_nuevo']);
+        User::factory()->create(['username' => 'mariano_nuevo2']);
 
         $this->mockGoogleUser($this->googleUser(
             id: 'google-mariano',
@@ -126,24 +177,31 @@ class GoogleAuthTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'mariano@example.com',
-            'username' => 'mariano3',
+            'username' => 'mariano_nuevo3',
             'google_id' => 'google-mariano',
         ]);
     }
 
-    public function test_google_callback_sends_code_when_google_email_is_explicitly_unverified(): void
+    public function test_google_callback_rejects_missing_email_gracefully(): void
     {
         $this->configureGoogle();
-        $this->configureBrevo();
+        $this->mockGoogleUser($this->googleUser(
+            id: 'google-no-email',
+            name: 'Sin Email',
+            email: null,
+        ));
 
-        $brevoPayloads = [];
-        Http::fake([
-            'https://api.brevo.com/v3/smtp/email' => function (Request $request) use (&$brevoPayloads) {
-                $brevoPayloads[] = $request->data();
+        $this->get(route('auth.google.callback'))
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('google');
 
-                return Http::response(['messageId' => 'brevo-message-id'], 201);
-            },
-        ]);
+        $this->assertGuest();
+        $this->assertSame(0, User::query()->where('google_id', 'google-no-email')->count());
+    }
+
+    public function test_google_callback_rejects_explicitly_unverified_email_gracefully(): void
+    {
+        $this->configureGoogle();
 
         $this->mockGoogleUser($this->googleUser(
             id: 'google-unverified',
@@ -153,15 +211,11 @@ class GoogleAuthTest extends TestCase
         ));
 
         $this->get(route('auth.google.callback'))
-            ->assertRedirect(route('verification.code.show'))
-            ->assertSessionHas('success', 'Te enviamos un código de verificación a tu correo.');
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('google');
 
-        $user = User::query()->where('email', 'pendiente@example.com')->firstOrFail();
-
-        $this->assertAuthenticatedAs($user);
-        $this->assertFalse($user->hasVerifiedEmail());
-        Http::assertSentCount(1);
-        $this->assertSame('pendiente@example.com', $brevoPayloads[0]['to'][0]['email']);
+        $this->assertGuest();
+        $this->assertSame(0, User::query()->where('email', 'pendiente@example.com')->count());
     }
 
     public function test_traditional_login_still_works(): void
@@ -220,16 +274,6 @@ class GoogleAuthTest extends TestCase
         ]);
     }
 
-    private function configureBrevo(): void
-    {
-        config([
-            'services.brevo.api_key' => 'fake-brevo-key',
-            'services.brevo.transactional_from_email' => 'no-reply@miprode.es',
-            'services.brevo.transactional_from_name' => 'Mi Prode',
-            'services.brevo.api_timeout' => 10,
-        ]);
-    }
-
     private function mockGoogleUser(SocialiteUser $user): void
     {
         $provider = Mockery::mock();
@@ -246,7 +290,7 @@ class GoogleAuthTest extends TestCase
     private function googleUser(
         string $id,
         string $name,
-        string $email,
+        ?string $email,
         ?string $avatar = null,
         bool $emailVerified = true,
     ): SocialiteUser

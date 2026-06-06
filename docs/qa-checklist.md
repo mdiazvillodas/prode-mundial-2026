@@ -34,7 +34,10 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 - Submit the verification code and confirm the account becomes verified.
 - Log in with email and password.
 - Log out and confirm protected pages redirect to login.
-- Log in with Google in staging when Google variables are configured.
+- Log in with Google for an existing app user in staging when Google variables are configured.
+- Register/log in with Google using an email that does not already exist in the app.
+- Confirm Google-created users land on the dashboard and do not see the email-code verification flow.
+- Confirm Google-created users have verified email status in admin/database checks.
 - Attempt duplicate email registration and confirm a friendly validation error.
 - Use forgot password and reset password if mail delivery is configured for the environment.
 - Confirm no API keys, stack traces, or technical provider errors are shown to users.

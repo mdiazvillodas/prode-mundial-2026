@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\EmailVerificationCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +23,7 @@ class GoogleAuthController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
-    public function callback(EmailVerificationCodeService $verificationCodes): RedirectResponse
+    public function callback(): RedirectResponse
     {
         if (! $this->isGoogleConfigured()) {
             return $this->redirectWithGoogleError(__('El acceso con Google todavía no está configurado.'));
@@ -38,6 +37,10 @@ class GoogleAuthController extends Controller
 
         if (! $googleUser->getEmail()) {
             return $this->redirectWithGoogleError(__('Google no devolvió un email para iniciar sesión.'));
+        }
+
+        if (! $this->googleEmailIsVerified($googleUser)) {
+            return $this->redirectWithGoogleError(__('Google no confirmó que ese email esté verificado.'));
         }
 
         $user = DB::transaction(function () use ($googleUser): User {
@@ -56,9 +59,7 @@ class GoogleAuthController extends Controller
                     'google_id' => $googleUser->getId(),
                     'avatar_url' => $googleUser->getAvatar(),
                     'auth_provider' => 'google',
-                    'email_verified_at' => $this->googleEmailIsVerified($googleUser)
-                        ? ($user->email_verified_at ?? now())
-                        : $user->email_verified_at,
+                    'email_verified_at' => $user->email_verified_at ?? now(),
                 ])->save();
 
                 return $user;
@@ -66,9 +67,9 @@ class GoogleAuthController extends Controller
 
             return User::query()->create([
                 'name' => $googleUser->getName() ?: Str::before($googleUser->getEmail(), '@'),
-                'username' => $this->generateUsername($googleUser->getEmail()),
+                'username' => $this->generateUsername($googleUser),
                 'email' => $googleUser->getEmail(),
-                'email_verified_at' => $this->googleEmailIsVerified($googleUser) ? now() : null,
+                'email_verified_at' => now(),
                 'password' => Hash::make(Str::random(40)),
                 'google_id' => $googleUser->getId(),
                 'avatar_url' => $googleUser->getAvatar(),
@@ -77,14 +78,6 @@ class GoogleAuthController extends Controller
         });
 
         Auth::login($user);
-
-        if (! $user->hasVerifiedEmail()) {
-            $verificationCodes->sendCode($user);
-
-            return redirect()
-                ->route('verification.code.show')
-                ->with('success', __('Te enviamos un código de verificación a tu correo.'));
-        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -103,9 +96,12 @@ class GoogleAuthController extends Controller
             ->withErrors(['google' => $message]);
     }
 
-    private function generateUsername(string $email): string
+    private function generateUsername(\Laravel\Socialite\Two\User $googleUser): string
     {
-        $base = Str::of(Str::before($email, '@'))
+        $source = $googleUser->getName() ?: Str::before((string) $googleUser->getEmail(), '@');
+
+        $base = Str::of($source)
+            ->ascii()
             ->lower()
             ->replaceMatches('/[^a-z0-9_]+/', '_')
             ->trim('_')
