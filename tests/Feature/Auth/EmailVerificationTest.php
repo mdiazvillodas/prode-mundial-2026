@@ -4,12 +4,14 @@ namespace Tests\Feature\Auth;
 
 use App\Models\EmailVerificationCode;
 use App\Models\User;
+use App\Services\EmailVerificationCodeService;
 use Database\Seeders\StagingDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class EmailVerificationTest extends TestCase
@@ -20,6 +22,13 @@ class EmailVerificationTest extends TestCase
      * @var array<int, array<string, mixed>>
      */
     private array $brevoPayloads = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Cache::flush();
+    }
 
     public function test_registration_creates_and_sends_verification_code_through_brevo_api(): void
     {
@@ -145,6 +154,7 @@ class EmailVerificationTest extends TestCase
     {
         $this->configureBrevo();
         $this->fakeSuccessfulBrevo();
+        config(['abuse.verification_resend_cooldown_seconds' => 0]);
 
         $user = User::factory()->unverified()->create();
         $oldCode = $this->sendAndCaptureCode($user);
@@ -163,6 +173,124 @@ class EmailVerificationTest extends TestCase
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
         $this->assertSame(2, EmailVerificationCode::query()->whereBelongsTo($user)->count());
         $this->assertSame(1, EmailVerificationCode::query()->whereBelongsTo($user)->whereNull('used_at')->count());
+    }
+
+    public function test_verification_email_daily_cap_prevents_brevo_api_call(): void
+    {
+        $this->configureBrevo();
+        config(['abuse.verification_email_daily_limit' => 0]);
+        Http::fake();
+
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
+
+        Http::assertNothingSent();
+        $this->assertSame(0, EmailVerificationCode::query()->whereBelongsTo($user)->count());
+    }
+
+    public function test_resend_cooldown_blocks_immediate_repeated_resend(): void
+    {
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
+
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Te enviamos un nuevo código de verificación.');
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Pediste varios códigos en poco tiempo. Esperá un momento antes de intentar de nuevo.');
+
+        Http::assertSentCount(1);
+        $this->assertSame(1, EmailVerificationCode::query()->whereBelongsTo($user)->count());
+    }
+
+    public function test_resend_hourly_limit_blocks_excessive_attempts(): void
+    {
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
+        config([
+            'abuse.verification_resend_cooldown_seconds' => 0,
+            'abuse.verification_resend_user_hourly_limit' => 1,
+        ]);
+
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Te enviamos un nuevo código de verificación.');
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Pediste varios códigos en poco tiempo. Esperá un momento antes de intentar de nuevo.');
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_resend_daily_limit_blocks_excessive_attempts(): void
+    {
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
+        config([
+            'abuse.verification_resend_cooldown_seconds' => 0,
+            'abuse.verification_resend_user_hourly_limit' => 10,
+            'abuse.verification_resend_user_daily_limit' => 1,
+        ]);
+
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Te enviamos un nuevo código de verificación.');
+
+        $this->actingAs($user)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Pediste varios códigos en poco tiempo. Esperá un momento antes de intentar de nuevo.');
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_abuse_alert_is_rate_limited_for_verification_daily_cap(): void
+    {
+        $this->configureBrevo();
+        config([
+            'abuse.alert_email' => 'admin@example.com',
+            'abuse.alert_cooldown_minutes' => 360,
+            'abuse.verification_email_daily_limit' => 0,
+        ]);
+
+        Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => Http::response(['messageId' => 'brevo-message-id'], 201),
+        ]);
+
+        $firstUser = User::factory()->unverified()->create();
+        $secondUser = User::factory()->unverified()->create();
+
+        $this->actingAs($firstUser)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
+
+        $this->actingAs($secondUser)
+            ->post(route('verification.code.resend'))
+            ->assertRedirect()
+            ->assertSessionHas('error', 'No pudimos enviar el código. Probá reenviarlo en unos minutos.');
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn (Request $request): bool => $request->data()['to'][0]['email'] === 'admin@example.com'
+            && $request->data()['subject'] === 'Alerta Mi Prode: límite de seguridad alcanzado');
     }
 
     public function test_resend_code_missing_brevo_api_key_redirects_without_500(): void
@@ -249,7 +377,7 @@ class EmailVerificationTest extends TestCase
 
     private function sendAndCaptureCode(User $user): string
     {
-        app(\App\Services\EmailVerificationCodeService::class)->sendCode($user);
+        app(EmailVerificationCodeService::class)->sendCode($user);
 
         return $this->latestBrevoCode();
     }

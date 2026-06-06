@@ -6,17 +6,23 @@ use App\Models\EmailVerificationCode;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class EmailVerificationCodeService
 {
     public const EXPIRES_IN_MINUTES = 15;
 
-    public function __construct(private BrevoTransactionalEmailService $brevoEmails)
-    {
-    }
+    public function __construct(
+        private BrevoTransactionalEmailService $brevoEmails,
+        private AbuseProtectionService $abuseProtection,
+    ) {}
 
     public function sendCode(User $user): EmailVerificationCode
     {
+        if (! $this->abuseProtection->verificationEmailCanBeSent($user)) {
+            throw new RuntimeException('Verification email daily limit reached.');
+        }
+
         $plainCode = $this->generatePlainCode();
 
         $verificationCode = DB::transaction(function () use ($user, $plainCode): EmailVerificationCode {
@@ -33,6 +39,7 @@ class EmailVerificationCodeService
         });
 
         $this->brevoEmails->sendVerificationCode($user, $plainCode);
+        $this->abuseProtection->recordVerificationEmailSent();
 
         return $verificationCode;
     }

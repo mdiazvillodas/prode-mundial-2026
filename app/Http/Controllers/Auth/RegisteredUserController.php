@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AbuseProtectionService;
 use App\Services\EmailVerificationCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,8 +32,25 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request, EmailVerificationCodeService $verificationCodes): RedirectResponse
-    {
+    public function store(
+        Request $request,
+        EmailVerificationCodeService $verificationCodes,
+        AbuseProtectionService $abuseProtection,
+    ): RedirectResponse {
+        if (filled($request->input('website'))) {
+            $abuseProtection->logHoneypotTriggered($request);
+
+            return back()
+                ->withInput($request->except(['password', 'password_confirmation', 'website']))
+                ->with('error', __(AbuseProtectionService::REGISTRATION_ERROR));
+        }
+
+        if (! $abuseProtection->registrationCanProceed($request)) {
+            return back()
+                ->withInput($request->except(['password', 'password_confirmation', 'website']))
+                ->with('error', __(AbuseProtectionService::REGISTRATION_ERROR));
+        }
+
         $request->merge([
             'username' => Str::lower((string) $request->input('username')),
         ]);
@@ -50,6 +68,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        $abuseProtection->recordRegistrationCreated();
 
         Auth::login($user);
 

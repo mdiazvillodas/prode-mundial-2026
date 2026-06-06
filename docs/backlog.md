@@ -385,6 +385,53 @@ Implemented with a dedicated `email_verification_codes` table that stores hashed
 Add email verification by code
 
 ### Ticket ID
+E3-T04
+
+### Title
+Registration and verification email abuse protection
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Protect the Brevo transactional email quota from bot-driven registration and verification-code resend abuse.
+
+### Note
+Implemented with configurable cache counters and Laravel rate limiting. Registration now has a hidden honeypot, an hourly per-IP limit, and a global daily registration cap. Verification-code email sending checks a global daily cap before creating a code or calling Brevo. Resend actions enforce a per-user cooldown plus hourly and daily limits. Optional admin alerts use the Brevo HTTP API and are rate-limited per alert type.
+
+### Scope
+- Add abuse protection configuration with safe defaults.
+- Add registration honeypot and registration rate limits.
+- Add global daily verification email cap before Brevo API calls.
+- Add resend cooldown and per-user resend caps.
+- Add optional rate-limited admin alert emails.
+- Add warning/info logging without secrets or verification codes.
+- Add focused feature tests for registration, verification cap, resend limits, and alert cooldown.
+- Update staging QA documentation.
+
+### Out of scope
+- No captcha.
+- No scoring, prediction, league, or API-Football changes.
+- No SMTP dependency for verification or alert emails.
+- No external packages.
+
+### Acceptance criteria
+- Normal registration and email verification still work.
+- Abuse limits prevent excessive registration and resend attempts.
+- Daily verification email cap prevents Brevo API calls after the limit.
+- User-facing errors stay friendly and Spanish.
+- Automated tests do not call real Brevo.
+
+### Suggested commit message
+Add registration abuse protection
+
+### Ticket ID
 TICKET-007
 
 ### Title

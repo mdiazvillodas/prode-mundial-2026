@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -17,6 +18,13 @@ class RegistrationTest extends TestCase
      * @var array<int, array<string, mixed>>
      */
     private array $brevoPayloads = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Cache::flush();
+    }
 
     public function test_registration_screen_can_be_rendered(): void
     {
@@ -42,6 +50,87 @@ class RegistrationTest extends TestCase
         $response->assertRedirect(route('verification.code.show', absolute: false));
         $response->assertSessionHas('success', 'Te enviamos un código de verificación a tu correo.');
         $this->assertBrevoSentTo('test@example.com', 'Test User');
+    }
+
+    public function test_honeypot_filled_does_not_create_user_or_send_email(): void
+    {
+        $this->configureBrevo();
+        Http::fake();
+
+        $response = $this->post('/register', [
+            'name' => 'Bot User',
+            'username' => 'botuser',
+            'email' => 'bot@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'website' => 'https://spam.example',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error', 'Se alcanzó el límite temporal de registros. Probá más tarde.');
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'bot@example.com']);
+        Http::assertNothingSent();
+    }
+
+    public function test_registration_ip_rate_limit_blocks_after_configured_threshold(): void
+    {
+        config(['abuse.registration_ip_hourly_limit' => 1]);
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
+
+        $this->post('/register', [
+            'name' => 'First User',
+            'username' => 'firstuser',
+            'email' => 'first@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertRedirect(route('verification.code.show', absolute: false));
+
+        auth()->logout();
+
+        $response = $this->post('/register', [
+            'name' => 'Second User',
+            'username' => 'seconduser',
+            'email' => 'second@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error', 'Se alcanzó el límite temporal de registros. Probá más tarde.');
+        $this->assertDatabaseMissing('users', ['email' => 'second@example.com']);
+        Http::assertSentCount(1);
+    }
+
+    public function test_global_daily_registration_limit_blocks_new_registrations(): void
+    {
+        config(['abuse.registration_daily_limit' => 1]);
+        $this->configureBrevo();
+        $this->fakeSuccessfulBrevo();
+
+        $this->post('/register', [
+            'name' => 'Daily One',
+            'username' => 'dailyone',
+            'email' => 'daily-one@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertRedirect(route('verification.code.show', absolute: false));
+
+        auth()->logout();
+
+        $response = $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])->post('/register', [
+            'name' => 'Daily Two',
+            'username' => 'dailytwo',
+            'email' => 'daily-two@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error', 'Se alcanzó el límite temporal de registros. Probá más tarde.');
+        $this->assertDatabaseMissing('users', ['email' => 'daily-two@example.com']);
+        Http::assertSentCount(1);
     }
 
     public function test_register_page_includes_csrf_token(): void

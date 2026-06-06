@@ -14,10 +14,61 @@ class BrevoTransactionalEmailService
 
     public function sendVerificationCode(User $user, string $code): void
     {
+        $this->sendEmail([
+            'to' => [
+                [
+                    'email' => $user->email,
+                    'name' => $user->name,
+                ],
+            ],
+            'subject' => 'Tu código de verificación de Mi Prode',
+            'htmlContent' => $this->htmlContent($user, $code),
+            'textContent' => $this->textContent($user, $code),
+        ], 'Brevo verification email', $user->id);
+    }
+
+    public function sendSecurityAlert(string $toEmail, string $message, array $context = []): void
+    {
+        $lines = [
+            'Mi Prode detectó que se alcanzó un límite de seguridad.',
+            '',
+            $message,
+        ];
+
+        foreach ($context as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $lines[] = sprintf('%s: %s', $key, (string) $value);
+            }
+        }
+
+        $lines[] = 'Fecha: '.now()->toDateTimeString();
+
+        $textContent = implode("\n", $lines);
+
+        $this->sendEmail([
+            'to' => [
+                [
+                    'email' => $toEmail,
+                    'name' => 'Mi Prode Admin',
+                ],
+            ],
+            'subject' => 'Alerta Mi Prode: límite de seguridad alcanzado',
+            'htmlContent' => nl2br(e($textContent)),
+            'textContent' => $textContent,
+        ], 'Brevo security alert email');
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function sendEmail(array $payload, string $logLabel, ?int $userId = null): void
+    {
         $apiKey = (string) config('services.brevo.api_key');
 
         if ($apiKey === '') {
-            Log::error('Brevo API key is missing for verification email delivery.');
+            Log::error($logLabel === 'Brevo verification email'
+                ? 'Brevo API key is missing for verification email delivery.'
+                : 'Brevo API key is missing for transactional email delivery.');
 
             throw new RuntimeException('Brevo API key is missing.');
         }
@@ -43,33 +94,24 @@ class BrevoTransactionalEmailService
                         'name' => $fromName,
                         'email' => $fromEmail,
                     ],
-                    'to' => [
-                        [
-                            'email' => $user->email,
-                            'name' => $user->name,
-                        ],
-                    ],
-                    'subject' => 'Tu código de verificación de Mi Prode',
-                    'htmlContent' => $this->htmlContent($user, $code),
-                    'textContent' => $this->textContent($user, $code),
-                ]);
+                ] + $payload);
         } catch (ConnectionException $exception) {
-            Log::error('Brevo verification email request failed.', [
-                'user_id' => $user->id,
+            Log::error($logLabel.' request failed.', [
+                'user_id' => $userId,
                 'exception' => $exception,
             ]);
 
-            throw new RuntimeException('Brevo verification email request failed.', previous: $exception);
+            throw new RuntimeException($logLabel.' request failed.', previous: $exception);
         }
 
         if (! $response->successful()) {
-            Log::error('Brevo verification email returned an error response.', [
-                'user_id' => $user->id,
+            Log::error($logLabel.' returned an error response.', [
+                'user_id' => $userId,
                 'status' => $response->status(),
                 'body' => str($response->body())->limit(1000)->toString(),
             ]);
 
-            throw new RuntimeException('Brevo verification email returned an error response.');
+            throw new RuntimeException($logLabel.' returned an error response.');
         }
     }
 

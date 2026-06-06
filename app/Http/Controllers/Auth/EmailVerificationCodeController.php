@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AbuseProtectionService;
 use App\Services\EmailVerificationCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,14 +46,22 @@ class EmailVerificationCodeController extends Controller
             ->with('success', __('Correo verificado. Ya podés entrar a Mi Prode.'));
     }
 
-    public function resend(Request $request, EmailVerificationCodeService $verificationCodes): RedirectResponse
-    {
+    public function resend(
+        Request $request,
+        EmailVerificationCodeService $verificationCodes,
+        AbuseProtectionService $abuseProtection,
+    ): RedirectResponse {
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
+        if (! $abuseProtection->resendCanProceed($request->user())) {
+            return back()->with('error', __(AbuseProtectionService::RESEND_ERROR));
+        }
+
         try {
             $verificationCodes->sendCode($request->user());
+            $abuseProtection->recordVerificationResent($request->user());
 
             return back()->with('success', __('Te enviamos un nuevo código de verificación.'));
         } catch (Throwable $exception) {

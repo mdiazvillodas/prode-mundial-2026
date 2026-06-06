@@ -315,6 +315,21 @@ Email verification by code QA:
 - `MAIL_MAILER` can remain `log` unless other Laravel emails need SMTP. Verification-code delivery does not use Laravel Mail/SMTP.
 - Staging demo users remain verified after `php artisan demo:reset-staging --force`, so Playwright smoke can log in with the documented demo accounts without completing email verification.
 
+Registration and verification abuse protection:
+
+- Registration and verification-code email sending use cache-backed limits to protect Brevo free/low-volume quota from repeated bot registrations or resend attempts.
+- Limits are configurable per environment. Conservative Railway staging values are recommended:
+  - `REGISTRATION_DAILY_LIMIT=50`
+  - `REGISTRATION_IP_HOURLY_LIMIT=5`
+  - `VERIFICATION_EMAIL_DAILY_LIMIT=80`
+  - `VERIFICATION_RESEND_USER_HOURLY_LIMIT=5`
+  - `VERIFICATION_RESEND_USER_DAILY_LIMIT=10`
+  - `VERIFICATION_RESEND_COOLDOWN_SECONDS=60`
+  - `ABUSE_ALERT_EMAIL=` optionally set to the admin email that should receive security limit alerts
+  - `ABUSE_ALERT_COOLDOWN_MINUTES=360`
+- Production can raise or lower these limits after real usage is known. Keep `VERIFICATION_EMAIL_DAILY_LIMIT` below the effective Brevo quota so a spike cannot consume all transactional email capacity.
+- Alert emails are sent through the Brevo HTTP API and are rate-limited per alert type. If alert delivery fails, the app logs the failure and does not retry recursively.
+
 Browser and reporting targets:
 
 - Chromium first

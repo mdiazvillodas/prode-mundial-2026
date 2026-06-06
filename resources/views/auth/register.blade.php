@@ -11,6 +11,10 @@
 
     <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
+        <div class="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Nombre')" class="font-bold text-slate-700" />
