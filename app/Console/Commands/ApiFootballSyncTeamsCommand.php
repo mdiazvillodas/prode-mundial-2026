@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Team;
+use App\Support\ApiFootballProductionSyncGuard;
 use App\Support\ApiSyncLogWriter;
 use App\Support\TeamFlagMapping;
 use Illuminate\Console\Command;
@@ -35,7 +36,7 @@ class ApiFootballSyncTeamsCommand extends Command
         $startedAt = now();
         $startedNs = hrtime(true);
 
-        if (! $this->environmentAllowsSync()) {
+        if (! ApiFootballProductionSyncGuard::allowsSync()) {
             $this->error('Refusing to sync API-Football teams in production or live mode.');
             $this->line('Current APP_ENV: '.app()->environment());
             $this->line('Current APP_MODE: '.config('app.mode'));
@@ -44,6 +45,8 @@ class ApiFootballSyncTeamsCommand extends Command
                 'error_message' => 'Refusing to sync API-Football teams in production or live mode.',
             ]);
         }
+
+        ApiFootballProductionSyncGuard::warnIfAllowed($this);
 
         $leagueId = $this->leagueId();
         $season = $this->season();
@@ -482,15 +485,6 @@ class ApiFootballSyncTeamsCommand extends Command
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
-    }
-
-    private function environmentAllowsSync(): bool
-    {
-        if (config('app.mode') === 'live') {
-            return false;
-        }
-
-        return ! app()->environment('production');
     }
 
     /**

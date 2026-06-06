@@ -11,9 +11,12 @@ API_FOOTBALL_BASE_URL=https://v3.football.api-sports.io
 API_FOOTBALL_KEY=
 API_FOOTBALL_WORLD_CUP_LEAGUE_ID=1
 API_FOOTBALL_WORLD_CUP_SEASON=2026
+API_FOOTBALL_ALLOW_PRODUCTION_SYNC=false
 ```
 
 Do not commit real API keys. Configure secrets in local `.env` or Railway variables only.
+
+`API_FOOTBALL_ALLOW_PRODUCTION_SYNC` must stay `false` by default. Set it to `true` only for the official production initial sync or production cron that is expected to call API-Football in `APP_ENV=production` or `APP_MODE=live`.
 
 ## World Cup 2026
 
@@ -198,7 +201,24 @@ Snapshots are ignored from Git and must not be committed.
 
 The discovery command does not change app data. It does not modify teams, matches, predictions, scores, rankings, users, or leagues.
 
-The command is blocked in production/live mode. It is intended for local and staging discovery only.
+API-Football discovery and sync commands are blocked in production/live mode by default. `--force` only skips interactive confirmation; it does not bypass the production/live guard.
+
+Production or live execution requires:
+
+```env
+API_FOOTBALL_ALLOW_PRODUCTION_SYNC=true
+```
+
+When this flag is enabled, the commands print a production/live warning before continuing. Use it only for the official production cron or an intentional production initial sync, for example:
+
+```bash
+php artisan migrate --force
+php artisan api-football:sync-teams --season=2026 --force
+php artisan teams:apply-flag-mapping --force
+php artisan api-football:sync-fixtures --season=2026 --force
+```
+
+Never run destructive demo commands such as `php artisan demo:reset-staging --force` or `php artisan demo:simulate-results` in production. This API-Football flag does not weaken demo reset protections.
 
 Real 2026 sync will require an API plan that can access season `2026`, or an alternative import strategy.
 

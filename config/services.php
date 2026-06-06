@@ -40,6 +40,7 @@ return [
         'key' => env('API_FOOTBALL_KEY'),
         'world_cup_league_id' => (int) env('API_FOOTBALL_WORLD_CUP_LEAGUE_ID', 1),
         'world_cup_season' => (int) env('API_FOOTBALL_WORLD_CUP_SEASON', 2026),
+        'allow_production_sync' => filter_var(env('API_FOOTBALL_ALLOW_PRODUCTION_SYNC', false), FILTER_VALIDATE_BOOLEAN),
         'sync_health_warning_minutes' => (int) env('API_SYNC_HEALTH_WARNING_MINUTES', 15),
     ],
 

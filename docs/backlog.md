@@ -3330,7 +3330,7 @@ Implemented with `php artisan api-football:sync-teams`. The command supports API
 - Link existing unmapped teams by unique `short_name` or exact name when safe.
 - Map `team.name`, `team.code`, `team.country`, `team.logo`, and `last_synced_at`.
 - Support dry run and snapshot mode.
-- Keep sync blocked in production/live mode.
+- Keep sync blocked in production/live mode unless the explicit API-Football production sync flag is enabled.
 - Add tests with `Http::fake()`.
 
 ### Out of scope
@@ -3377,7 +3377,7 @@ Implemented with `php artisan api-football:sync-fixtures`. The command supports 
 - Store `fixture.date`, `fixture.status.short`, `league.round`, venue name/city, and `last_synced_at`.
 - Skip fixtures whose local teams are missing, with guidance to run `api-football:sync-teams` first.
 - Support dry run and snapshot mode.
-- Keep sync blocked in production/live mode.
+- Keep sync blocked in production/live mode unless the explicit API-Football production sync flag is enabled.
 - Add tests with `Http::fake()`.
 
 ### Out of scope
@@ -3397,6 +3397,46 @@ Implemented with `php artisan api-football:sync-fixtures`. The command supports 
 
 ### Suggested commit message
 Sync fixtures from API-Football
+
+### Ticket ID
+OPS-T01
+
+### Title
+Allow controlled production API-Football sync
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Allow the official production initial sync and cron to run API-Football commands in `APP_ENV=production` or `APP_MODE=live` only when explicitly enabled.
+
+### Note
+Implemented `API_FOOTBALL_ALLOW_PRODUCTION_SYNC=false` in service config and a shared production/live guard for `api-football:sync-teams`, `api-football:sync-fixtures`, and `api-football:discover-world-cup`. Production/live still refuses by default, and `--force` does not bypass the guard. When the flag is enabled, the commands warn clearly before continuing. Demo reset and result simulation protections are unchanged.
+
+### Scope
+- Add `services.api_football.allow_production_sync`.
+- Keep production/live API sync blocked by default.
+- Allow production/live API sync only when the explicit API-Football flag is true.
+- Add HTTP-faked tests for refused and allowed production/live teams and fixtures sync.
+- Document production cron usage and demo reset guardrails.
+
+### Out of scope
+- No scoring, predictions, leagues, auth, API mapping, Railway variable, or demo reset behavior changes.
+- No real API calls in tests.
+
+### Acceptance criteria
+- Production/live sync refuses by default.
+- Production/live sync runs only with `API_FOOTBALL_ALLOW_PRODUCTION_SYNC=true`.
+- Staging/non-production sync behavior remains unchanged.
+
+### Suggested commit message
+Allow controlled production API sync
 
 ### Ticket ID
 E16-T04

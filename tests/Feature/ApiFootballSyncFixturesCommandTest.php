@@ -30,6 +30,47 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_sync_fixtures_refuses_in_production_live_when_production_sync_flag_is_false(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->configureProtectedEnvironment(false);
+        Http::fake();
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('Refusing to sync API-Football fixtures in production or live mode.')
+            ->expectsOutputToContain('Current APP_ENV: production')
+            ->expectsOutputToContain('Current APP_MODE: live')
+            ->assertFailed();
+
+        Http::assertNothingSent();
+        $this->assertSame(0, TournamentMatch::query()->count());
+    }
+
+    public function test_sync_fixtures_allows_production_live_when_production_sync_flag_is_true(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->configureProtectedEnvironment(true);
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+        $this->fakeFixturesResponse();
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('API-Football production/live sync is enabled by API_FOOTBALL_ALLOW_PRODUCTION_SYNC=true.')
+            ->expectsOutputToContain('Proceeding in APP_ENV=production and APP_MODE=live.')
+            ->expectsOutputToContain('created')
+            ->assertSuccessful();
+
+        Http::assertSentCount(1);
+        $this->assertDatabaseHas('matches', [
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1001,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+        ]);
+    }
+
     public function test_snapshot_mode_does_not_require_api_key_or_send_request(): void
     {
         $this->createTournament();
@@ -260,6 +301,18 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
             'services.api_football.key' => 'fake-api-key',
             'services.api_football.world_cup_league_id' => 1,
             'services.api_football.world_cup_season' => 2026,
+            'services.api_football.allow_production_sync' => false,
+        ]);
+    }
+
+    private function configureProtectedEnvironment(bool $allowProductionSync): void
+    {
+        $this->app->detectEnvironment(fn (): string => 'production');
+
+        config([
+            'app.env' => 'production',
+            'app.mode' => 'live',
+            'services.api_football.allow_production_sync' => $allowProductionSync,
         ]);
     }
 

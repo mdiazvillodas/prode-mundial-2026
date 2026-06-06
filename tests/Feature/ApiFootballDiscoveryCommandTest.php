@@ -26,6 +26,36 @@ class ApiFootballDiscoveryCommandTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_discovery_refuses_in_production_live_when_production_sync_flag_is_false(): void
+    {
+        $this->configureApiFootball();
+        $this->configureProtectedEnvironment(false);
+        Http::fake();
+
+        $this->artisan('api-football:discover-world-cup --endpoint=teams --force')
+            ->expectsOutputToContain('Refusing to run API-Football discovery in production or live mode.')
+            ->expectsOutputToContain('Current APP_ENV: production')
+            ->expectsOutputToContain('Current APP_MODE: live')
+            ->assertFailed();
+
+        Http::assertNothingSent();
+    }
+
+    public function test_discovery_allows_production_live_when_production_sync_flag_is_true(): void
+    {
+        $this->configureApiFootball();
+        $this->configureProtectedEnvironment(true);
+        Http::fake();
+
+        $this->artisan('api-football:discover-world-cup --endpoint=teams --dry-run --force')
+            ->expectsOutputToContain('API-Football production/live sync is enabled by API_FOOTBALL_ALLOW_PRODUCTION_SYNC=true.')
+            ->expectsOutputToContain('Proceeding in APP_ENV=production and APP_MODE=live.')
+            ->expectsOutputToContain('Dry run only')
+            ->assertSuccessful();
+
+        Http::assertNothingSent();
+    }
+
     public function test_teams_endpoint_calls_correct_url_and_header(): void
     {
         $this->configureApiFootball();
@@ -219,6 +249,18 @@ class ApiFootballDiscoveryCommandTest extends TestCase
             'services.api_football.key' => 'fake-api-key',
             'services.api_football.world_cup_league_id' => 1,
             'services.api_football.world_cup_season' => 2026,
+            'services.api_football.allow_production_sync' => false,
+        ]);
+    }
+
+    private function configureProtectedEnvironment(bool $allowProductionSync): void
+    {
+        $this->app->detectEnvironment(fn (): string => 'production');
+
+        config([
+            'app.env' => 'production',
+            'app.mode' => 'live',
+            'services.api_football.allow_production_sync' => $allowProductionSync,
         ]);
     }
 }

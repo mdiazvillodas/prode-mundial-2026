@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Support\ApiSyncLogWriter;
+use App\Support\ApiFootballProductionSyncGuard;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -37,7 +38,7 @@ class ApiFootballDiscoverWorldCupCommand extends Command
         $commandStartedAt = now();
         $commandStartedNs = hrtime(true);
 
-        if (! $this->environmentAllowsDiscovery()) {
+        if (! ApiFootballProductionSyncGuard::allowsSync()) {
             $this->error('Refusing to run API-Football discovery in production or live mode.');
             $this->line('Current APP_ENV: '.app()->environment());
             $this->line('Current APP_MODE: '.config('app.mode'));
@@ -48,6 +49,8 @@ class ApiFootballDiscoverWorldCupCommand extends Command
 
             return self::FAILURE;
         }
+
+        ApiFootballProductionSyncGuard::warnIfAllowed($this);
 
         $apiKey = (string) config('services.api_football.key');
 
@@ -453,15 +456,6 @@ class ApiFootballDiscoverWorldCupCommand extends Command
             429 => $this->error('Rate limit reached. Stop running discovery and wait for quota reset.'),
             default => $this->error('API-Football returned an error. Inspect status/body with a manual saved run if needed.'),
         };
-    }
-
-    private function environmentAllowsDiscovery(): bool
-    {
-        if (config('app.mode') === 'live') {
-            return false;
-        }
-
-        return ! app()->environment('production');
     }
 
     /**

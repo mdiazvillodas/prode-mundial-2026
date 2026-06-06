@@ -113,6 +113,9 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 - Confirm latest fixtures sync log is `success`.
 - Confirm raw API responses are not stored in the database.
 - Confirm the future cron/scheduler service is configured separately from the web service.
+- Confirm production/live API-Football sync refuses by default when `API_FOOTBALL_ALLOW_PRODUCTION_SYNC=false`.
+- Confirm the production cron or initial sync has `API_FOOTBALL_ALLOW_PRODUCTION_SYNC=true` only when intentional.
+- Confirm destructive demo reset/simulation commands are never run in production/live.
 
 Useful local integrity checks:
 

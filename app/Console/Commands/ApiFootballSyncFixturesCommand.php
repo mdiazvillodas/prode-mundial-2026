@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\TournamentMatch;
+use App\Support\ApiFootballProductionSyncGuard;
 use App\Support\ApiSyncLogWriter;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
@@ -42,7 +43,7 @@ class ApiFootballSyncFixturesCommand extends Command
         $startedAt = now();
         $startedNs = hrtime(true);
 
-        if (! $this->environmentAllowsSync()) {
+        if (! ApiFootballProductionSyncGuard::allowsSync()) {
             $this->error('Refusing to sync API-Football fixtures in production or live mode.');
             $this->line('Current APP_ENV: '.app()->environment());
             $this->line('Current APP_MODE: '.config('app.mode'));
@@ -51,6 +52,8 @@ class ApiFootballSyncFixturesCommand extends Command
                 'error_message' => 'Refusing to sync API-Football fixtures in production or live mode.',
             ]);
         }
+
+        ApiFootballProductionSyncGuard::warnIfAllowed($this);
 
         $leagueId = $this->leagueId();
         $season = $this->season();
@@ -566,15 +569,6 @@ class ApiFootballSyncFixturesCommand extends Command
         }
 
         return (int) $value;
-    }
-
-    private function environmentAllowsSync(): bool
-    {
-        if (config('app.mode') === 'live') {
-            return false;
-        }
-
-        return ! app()->environment('production');
     }
 
     /**

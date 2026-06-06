@@ -26,6 +26,42 @@ class ApiFootballSyncTeamsCommandTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_sync_teams_refuses_in_production_live_when_production_sync_flag_is_false(): void
+    {
+        $this->configureApiFootball();
+        $this->configureProtectedEnvironment(false);
+        Http::fake();
+
+        $this->artisan('api-football:sync-teams --force')
+            ->expectsOutputToContain('Refusing to sync API-Football teams in production or live mode.')
+            ->expectsOutputToContain('Current APP_ENV: production')
+            ->expectsOutputToContain('Current APP_MODE: live')
+            ->assertFailed();
+
+        Http::assertNothingSent();
+        $this->assertSame(0, Team::query()->count());
+    }
+
+    public function test_sync_teams_allows_production_live_when_production_sync_flag_is_true(): void
+    {
+        $this->configureApiFootball();
+        $this->configureProtectedEnvironment(true);
+        $this->fakeTeamsResponse();
+
+        $this->artisan('api-football:sync-teams --force')
+            ->expectsOutputToContain('API-Football production/live sync is enabled by API_FOOTBALL_ALLOW_PRODUCTION_SYNC=true.')
+            ->expectsOutputToContain('Proceeding in APP_ENV=production and APP_MODE=live.')
+            ->expectsOutputToContain('created')
+            ->assertSuccessful();
+
+        Http::assertSentCount(1);
+        $this->assertDatabaseHas('teams', [
+            'api_provider' => 'api-football',
+            'api_team_id' => 10,
+            'name' => 'Argentina',
+        ]);
+    }
+
     public function test_api_errors_are_detected_and_no_database_mutation_occurs(): void
     {
         $this->configureApiFootball();
@@ -342,6 +378,18 @@ class ApiFootballSyncTeamsCommandTest extends TestCase
             'services.api_football.key' => 'fake-api-key',
             'services.api_football.world_cup_league_id' => 1,
             'services.api_football.world_cup_season' => 2026,
+            'services.api_football.allow_production_sync' => false,
+        ]);
+    }
+
+    private function configureProtectedEnvironment(bool $allowProductionSync): void
+    {
+        $this->app->detectEnvironment(fn (): string => 'production');
+
+        config([
+            'app.env' => 'production',
+            'app.mode' => 'live',
+            'services.api_football.allow_production_sync' => $allowProductionSync,
         ]);
     }
 
