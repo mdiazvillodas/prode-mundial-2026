@@ -22,8 +22,6 @@
                         @php
                             $teamAName = $match->teamA?->name ?? 'Equipo por definir';
                             $teamBName = $match->teamB?->name ?? 'Equipo por definir';
-                            $teamACode = $match->teamA?->country_code ?? 'TBD';
-                            $teamBCode = $match->teamB?->country_code ?? 'TBD';
                             $isPlaceholder = $match->status === 'placeholder' || ! $match->teamA || ! $match->teamB;
                             $hasResult = $match->team_a_score !== null && $match->team_b_score !== null;
 
@@ -68,9 +66,7 @@
                                         <div class="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                                             <div class="min-w-0">
                                                 <div class="flex items-center gap-2">
-                                                    <span class="inline-flex h-8 w-10 shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-bold uppercase text-gray-600">
-                                                        {{ $teamACode }}
-                                                    </span>
+                                                    <x-team-flag :team="$match->teamA" size="sm" />
                                                     <div class="min-w-0">
                                                         <p class="truncate text-base font-semibold text-gray-900">{{ $teamAName }}</p>
                                                         @if ($match->teamA?->short_name)
@@ -98,9 +94,7 @@
                                                             <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamB->short_name }}</p>
                                                         @endif
                                                     </div>
-                                                    <span class="inline-flex h-8 w-10 shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-bold uppercase text-gray-600">
-                                                        {{ $teamBCode }}
-                                                    </span>
+                                                    <x-team-flag :team="$match->teamB" size="sm" />
                                                 </div>
                                             </div>
                                         </div>

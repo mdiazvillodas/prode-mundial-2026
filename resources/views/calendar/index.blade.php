@@ -43,9 +43,7 @@
 
                 @if ($selectedTeam)
                     <div class="mt-5 flex items-center gap-3 rounded-xl bg-indigo-50 p-4">
-                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black uppercase text-indigo-900 ring-1 ring-indigo-100">
-                            {{ $selectedTeam->country_code ?: mb_substr($selectedTeam->short_name ?? $selectedTeam->name, 0, 3) }}
-                        </div>
+                        <x-team-flag :team="$selectedTeam" class="h-12 w-12 bg-white ring-1 ring-indigo-100" />
                         <div>
                             <p class="text-xs font-bold uppercase tracking-wide text-indigo-700">
                                 {{ __('Agenda seleccionada') }}
@@ -158,9 +156,7 @@
                             <div class="p-5">
                                 <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                                     <div class="min-w-0 text-center">
-                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-sm font-black uppercase text-indigo-900 ring-1 ring-indigo-100">
-                                            {{ $selectedTeam->country_code ?: mb_substr($selectedTeam->short_name ?? $selectedTeam->name, 0, 3) }}
-                                        </div>
+                                        <x-team-flag :team="$selectedTeam" size="lg" class="mx-auto ring-2 ring-indigo-100" />
                                         <h4 class="mt-2 truncate text-sm font-black text-gray-950 sm:text-base">
                                             {{ $selectedTeam->name }}
                                         </h4>
@@ -192,9 +188,7 @@
                                     </div>
 
                                     <div class="min-w-0 text-center">
-                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-sm font-black uppercase text-gray-700 ring-1 ring-gray-200">
-                                            {{ $opponent?->country_code ?: mb_substr($opponent?->short_name ?? $opponent?->name ?? 'POR', 0, 3) }}
-                                        </div>
+                                        <x-team-flag :team="$opponent" size="lg" class="mx-auto ring-2 ring-gray-100" />
                                         <h4 class="mt-2 truncate text-sm font-black text-gray-950 sm:text-base">
                                             {{ $opponent?->name ?? __('Rival por definir') }}
                                         </h4>

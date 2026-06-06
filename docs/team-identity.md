@@ -158,13 +158,21 @@ API response: team.code        -> database: teams.short_name
 
 ### Displaying Flags
 
+Use the reusable Blade component for team flags in match cards and team-facing UI:
+
 ```blade
-@if ($team->hasFlag())
-    <img src="{{ $team->flagUrl() }}" alt="{{ $team->name }}" class="team-flag" />
-@else
-    <span>{{ $team->displayCode() }}</span>
-@endif
+<x-team-flag :team="$team" />
+<x-team-flag :team="$team" size="lg" />
 ```
+
+The component reads only local team identity data:
+
+- If `team.flag_path` is present, it renders `<img src="{{ asset($team->flag_path) }}">`.
+- Image alt text uses `Bandera de {equipo}`.
+- If `flag_path` is missing, it falls back to `short_name`, then `country_code`, then initials/name.
+- If the team is null or the match is a placeholder, it shows a neutral `TBD` badge with `Equipo por definir` as the accessible label.
+- `teams.short_name` is the local display/API team code field. There is no `teams.code` column.
+- `logo_url` is not used as the primary UI flag and must not replace `flag_path` in match cards.
 
 ### Displaying Logos
 
@@ -198,7 +206,8 @@ If an asset is missing or unavailable:
 
 3. **UI rendering**: Read from database
    - Display `flag_path` for national flag (local asset)
-   - Display `logo_url` for team brand logo (external URL)
+   - Use `resources/views/components/team-flag.blade.php` for compact flag rendering and clean fallbacks
+   - Display `logo_url` only when a feature specifically needs the API-provided team logo, not as the primary flag
    - Display `name` as team name
    - Display `country` for country information
 

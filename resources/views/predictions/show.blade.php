@@ -35,19 +35,29 @@
 
                     <div class="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                         <div class="min-w-0">
-                            <p class="truncate text-lg font-semibold text-gray-900">{{ $tournamentMatch->teamA->name }}</p>
-                            @if ($tournamentMatch->teamA->short_name)
-                                <p class="text-xs uppercase tracking-wide text-gray-500">{{ $tournamentMatch->teamA->short_name }}</p>
-                            @endif
+                            <div class="flex items-center gap-3">
+                                <x-team-flag :team="$tournamentMatch->teamA" />
+                                <div class="min-w-0">
+                                    <p class="truncate text-lg font-semibold text-gray-900">{{ $tournamentMatch->teamA->name }}</p>
+                                    @if ($tournamentMatch->teamA->short_name)
+                                        <p class="text-xs uppercase tracking-wide text-gray-500">{{ $tournamentMatch->teamA->short_name }}</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
 
                         <span class="text-sm font-semibold text-gray-500">{{ __('vs') }}</span>
 
                         <div class="min-w-0 text-right">
-                            <p class="truncate text-lg font-semibold text-gray-900">{{ $tournamentMatch->teamB->name }}</p>
-                            @if ($tournamentMatch->teamB->short_name)
-                                <p class="text-xs uppercase tracking-wide text-gray-500">{{ $tournamentMatch->teamB->short_name }}</p>
-                            @endif
+                            <div class="flex items-center justify-end gap-3">
+                                <div class="min-w-0">
+                                    <p class="truncate text-lg font-semibold text-gray-900">{{ $tournamentMatch->teamB->name }}</p>
+                                    @if ($tournamentMatch->teamB->short_name)
+                                        <p class="text-xs uppercase tracking-wide text-gray-500">{{ $tournamentMatch->teamB->short_name }}</p>
+                                    @endif
+                                </div>
+                                <x-team-flag :team="$tournamentMatch->teamB" />
+                            </div>
                         </div>
                     </div>
 

@@ -79,8 +79,6 @@
                                         $isPlaceholder = $match->status === 'placeholder' || ! $match->teamA || ! $match->teamB;
                                         $teamAName = $match->teamA?->name ?? __('Equipo por definir');
                                         $teamBName = $match->teamB?->name ?? __('Equipo por definir');
-                                        $teamACode = $match->teamA?->country_code ?? 'TBD';
-                                        $teamBCode = $match->teamB?->country_code ?? 'TBD';
                                         $closesAt = $match->predictionClosesAt();
                                         $isClosingSoon = $canPredict && $closesAt && $closesAt->isFuture() && $closesAt->diffInMinutes(now()) <= 60;
                                         $hasResult = $match->status === 'finished' && $match->team_a_score !== null && $match->team_b_score !== null;
@@ -153,9 +151,7 @@
 
                                             <div class="mt-6 grid grid-cols-[1fr_auto_1fr] items-start gap-3">
                                                 <div class="min-w-0 text-center">
-                                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-sky-50 text-sm font-black uppercase text-blue-900 ring-4 ring-blue-50">
-                                                        {{ $teamACode }}
-                                                    </div>
+                                                    <x-team-flag :team="$match->teamA" size="lg" class="mx-auto ring-4 ring-blue-50" />
                                                     <p class="mt-3 truncate text-sm font-black text-blue-950 sm:text-base">{{ $teamAName }}</p>
                                                     @if ($match->teamA?->short_name)
                                                         <p class="mt-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">{{ $match->teamA->short_name }}</p>
@@ -231,9 +227,7 @@
                                                 </div>
 
                                                 <div class="min-w-0 text-center">
-                                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-sky-50 text-sm font-black uppercase text-blue-900 ring-4 ring-blue-50">
-                                                        {{ $teamBCode }}
-                                                    </div>
+                                                    <x-team-flag :team="$match->teamB" size="lg" class="mx-auto ring-4 ring-blue-50" />
                                                     <p class="mt-3 truncate text-sm font-black text-blue-950 sm:text-base">{{ $teamBName }}</p>
                                                     @if ($match->teamB?->short_name)
                                                         <p class="mt-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">{{ $match->teamB->short_name }}</p>

@@ -73,10 +73,15 @@
 
                                         <div class="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                                             <div class="min-w-0">
-                                                <p class="truncate text-base font-semibold text-gray-900">{{ $teamAName }}</p>
-                                                @if ($match->teamA?->short_name)
-                                                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamA->short_name }}</p>
-                                                @endif
+                                                <div class="flex items-center gap-2">
+                                                    <x-team-flag :team="$match->teamA" size="sm" />
+                                                    <div class="min-w-0">
+                                                        <p class="truncate text-base font-semibold text-gray-900">{{ $teamAName }}</p>
+                                                        @if ($match->teamA?->short_name)
+                                                            <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamA->short_name }}</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div class="text-center text-sm font-semibold text-gray-500">
@@ -90,10 +95,15 @@
                                             </div>
 
                                             <div class="min-w-0 text-right">
-                                                <p class="truncate text-base font-semibold text-gray-900">{{ $teamBName }}</p>
-                                                @if ($match->teamB?->short_name)
-                                                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamB->short_name }}</p>
-                                                @endif
+                                                <div class="flex items-center justify-end gap-2">
+                                                    <div class="min-w-0">
+                                                        <p class="truncate text-base font-semibold text-gray-900">{{ $teamBName }}</p>
+                                                        @if ($match->teamB?->short_name)
+                                                            <p class="text-xs uppercase tracking-wide text-gray-500">{{ $match->teamB->short_name }}</p>
+                                                        @endif
+                                                    </div>
+                                                    <x-team-flag :team="$match->teamB" size="sm" />
+                                                </div>
                                             </div>
                                         </div>
 

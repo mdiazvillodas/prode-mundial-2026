@@ -27,8 +27,6 @@
                     $match = $prediction->match;
                     $teamAName = $match->teamA?->name ?? __('Equipo por definir');
                     $teamBName = $match->teamB?->name ?? __('Equipo por definir');
-                    $teamACode = $match->teamA?->country_code ?? '---';
-                    $teamBCode = $match->teamB?->country_code ?? '---';
                     $statusLabels = [
                         'submitted' => __('Pendiente'),
                         'locked' => __('Cerrada'),
@@ -77,9 +75,7 @@
                         <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="inline-flex h-8 w-10 shrink-0 items-center justify-center rounded bg-gray-100 text-xs font-semibold text-gray-700">
-                                        {{ $teamACode }}
-                                    </span>
+                                    <x-team-flag :team="$match->teamA" size="sm" />
                                     <p class="truncate text-sm font-semibold text-gray-900">{{ $teamAName }}</p>
                                 </div>
                             </div>
@@ -91,9 +87,7 @@
                             <div class="min-w-0">
                                 <div class="flex items-center justify-end gap-2">
                                     <p class="truncate text-right text-sm font-semibold text-gray-900">{{ $teamBName }}</p>
-                                    <span class="inline-flex h-8 w-10 shrink-0 items-center justify-center rounded bg-gray-100 text-xs font-semibold text-gray-700">
-                                        {{ $teamBCode }}
-                                    </span>
+                                    <x-team-flag :team="$match->teamB" size="sm" />
                                 </div>
                             </div>
                         </div>

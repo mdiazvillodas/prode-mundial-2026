@@ -3089,16 +3089,38 @@ E15-T04
 Show flags in match cards and team UI
 
 ### Status
-Todo
+Done
 
 ### Sprint
-Future
+Sprint 8
 
 ### Priority
 Medium
 
 ### Objective
 Use local team flags in match cards, predictions, calendar, rankings, and team-facing UI where they improve scan speed.
+
+### Note
+Implemented with a reusable `x-team-flag` Blade component that renders local `flag_path` assets via `asset()`, falls back to `short_name`/`country_code`/initials, and handles null placeholder teams without broken images. The component is used in prediction match cards, single prediction view, prediction history, calendar schedule cards, matches listing, and useful admin match/result views. Existing controllers already eager-load team relations, so no new N+1 query path was introduced.
+
+### Scope
+- Add reusable team flag rendering component.
+- Show local flags next to team names in match-heavy user views.
+- Preserve team names as primary readable text.
+- Add clean fallback rendering for missing flags and placeholder teams.
+- Keep `logo_url` out of primary flag rendering.
+- Add component render tests.
+- Update team identity documentation.
+
+### Out of scope
+- No scoring, prediction, league, admin business, auth/email, or API sync behavior changes.
+- No external packages or API calls.
+- No FIFA or tournament branding.
+
+### Acceptance criteria
+- Flags appear in prediction match cards when `flag_path` exists.
+- Missing flags and placeholder teams render compact fallback badges.
+- Existing feature tests continue to pass.
 
 ### Suggested commit message
 Show local team flags
