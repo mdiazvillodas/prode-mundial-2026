@@ -3421,3 +3421,45 @@ Implemented with `api_sync_logs`, `App\Models\ApiSyncLog`, safe logging integrat
 
 ### Suggested commit message
 Add API sync health admin panel
+
+### Ticket ID
+FIX-PRED-DATE-NAV
+
+### Title
+Fix predictions date navigation
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+High
+
+### Objective
+Make `/predictions` date navigation work with real World Cup 2026 fixtures by showing only dates that have matches and rendering the selected match date.
+
+### Note
+Implemented with a distinct match-date selector based on `TournamentMatch.starts_at`, using the app timezone consistently for option generation, default date selection, and displayed match times. The page now defaults to today when today has matches, otherwise the next available match date, otherwise the first available match date. Selecting `?date=YYYY-MM-DD` filters the match list to that date and orders matches by `starts_at`.
+
+### Scope
+- Build horizontal date chips from actual match dates.
+- Hide empty generic calendar days.
+- Filter `/predictions` matches by selected date.
+- Keep existing prediction cards, flags, locking, and submit behavior.
+- Add feature tests for date options, filtering, default date, ordering, and empty state.
+
+### Out of scope
+- No scoring changes.
+- No prediction locking rule changes.
+- No league, API-Football sync, calendar, or admin behavior changes.
+
+### Acceptance criteria
+- `/predictions` shows only dates with matches.
+- Date chips change the visible match list.
+- Empty dates do not appear.
+- Existing prediction submit/edit tests still pass.
+
+### Suggested commit message
+Fix predictions date navigation

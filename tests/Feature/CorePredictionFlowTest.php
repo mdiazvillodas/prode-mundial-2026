@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class CorePredictionFlowTest extends TestCase
@@ -21,6 +22,86 @@ class CorePredictionFlowTest extends TestCase
             ->get('/predictions')
             ->assertOk()
             ->assertSee('Predicciones');
+    }
+
+    public function test_predictions_shows_only_dates_that_have_matches(): void
+    {
+        $user = User::factory()->create();
+
+        $this->datedMatch('Argentina', 'Brazil', '2026-06-11 18:00:00');
+        $this->datedMatch('France', 'Spain', '2026-06-13 18:00:00');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-11')
+            ->assertOk()
+            ->assertSee('date=2026-06-11', false)
+            ->assertSee('date=2026-06-13', false)
+            ->assertDontSee('date=2026-06-12', false);
+    }
+
+    public function test_predictions_selected_date_filters_matches(): void
+    {
+        $user = User::factory()->create();
+
+        $this->datedMatch('Argentina', 'Brazil', '2026-06-11 18:00:00');
+        $this->datedMatch('France', 'Spain', '2026-06-13 18:00:00');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-13')
+            ->assertOk()
+            ->assertSee('France')
+            ->assertSee('Spain')
+            ->assertDontSee('Argentina')
+            ->assertDontSee('Brazil');
+    }
+
+    public function test_predictions_without_selected_date_defaults_to_next_available_match_date(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Past Team A', 'Past Team B', '2026-06-09 18:00:00');
+        $this->datedMatch('Next Team A', 'Next Team B', '2026-06-12 18:00:00');
+        $this->datedMatch('Later Team A', 'Later Team B', '2026-06-14 18:00:00');
+
+        $this->actingAs($user)
+            ->get('/predictions')
+            ->assertOk()
+            ->assertSee('Next Team A')
+            ->assertSee('Next Team B')
+            ->assertDontSee('Past Team A')
+            ->assertDontSee('Later Team A');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_predictions_orders_matches_by_start_time_within_selected_date(): void
+    {
+        $user = User::factory()->create();
+
+        $this->datedMatch('Late Team A', 'Late Team B', '2026-06-11 22:00:00');
+        $this->datedMatch('Early Team A', 'Early Team B', '2026-06-11 18:00:00');
+        $this->datedMatch('Middle Team A', 'Middle Team B', '2026-06-11 20:00:00');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-11')
+            ->assertOk()
+            ->assertSeeInOrder([
+                'Early Team A',
+                'Middle Team A',
+                'Late Team A',
+            ]);
+    }
+
+    public function test_predictions_empty_state_when_no_matches_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/predictions')
+            ->assertOk()
+            ->assertSee('Todavía no hay partidos cargados')
+            ->assertDontSee('date=', false);
     }
 
     public function test_guest_is_redirected_from_inline_predictions_page(): void
@@ -281,5 +362,24 @@ class CorePredictionFlowTest extends TestCase
             'team_b_score' => null,
             'winner_team_id' => null,
         ], $overrides));
+    }
+
+    private function datedMatch(string $teamAName, string $teamBName, string $startsAt): TournamentMatch
+    {
+        $teamA = Team::factory()->create(['name' => $teamAName]);
+        $teamB = Team::factory()->create(['name' => $teamBName]);
+        $startsAt = Carbon::parse($startsAt);
+
+        return TournamentMatch::factory()->create([
+            'team_a_id' => $teamA->id,
+            'team_b_id' => $teamB->id,
+            'starts_at' => $startsAt,
+            'prediction_closes_at' => $startsAt->copy()->subMinutes(5),
+            'stage' => 'group',
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+            'winner_team_id' => null,
+        ]);
     }
 }
