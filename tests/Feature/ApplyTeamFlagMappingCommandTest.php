@@ -120,7 +120,7 @@ class ApplyTeamFlagMappingCommandTest extends TestCase
             'name' => 'Uruguay',
             'short_name' => 'URU',
             'country_code' => 'URY',
-            'flag_path' => 'flags/ury.svg',
+            'flag_path' => 'flags/missing-uruguay.svg',
         ]);
 
         $this->artisan('teams:apply-flag-mapping --force')
