@@ -3443,11 +3443,15 @@ Make `/predictions` date navigation work with real World Cup 2026 fixtures by sh
 ### Note
 Implemented with a distinct match-date selector based on `TournamentMatch.starts_at`, using the app timezone consistently for option generation, default date selection, and displayed match times. The page now defaults to today when today has matches, otherwise the next available match date, otherwise the first available match date. Selecting `?date=YYYY-MM-DD` filters the match list to that date and orders matches by `starts_at`.
 
+Follow-up polish keeps the active date chip visible on mobile after page reload by centering it in the horizontal scroller on `DOMContentLoaded`. The `Cierra pronto` badge now appears only while predictions are open and the signed time remaining until `predictionClosesAt` is between 0 and 60 minutes, so matches days away stay labeled as open.
+
 ### Scope
 - Build horizontal date chips from actual match dates.
 - Hide empty generic calendar days.
 - Filter `/predictions` matches by selected date.
 - Keep existing prediction cards, flags, locking, and submit behavior.
+- Center the active date chip on mobile after selecting a date.
+- Limit `Cierra pronto` to less than or equal to 1 hour before prediction lock.
 - Add feature tests for date options, filtering, default date, ordering, and empty state.
 
 ### Out of scope

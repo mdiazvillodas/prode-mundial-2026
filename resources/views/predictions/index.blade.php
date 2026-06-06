@@ -17,7 +17,7 @@
         <div class="mx-auto max-w-5xl space-y-6 px-4 pb-32 sm:px-6 lg:px-8">
             @if ($dateOptions->isNotEmpty())
                 <section class="rounded-[1.25rem] border border-white bg-white/75 p-3 shadow-md shadow-blue-900/5 ring-1 ring-blue-100/70 backdrop-blur">
-                    <div class="flex gap-2 overflow-x-auto pb-1">
+                    <div class="flex gap-2 overflow-x-auto pb-1" data-date-nav>
                         @foreach ($dateOptions as $dateOption)
                             @php
                                 $isActiveDate = $dateOption['date'] === $selectedDate;
@@ -26,6 +26,8 @@
                             <a
                                 href="{{ route('predictions.index', ['date' => $dateOption['date']]) }}"
                                 aria-current="{{ $isActiveDate ? 'date' : 'false' }}"
+                                data-date-chip
+                                @if ($isActiveDate) data-active-date-chip @endif
                                 @class([
                                     'shrink-0 rounded-full px-4 py-2 text-sm font-bold transition focus:outline-none focus:ring-4 focus:ring-blue-100',
                                     'bg-blue-700 text-white shadow-md shadow-blue-700/20' => $isActiveDate,
@@ -84,7 +86,8 @@
                                     $teamAName = $match->teamA?->name ?? __('Equipo por definir');
                                     $teamBName = $match->teamB?->name ?? __('Equipo por definir');
                                     $closesAt = $match->predictionClosesAt();
-                                    $isClosingSoon = $canPredict && $closesAt && $closesAt->isFuture() && $closesAt->diffInMinutes(now()) <= 60;
+                                    $minutesUntilClose = $closesAt ? now()->diffInMinutes($closesAt, false) : null;
+                                    $isClosingSoon = $canPredict && $minutesUntilClose !== null && $minutesUntilClose >= 0 && $minutesUntilClose <= 60;
                                     $hasResult = $match->status === 'finished' && $match->team_a_score !== null && $match->team_b_score !== null;
 
                                     $statusLabels = [
@@ -321,6 +324,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const dateNav = document.querySelector('[data-date-nav]');
+            const activeDateChip = dateNav?.querySelector('[data-active-date-chip]');
+
+            if (dateNav && activeDateChip) {
+                const left = activeDateChip.offsetLeft - ((dateNav.clientWidth - activeDateChip.clientWidth) / 2);
+
+                dateNav.scrollTo({
+                    left: Math.max(0, left),
+                    behavior: 'auto',
+                });
+            }
+
             const form = document.getElementById('predictions-form');
             const floatingSave = document.getElementById('floating-save');
             const floatingSaveButton = document.getElementById('floating-save-button');

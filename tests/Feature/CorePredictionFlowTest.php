@@ -39,6 +39,22 @@ class CorePredictionFlowTest extends TestCase
             ->assertDontSee('date=2026-06-12', false);
     }
 
+    public function test_predictions_date_chip_markup_marks_active_date(): void
+    {
+        $user = User::factory()->create();
+
+        $this->datedMatch('Argentina', 'Brazil', '2026-06-11 18:00:00');
+        $this->datedMatch('France', 'Spain', '2026-06-13 18:00:00');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-13')
+            ->assertOk()
+            ->assertSee('data-date-nav', false)
+            ->assertSee('data-date-chip', false)
+            ->assertSee('data-active-date-chip', false)
+            ->assertSee('aria-current="date"', false);
+    }
+
     public function test_predictions_selected_date_filters_matches(): void
     {
         $user = User::factory()->create();
@@ -102,6 +118,55 @@ class CorePredictionFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Todavía no hay partidos cargados')
             ->assertDontSee('date=', false);
+    }
+
+    public function test_match_more_than_one_hour_from_lock_does_not_show_closing_soon(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-11 12:00:00'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Future Team A', 'Future Team B', '2026-06-18 18:00:00');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-18')
+            ->assertOk()
+            ->assertSee('Abierto')
+            ->assertDontSee('Cierra pronto');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_match_closing_within_one_hour_shows_closing_soon(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-11 12:00:00'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Soon Team A', 'Soon Team B', '2026-06-11 12:35:00');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-11')
+            ->assertOk()
+            ->assertSee('Cierra pronto');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_locked_match_does_not_show_closing_soon(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-11 12:00:00'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Locked Team A', 'Locked Team B', '2026-06-11 12:35:00', [
+            'status' => TournamentMatch::STATUS_LOCKED,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-11')
+            ->assertOk()
+            ->assertSee('Cerrado')
+            ->assertDontSee('Cierra pronto');
+
+        Carbon::setTestNow();
     }
 
     public function test_guest_is_redirected_from_inline_predictions_page(): void
@@ -364,13 +429,13 @@ class CorePredictionFlowTest extends TestCase
         ], $overrides));
     }
 
-    private function datedMatch(string $teamAName, string $teamBName, string $startsAt): TournamentMatch
+    private function datedMatch(string $teamAName, string $teamBName, string $startsAt, array $overrides = []): TournamentMatch
     {
         $teamA = Team::factory()->create(['name' => $teamAName]);
         $teamB = Team::factory()->create(['name' => $teamBName]);
         $startsAt = Carbon::parse($startsAt);
 
-        return TournamentMatch::factory()->create([
+        return TournamentMatch::factory()->create(array_merge([
             'team_a_id' => $teamA->id,
             'team_b_id' => $teamB->id,
             'starts_at' => $startsAt,
@@ -380,6 +445,6 @@ class CorePredictionFlowTest extends TestCase
             'team_a_score' => null,
             'team_b_score' => null,
             'winner_team_id' => null,
-        ]);
+        ], $overrides));
     }
 }
