@@ -24,6 +24,8 @@ PLAYWRIGHT_BASE_URL=https://staging.example.test npm run test:e2e
 
 Do not run destructive demo reset commands in production or live mode. Do not use real Brevo, Google, or API-Football calls as part of automated smoke tests.
 
+If `/predictions` has no editable matches during smoke testing, run `php artisan demo:reset-staging --force` to reseed deterministic staging data with a future open match.
+
 ## A. Auth
 
 - Register with email and password.

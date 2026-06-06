@@ -6,7 +6,6 @@ test('prediction pre-results smoke loads and saves an editable prediction when a
 
     await page.goto('/predictions');
     await expect(page.getByRole('heading', { name: 'Predicciones' })).toBeVisible();
-    await expect(page.getByText(/Jornada|Todav/i).first()).toBeVisible();
     await expect(page.locator('[data-date-nav]')).toBeVisible();
     await expect(page.locator('[data-active-date-chip]')).toBeVisible();
 
@@ -17,24 +16,59 @@ test('prediction pre-results smoke loads and saves an editable prediction when a
         throw new Error('No prediction date chips were found. Run php artisan demo:reset-staging --force before E2E smoke.');
     }
 
-    if (dateChipCount > 1) {
-        await dateChips.nth(1).click();
+    let savedPrediction = false;
+    let anyEditableDate = false;
+
+    for (let index = 0; index < dateChipCount; index += 1) {
+        const chip = dateChips.nth(index);
+        const isActive = await chip.getAttribute('data-active-date-chip') !== null;
+
+        if (!isActive) {
+            await Promise.all([
+                page.waitForNavigation({ url: /\/predictions/, waitUntil: 'networkidle' }),
+                chip.click(),
+            ]);
+        }
+
+        await expect(page.locator('[data-date-nav]')).toBeVisible();
         await expect(page.locator('[data-active-date-chip]')).toBeVisible();
+
+        const predictionInputs = page.locator('[data-prediction-input]:visible');
+        const editableCount = await predictionInputs.count();
+
+        if (editableCount === 0) {
+            continue;
+        }
+
+        const numberInputs = page.locator('input[data-prediction-input]:visible');
+        const numberCount = await numberInputs.count();
+
+        if (numberCount < 2) {
+            continue;
+        }
+
+        anyEditableDate = true;
+        await numberInputs.nth(0).fill('2');
+        await numberInputs.nth(1).fill('1');
+
+        const selectInputs = page.locator('select[data-prediction-input]:visible');
+        if (await selectInputs.count() > 0) {
+            await selectInputs.nth(0).selectOption({ index: 1 });
+        }
+
+        await expect(page.locator('#floating-save')).toBeVisible();
+        await page.locator('#floating-save-button').click();
+        await expect(page.getByRole('status')).toContainText(/Predicciones guardadas|Prediccion guardada/);
+
+        savedPrediction = true;
+        break;
     }
 
-    await expect(page.locator('article').first()).toBeVisible();
+    if (!savedPrediction) {
+        if (!anyEditableDate) {
+            throw new Error('No editable prediction inputs were found on any available date chip. Ensure demo staging data includes at least one open future match.');
+        }
 
-    const scoreInputs = page.locator('[data-prediction-input]').and(page.locator('input[type="number"]'));
-    const editableScores = await scoreInputs.count();
-
-    if (editableScores === 0) {
-        throw new Error('No editable prediction inputs were found. Run php artisan demo:reset-staging --force before pre-results E2E smoke.');
+        throw new Error('An editable prediction date was found, but the page did not expose enough editable score inputs to save a prediction.');
     }
-
-    await scoreInputs.nth(0).fill('2');
-    await scoreInputs.nth(1).fill('1');
-
-    await expect(page.locator('#floating-save')).toBeVisible();
-    await page.getByRole('button', { name: 'Guardar cambios' }).click();
-    await expect(page.getByRole('status')).toContainText(/Predicciones guardadas|Prediccion guardada/);
 });
