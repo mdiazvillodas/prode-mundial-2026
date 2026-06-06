@@ -17,6 +17,9 @@
         <div class="mx-auto max-w-5xl space-y-6 px-4 pb-32 sm:px-6 lg:px-8">
             @if ($dateOptions->isNotEmpty())
                 <section class="rounded-[1.25rem] border border-white bg-white/75 p-3 shadow-md shadow-blue-900/5 ring-1 ring-blue-100/70 backdrop-blur">
+                    <p class="px-1 pb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                        {{ __('Horarios en tu hora local') }}
+                    </p>
                     <div class="flex gap-2 overflow-x-auto pb-1" data-date-nav>
                         @foreach ($dateOptions as $dateOption)
                             @php
@@ -24,7 +27,7 @@
                             @endphp
 
                             <a
-                                href="{{ route('predictions.index', ['date' => $dateOption['date']]) }}"
+                                href="{{ route('predictions.index', ['date' => $dateOption['date'], 'tz' => $timezone]) }}"
                                 aria-current="{{ $isActiveDate ? 'date' : 'false' }}"
                                 data-date-chip
                                 @if ($isActiveDate) data-active-date-chip @endif
@@ -56,7 +59,7 @@
                     </p>
                 </div>
             @else
-                <form method="POST" action="{{ route('predictions.bulk-store', ['date' => $selectedDate]) }}" id="predictions-form" class="space-y-8">
+                <form method="POST" action="{{ route('predictions.bulk-store', ['date' => $selectedDate, 'tz' => $timezone]) }}" id="predictions-form" class="space-y-8">
                     @csrf
 
                     <section class="space-y-4">
@@ -142,7 +145,13 @@
 
                                         <div class="mt-4 text-center">
                                             <p class="text-sm font-black text-blue-950">
-                                                {{ $match->starts_at ? $match->starts_at->timezone($timezone)->format('H:i') : __('Hora por definir') }}
+                                                @if ($match->starts_at)
+                                                    <span data-local-time="{{ $match->starts_at->toIso8601String() }}">
+                                                        {{ $match->starts_at->timezone($timezone)->format('H:i') }}
+                                                    </span>
+                                                @else
+                                                    {{ __('Hora por definir') }}
+                                                @endif
                                             </p>
                                             <div class="mt-1 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-slate-500">
                                                 @if ($match->stage)
@@ -279,7 +288,12 @@
                                                 @endif
 
                                                 @if ($closesAt)
-                                                    <span>{{ __('Editar hasta') }} {{ $closesAt->timezone($timezone)->format('H:i') }}.</span>
+                                                    <span>
+                                                        {{ __('Editar hasta') }}
+                                                        <span data-local-time="{{ $closesAt->toIso8601String() }}">
+                                                            {{ $closesAt->timezone($timezone)->format('H:i') }}
+                                                        </span>.
+                                                    </span>
                                                 @endif
                                             @elseif ($isPlaceholder)
                                                 <span class="text-sky-700">{{ __('Equipos por definir. Este partido se habilita cuando estén confirmados.') }}</span>
@@ -324,6 +338,38 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const browserTimezone = (() => {
+                try {
+                    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+                } catch (error) {
+                    return null;
+                }
+            })();
+
+            if (browserTimezone) {
+                const url = new URL(window.location.href);
+
+                if (url.searchParams.get('tz') !== browserTimezone) {
+                    url.searchParams.set('tz', browserTimezone);
+                    window.location.replace(url.toString());
+
+                    return;
+                }
+            }
+
+            document.querySelectorAll('[data-local-time]').forEach((element) => {
+                const date = new Date(element.dataset.localTime);
+
+                if (Number.isNaN(date.getTime())) {
+                    return;
+                }
+
+                element.textContent = new Intl.DateTimeFormat(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }).format(date);
+            });
+
             const dateNav = document.querySelector('[data-date-nav]');
             const activeDateChip = dateNav?.querySelector('[data-active-date-chip]');
 

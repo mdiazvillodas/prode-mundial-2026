@@ -169,6 +169,67 @@ class CorePredictionFlowTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_predictions_displays_match_time_in_viewer_timezone(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Argentina', 'Algeria', Carbon::parse('2026-06-17 01:00:00', 'UTC'));
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-17&tz=Europe/Madrid')
+            ->assertOk()
+            ->assertSee('Argentina')
+            ->assertSee('Algeria')
+            ->assertSee('03:00')
+            ->assertSee('02:55')
+            ->assertSee('Horarios en tu hora local');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_predictions_date_chips_use_viewer_local_dates(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Boundary Team A', 'Boundary Team B', Carbon::parse('2026-06-16 23:30:00', 'UTC'));
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-17&tz=Europe/Madrid')
+            ->assertOk()
+            ->assertSee('date=2026-06-17', false)
+            ->assertDontSee('date=2026-06-16', false)
+            ->assertSee('Boundary Team A')
+            ->assertSee('Boundary Team B')
+            ->assertSee('01:30');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_predictions_filters_by_viewer_local_date_across_utc_midnight(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('Local Next Day A', 'Local Next Day B', Carbon::parse('2026-06-16 23:30:00', 'UTC'));
+        $this->datedMatch('Local Same Day A', 'Local Same Day B', Carbon::parse('2026-06-17 22:30:00', 'UTC'));
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-17&tz=Europe/Madrid')
+            ->assertOk()
+            ->assertSee('Local Next Day A')
+            ->assertDontSee('Local Same Day A');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-17&tz=UTC')
+            ->assertOk()
+            ->assertDontSee('Local Next Day A')
+            ->assertSee('Local Same Day A');
+
+        Carbon::setTestNow();
+    }
+
     public function test_guest_is_redirected_from_inline_predictions_page(): void
     {
         $this->get('/predictions')
@@ -201,6 +262,37 @@ class CorePredictionFlowTest extends TestCase
             'predicted_qualified_team_id' => null,
             'status' => Prediction::STATUS_SUBMITTED,
             'points_awarded' => null,
+        ]);
+    }
+
+    public function test_inline_prediction_bulk_save_preserves_date_and_timezone_context(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch([
+            'stage' => 'group',
+            'starts_at' => Carbon::parse('2026-06-17 01:00:00', 'UTC'),
+            'prediction_closes_at' => Carbon::parse('2026-06-17 00:55:00', 'UTC'),
+        ]);
+
+        $this->actingAs($user)
+            ->from('/predictions?date=2026-06-17&tz=Europe/Madrid')
+            ->post('/predictions/bulk?date=2026-06-17&tz=Europe/Madrid', [
+                'predictions' => [
+                    $match->id => [
+                        'changed' => '1',
+                        'team_a_score' => 2,
+                        'team_b_score' => 1,
+                    ],
+                ],
+            ])
+            ->assertRedirect('/predictions?date=2026-06-17&tz=Europe%2FMadrid')
+            ->assertSessionHas('status', 'Predicciones guardadas.');
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => 2,
+            'team_b_score' => 1,
         ]);
     }
 
@@ -429,11 +521,11 @@ class CorePredictionFlowTest extends TestCase
         ], $overrides));
     }
 
-    private function datedMatch(string $teamAName, string $teamBName, string $startsAt, array $overrides = []): TournamentMatch
+    private function datedMatch(string $teamAName, string $teamBName, Carbon|string $startsAt, array $overrides = []): TournamentMatch
     {
         $teamA = Team::factory()->create(['name' => $teamAName]);
         $teamB = Team::factory()->create(['name' => $teamBName]);
-        $startsAt = Carbon::parse($startsAt);
+        $startsAt = $startsAt instanceof Carbon ? $startsAt : Carbon::parse($startsAt);
 
         return TournamentMatch::factory()->create(array_merge([
             'team_a_id' => $teamA->id,

@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { demoUsers, login } from './helpers/auth.js';
 
+test.use({ timezoneId: 'Europe/Madrid' });
+
 test('prediction pre-results smoke loads and saves an editable prediction when available', async ({ page }) => {
     await login(page, demoUsers.mariano);
 

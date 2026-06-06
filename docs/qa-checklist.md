@@ -51,6 +51,8 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 - Confirm locked, closed, finished, and placeholder matches do not allow edits.
 - Confirm `Cierra pronto` appears only when less than or equal to 1 hour remains before prediction lock.
 - Confirm matches days away stay labeled as open/scheduled, not closing soon.
+- In Europe/Madrid, confirm Argentina vs Algeria on `17/06/2026 01:00 UTC` shows as `17/06/2026 03:00` on `/predictions`.
+- Confirm the same match shows `Editar hasta 02:55` on `/predictions`.
 
 ## C. Calendar
 
@@ -61,6 +63,9 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 - Confirm flags are visible for selected team and opponent.
 - Confirm dates and times are readable on mobile and desktop.
 - Confirm empty/invalid team states are friendly.
+- Compare the same fixture between `/calendar` and `/predictions`; the visible local date and time must match.
+- Test a UTC-midnight boundary fixture, for example `2026-06-16 23:30 UTC`, and confirm it appears under `17/06/2026` for Europe/Madrid.
+- Test an Argentina viewer timezone when possible and confirm dates/times shift consistently on both pages.
 
 ## D. Private Leagues
 

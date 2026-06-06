@@ -17,7 +17,7 @@ class PredictionController extends Controller
 {
     public function index(Request $request): View
     {
-        $timezone = config('app.timezone');
+        $timezone = $this->viewerTimezone($request);
         $dateOptions = $this->matchDateOptions($timezone);
         $selectedDate = $this->selectedMatchDate((string) $request->query('date', ''), $dateOptions, $timezone);
 
@@ -51,6 +51,17 @@ class PredictionController extends Controller
             'selectedDate' => $selectedDate,
             'timezone' => $timezone,
         ]);
+    }
+
+    private function viewerTimezone(Request $request): string
+    {
+        $requestedTimezone = (string) $request->query('tz', '');
+
+        if ($requestedTimezone !== '' && in_array($requestedTimezone, timezone_identifiers_list(), true)) {
+            return $requestedTimezone;
+        }
+
+        return (string) config('app.timezone');
     }
 
     /**
@@ -190,7 +201,7 @@ class PredictionController extends Controller
 
         if ($submittedPredictions->isEmpty()) {
             return redirect()
-                ->route('predictions.index')
+                ->route('predictions.index', $this->predictionIndexQuery($request))
                 ->with('status', __('No hay cambios para guardar.'));
         }
 
@@ -255,7 +266,27 @@ class PredictionController extends Controller
         }
 
         return redirect()
-            ->route('predictions.index')
+            ->route('predictions.index', $this->predictionIndexQuery($request))
             ->with('status', __('Predicciones guardadas.'));
+    }
+
+    /**
+     * @return array{date?: string, tz?: string}
+     */
+    private function predictionIndexQuery(Request $request): array
+    {
+        $query = [];
+        $date = (string) $request->query('date', '');
+        $timezone = (string) $request->query('tz', '');
+
+        if ($date !== '') {
+            $query['date'] = $date;
+        }
+
+        if ($timezone !== '' && in_array($timezone, timezone_identifiers_list(), true)) {
+            $query['tz'] = $timezone;
+        }
+
+        return $query;
     }
 }

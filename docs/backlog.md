@@ -3469,6 +3469,49 @@ Follow-up polish keeps the active date chip visible on mobile after page reload 
 Fix predictions date navigation
 
 ### Ticket ID
+TZ-01
+
+### Title
+Fix predictions local timezone display
+
+### Status
+Done
+
+### Sprint
+Sprint 8
+
+### Priority
+Critical
+
+### Objective
+Make `/predictions` display match times, edit-until times, and date chips in the viewer's local timezone, consistent with `/calendar`.
+
+### Note
+Implemented `/predictions` timezone handling around a `tz` query parameter populated from `Intl.DateTimeFormat().resolvedOptions().timeZone` when available, with `config('app.timezone')` as the server fallback. Date chips and selected-date filtering now use the viewer timezone, so `?date=YYYY-MM-DD` refers to the viewer's local match date. Match kickoff and edit-until labels also carry local-time data attributes for browser-side formatting, matching the calendar behavior.
+
+### Scope
+- Preserve prediction lock rules based on the real match start time minus 5 minutes.
+- Display kickoff time and `Editar hasta` time in the viewer timezone.
+- Group and filter prediction date chips by viewer local date.
+- Preserve active chip centering and date-chip navigation behavior.
+- Add feature coverage for Europe/Madrid display and UTC-midnight boundaries.
+- Add Playwright timezone emulation for prediction smoke coverage.
+
+### Out of scope
+- No scoring changes.
+- No prediction submission/edit rule changes.
+- No league, API-Football sync, auth, production, or Railway configuration changes.
+
+### Acceptance criteria
+- `/predictions` and `/calendar` show consistent local times for the same fixture.
+- Argentina vs Algeria at `2026-06-17 01:00 UTC` shows `03:00` in Europe/Madrid.
+- Edit-until time for that fixture shows `02:55` in Europe/Madrid.
+- UTC-midnight boundary fixtures appear under the viewer's local date.
+
+### Suggested commit message
+Fix predictions local timezone display
+
+### Ticket ID
 QA-01
 
 ### Title
