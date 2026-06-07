@@ -3892,7 +3892,7 @@ E17-T06
 Build live dashboard data service
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -3902,6 +3902,8 @@ High
 
 ### Objective
 Create a backend data preparation layer for the redesigned dashboard, keeping complex queries out of Blade views.
+
+Implemented `App\Services\Dashboard\LiveDashboardDataService` as a plain array data-preparation layer and wired it into `DashboardController` as `liveDashboardData` without redesigning the current Blade view. The service prepares nearest-day missing predictions with local timezone URLs, conservative live-ish match states, provisional prediction status, friend completion activity across shared private leagues with deduplication, compact league summaries using existing ranking order, and GF/GC averages from finished matches.
 
 ### Scope
 - Determine the nearest local match day with open/predictable matches missing a prediction from the current user.

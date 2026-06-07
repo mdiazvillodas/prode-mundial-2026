@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LeagueMembership;
 use App\Models\Prediction;
 use App\Models\TournamentMatch;
+use App\Services\Dashboard\LiveDashboardDataService;
 use App\Services\PredictionScoringService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,7 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, LiveDashboardDataService $liveDashboardData): View
     {
         $user = $request->user();
         $leaderboard = $this->globalLeaderboard();
@@ -34,6 +35,7 @@ class DashboardController extends Controller
         return view('dashboard', [
             'activePrivateLeagues' => $activePrivateLeagues,
             'currentUserPosition' => $currentUserPosition,
+            'liveDashboardData' => $liveDashboardData->forUser($user, $request->query('tz')),
             'openPredictionsCount' => $this->openPredictionsCount($user->id),
             'scoredPredictionsCount' => $currentUserEntry?->scored_predictions_count ?? 0,
             'totalPoints' => $currentUserEntry?->total_points ?? 0,
