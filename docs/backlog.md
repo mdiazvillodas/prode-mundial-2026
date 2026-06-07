@@ -3673,3 +3673,387 @@ Implemented with `docs/qa-checklist.md`, covering manual QA for auth, prediction
 
 ### Suggested commit message
 Add deep QA checklist and smoke coverage
+
+## EPIC 17 - Dashboard vivo, identidad y engagement
+
+### Ticket ID
+E17-T01
+
+### Title
+Document live dashboard narrative
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Define the product narrative for the new dashboard. Inicio should stop being a generic access hub and become an actionable/social dashboard.
+
+### Scope
+- Document that the dashboard should focus on pending predictions, live-ish match tracking, private league activity, and compact league summary.
+- Document that generic filler statistics should be avoided.
+- Document that empty filler cards should not be shown.
+- Document that the large "Hola" hero should be replaced by a compact mobile-first structure.
+
+### Out of scope
+- No application code.
+- No UI implementation.
+- No database changes.
+
+### Acceptance criteria
+- The backlog clearly documents the new dashboard direction.
+- The ticket can guide future implementation tickets.
+
+### Suggested commit message
+docs: add live dashboard engagement roadmap
+
+### Ticket ID
+E17-T02
+
+### Title
+Add predefined profile avatar system
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Allow users to choose a predefined local avatar for profile identity without uploading custom images and without using Google profile photos.
+
+### Scope
+- Add a user avatar key field or equivalent.
+- Use null to mean the user has not chosen yet.
+- Use a default/silhouette option to mean the user explicitly chose no profile image.
+- Store avatar choices as keys mapped to local assets.
+- Do not use Google profile pictures.
+- Do not allow image uploads.
+- Prepare avatar rendering for header, rankings, leagues, and social dashboard cards.
+
+### Out of scope
+- No free-form image upload.
+- No Google avatar import.
+- No external storage.
+- No scoring, prediction, league, API-Football, auth-provider, or production config changes.
+
+### Acceptance criteria
+- Users can have a stored avatar key.
+- A default/silhouette choice is supported.
+- Missing/unselected avatar state can be distinguished from "default selected".
+- Existing users remain valid.
+
+### Suggested commit message
+feat: add predefined profile avatars
+
+### Ticket ID
+E17-T03
+
+### Title
+Prompt users to choose avatar
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Show a profile avatar selection modal to users who have not chosen an avatar yet.
+
+### Scope
+- Show the modal only when the authenticated user's avatar choice is missing/null.
+- Let the user choose one predefined avatar or the default/silhouette option.
+- After choosing any option, do not show the modal again automatically.
+- Provide a way to change the avatar later from profile or the user menu.
+- Keep copy in Spanish and aligned with Prode tone.
+
+### Out of scope
+- No forced upload.
+- No Google avatar usage.
+- No blocking prediction, league, or dashboard access after dismissal/selection.
+- No scoring or prediction logic changes.
+
+### Acceptance criteria
+- Users without avatar selection see the modal after login/dashboard access.
+- Users who select an avatar no longer see the modal.
+- Users who select the default/silhouette option no longer see the modal.
+- Users can later change avatar from profile/menu.
+
+### Suggested commit message
+feat: prompt users to choose avatar
+
+### Ticket ID
+E17-T04
+
+### Title
+Add local avatar assets and catalog
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+Medium
+
+### Objective
+Add the first local avatar asset set and a maintainable avatar catalog.
+
+### Scope
+- Add local avatar assets under `public/avatars` or an equivalent public asset path.
+- Include an initial set of 7 male avatars, 3 female avatars, and 1 default/silhouette avatar.
+- Add a config/catalog file such as `config/profile-avatars.php` with keys, labels, and asset paths.
+- Add tests or validation ensuring configured assets exist.
+- Keep assets generic and not based on real people.
+
+### Out of scope
+- No user-uploaded images.
+- No third-party avatar API.
+- No copyrighted/proprietary character assets.
+- No scoring, prediction, league, or API changes.
+
+### Acceptance criteria
+- Avatar catalog exists.
+- Each configured avatar points to an existing local file.
+- Default/silhouette avatar exists.
+- The system can render avatar options from the catalog.
+
+### Suggested commit message
+feat: add local avatar catalog
+
+### Ticket ID
+E17-T05
+
+### Title
+Add dashboard engagement demo data
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Create or extend local/staging demo data so the new dashboard can be tested with realistic engagement scenarios.
+
+### Scope
+- Include users with and without avatar choices.
+- Include upcoming matches.
+- Include the nearest day with partially completed predictions.
+- Include in-progress/live-ish matches.
+- Include finished matches for GF/GC averages and form indicators.
+- Include private leagues with multiple members.
+- Include members with different prediction completion counts for the next match day, such as 4/4, 3/4, 2/4, and 0/4.
+- Include predictions that are provisionally exact, trend-correct, incorrect, and missing for in-progress matches.
+
+### Out of scope
+- No production seeders.
+- No destructive production commands.
+- No real API calls.
+- No scoring rule changes.
+
+### Acceptance criteria
+- Local/staging demo data supports dashboard visual QA.
+- Existing staging reset safety protections remain intact.
+- Production/live destructive protections remain intact.
+
+### Suggested commit message
+feat: add dashboard engagement demo data
+
+### Ticket ID
+E17-T06
+
+### Title
+Build live dashboard data service
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Create a backend data preparation layer for the redesigned dashboard, keeping complex queries out of Blade views.
+
+### Scope
+- Determine the nearest local match day with open/predictable matches missing a prediction from the current user.
+- Return only missing predictions from that nearest relevant day.
+- Return in-progress matches with current score, user's prediction, and provisional status: exact, trend, incorrect, or no prediction.
+- Return last API sync age for live-ish match display when available.
+- Return private-league friend activity for the next match day, deduplicating users across leagues.
+- Sort friends by completed prediction count descending.
+- Return compact league summary data.
+- Calculate GF/GC averages from finished tournament matches where enough data exists.
+
+### Out of scope
+- No dashboard UI redesign in this ticket.
+- No scoring changes.
+- No prediction save/edit changes.
+- No API-Football endpoint additions.
+- No cron or Railway changes.
+
+### Acceptance criteria
+- Service/query object returns stable data for the dashboard.
+- Tests cover pending predictions, in-progress status, friend activity deduplication, and GF/GC calculation.
+- Blade views are not filled with complex query logic.
+
+### Suggested commit message
+feat: add live dashboard data service
+
+### Ticket ID
+E17-T07
+
+### Title
+Redesign dashboard as mobile-first live home
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Replace the current generic dashboard with a mobile-first dashboard focused on action, live-ish match tracking, and private-league social activity.
+
+### Scope
+- Redesign `/dashboard`.
+- Use a compact header with logo/title and a top-right hamburger/user menu.
+- Do not add bottom navigation.
+- Remove the large "Hola" hero.
+- Replace generic metric cards with contextual modules.
+- Show "Te falta pronosticar" only when pending predictions exist for the nearest relevant day.
+- Show only missing predictions from that day.
+- Make pending match rows/cards clickable to the correct `/predictions` date.
+- Show "En juego" only when there are in-progress/live-ish matches.
+- Show "Actualizado hace X min" instead of formal live disclaimers.
+- Show provisional status indicators for the user's current prediction state.
+- Show "Tus amigos ya se movieron" only when private-league friend activity exists.
+- Show up to 6 visible friends, with internal scroll if needed.
+- Show compact league summary.
+- Keep Spanish copy and avoid gambling language.
+
+### Out of scope
+- No scoring changes.
+- No prediction validation changes.
+- No API-Football sync changes.
+- No full redesign of predictions, leagues, calendar, history, or admin.
+- No React, Vue, or Inertia.
+
+### Acceptance criteria
+- Dashboard is useful on mobile.
+- Empty/non-applicable modules are hidden rather than replaced by filler.
+- Pending prediction links route to the correct date on `/predictions`.
+- Live-ish matches show current score, user prediction, provisional status, and sync age.
+- Friend activity does not reveal prediction values.
+- Existing auth/admin access rules remain unchanged.
+
+### Suggested commit message
+feat: redesign live dashboard
+
+### Ticket ID
+E17-T08
+
+### Title
+Add recent form indicators to rankings
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+Medium
+
+### Objective
+Make league rankings more engaging by showing each user's recent prediction form.
+
+### Scope
+- Add compact recent form indicators to general and private league rankings.
+- Use the latest shared finished/scored matches as the comparison basis.
+- Use the same match sequence for every user in a given ranking.
+- Show indicators:
+  - exact result
+  - trend correct
+  - incorrect
+  - no prediction
+- Keep points, exacts, trends, and scored prediction counts unchanged.
+- Add a small legend if needed.
+
+### Out of scope
+- No ranking sort changes.
+- No scoring rule changes.
+- No new badges or rewards.
+- No prediction logic changes.
+
+### Acceptance criteria
+- Rankings still sort exactly as before.
+- Users can quickly see recent form.
+- No prediction values are leaked before allowed visibility.
+- Removed private league members remain excluded.
+
+### Suggested commit message
+feat: add ranking form indicators
+
+### Ticket ID
+E17-T09
+
+### Title
+QA dashboard engagement sprint
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Validate the avatar, dashboard, demo data, and ranking-form changes before staging/production release.
+
+### Scope
+- Update `docs/qa-checklist.md` if flows change.
+- Add/adjust feature tests where needed.
+- Add/adjust Playwright smoke coverage for dashboard and avatar modal where stable.
+- Verify `php artisan test`.
+- Verify `npm run build`.
+- Verify local/staging smoke flow.
+- Document any follow-up issues in `docs/backlog.md`.
+
+### Out of scope
+- No production deploy.
+- No production E2E writes.
+- No unrelated UI redesign.
+
+### Acceptance criteria
+- Local tests pass.
+- Frontend build passes.
+- Staging QA path is documented.
+- Follow-up bugs are captured in the backlog.
+
+### Suggested commit message
+test: cover dashboard engagement sprint
