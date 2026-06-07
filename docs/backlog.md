@@ -4074,3 +4074,369 @@ Completed QA closure for EPIC 17 by reviewing and tightening `docs/qa-checklist.
 
 ### Suggested commit message
 test: cover dashboard engagement sprint
+
+## EPIC 18 - Dashboard responsive, jornada y activación social
+
+Product direction:
+The dashboard should work well in two major states:
+- Users with useful activity/social context.
+- Users with no private leagues, where the dashboard would otherwise feel empty.
+
+The dashboard must keep "Te falta pronosticar" as the main action when pending predictions exist, use desktop width better, and provide a compact right-side context column.
+
+Product rules:
+- Do not use gambling/betting language.
+- Use Spanish copy.
+- Keep mobile-first behavior.
+- Desktop should use a two-column structure where appropriate.
+- Mobile should remain stacked and easy to scan.
+- Empty/filler cards should still be avoided, but meaningful onboarding/activation cards are allowed.
+- No scoring, prediction rules, league business rules, API sync, auth, Railway, production config, migrations, or database changes are implied by this planning epic.
+
+### Ticket ID
+E18-T01
+
+### Title
+Document dashboard responsive and social activation roadmap
+
+### Status
+Done
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Document the agreed product direction for the next dashboard iteration after EPIC 17.
+
+Documented EPIC 18 as the post-EPIC 17 roadmap for dashboard responsive layout, daily World Cup context, compact prediction-state indicators, and private-league social activation.
+
+### Scope
+- Document the desktop layout direction:
+  - main content area using an 8/12 column for "Te falta pronosticar"
+  - right sidebar using a 4/12 column for compact tournament/day context
+- Document mobile stacking behavior.
+- Document that "Te falta pronosticar" remains the primary action when pending predictions exist.
+- Document that "Hoy en el Mundial" replaces the narrower "En juego" concept.
+- Document that "Jugá con tus amigos" is a full-width onboarding/social activation card shown only to users with no active private leagues.
+- Document that users with private leagues should see friend activity instead of the onboarding card.
+- Document compact visual prediction-state indicators:
+  - gray dot for no prediction
+  - green dot for trend/correct direction
+  - red dot for incorrect
+  - violet star for exact
+- Document that repeated visible text like "Sin pronóstico" should be avoided in compact match rows.
+
+### Out of scope
+- No application code.
+- No UI implementation.
+- No data service changes.
+- No tests required unless docs checks exist.
+
+### Acceptance criteria
+- EPIC 18 clearly captures the agreed roadmap.
+- Future implementation tickets can be executed independently.
+
+### Suggested commit message
+docs: add dashboard responsive activation roadmap
+
+### Ticket ID
+E18-T02
+
+### Title
+Add daily World Cup sidebar card to dashboard
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Replace the current narrow "En juego" concept with a compact right-side dashboard card showing the user's local World Cup day context.
+
+### Scope
+- Add/adjust dashboard data so the card can show matches for the relevant local day.
+- The card should be called "Hoy en el Mundial" unless product copy changes.
+- Show matches from the user's local day, including:
+  - scheduled/upcoming matches
+  - live-ish/in-progress matches
+  - finished matches
+- If the next local day has no matches, continue showing the last relevant match day until a future match day exists.
+- When the local day changes and there are matches, move to that day.
+- Keep rows compact, like a sidebar.
+- Show team codes/names, kickoff time or score, and match status where useful.
+- Show last sync age when useful and available, especially for live-ish data.
+- A match may appear both in "Te falta pronosticar" and "Hoy en el Mundial" if it is part of the relevant day and the user has not predicted it yet.
+
+### Out of scope
+- No scoring changes.
+- No prediction lock rule changes.
+- No API-Football sync changes.
+- No cron/Railway changes.
+- No production config changes.
+- No broad dashboard redesign beyond this card and required data.
+- No external packages.
+
+### Acceptance criteria
+- Dashboard shows a compact "Hoy en el Mundial" card on desktop/right sidebar and stacked on mobile.
+- The card can show upcoming, live-ish, and finished matches.
+- It does not become an empty large card just because there are no live matches.
+- Existing live-ish behavior remains conservative and sync-age aware.
+
+### Suggested commit message
+feat: add daily matches dashboard card
+
+### Ticket ID
+E18-T03
+
+### Title
+Improve dashboard desktop grid layout
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Use desktop width better by moving from fully stacked cards to a responsive dashboard grid.
+
+### Scope
+- On desktop, arrange the first dashboard section as:
+  - 8/12 width: "Te falta pronosticar"
+  - 4/12 width: "Hoy en el Mundial"
+- On mobile, keep sections stacked.
+- Keep "Te falta pronosticar" visually dominant.
+- Ensure the right column behaves like a compact sidebar, not a full-width content block.
+- If the user has private leagues, place "Tus amigos ya se movieron" as another right-column sidebar card when appropriate.
+- If the user has no private leagues, do not show the friend activity card.
+- Preserve existing dashboard route and access rules.
+
+### Out of scope
+- No changes to prediction save/edit behavior.
+- No scoring changes.
+- No league business rule changes.
+- No API sync changes.
+- No migrations.
+- No redesign of other pages.
+
+### Acceptance criteria
+- Desktop dashboard uses a clear 8/12 + 4/12 layout where data exists.
+- Mobile remains stacked and readable.
+- "Hoy en el Mundial" and friend activity cards feel like sidebar modules.
+- No empty filler modules are introduced.
+
+### Suggested commit message
+style: improve dashboard desktop grid
+
+### Ticket ID
+E18-T04
+
+### Title
+Add private league onboarding CTA to dashboard
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Add a strong social onboarding card for users who do not belong to any active private league.
+
+### Product narrative
+The card should be a protagonist onboarding/social activation piece, not a small empty-state placeholder. It should explain how to play with friends:
+- Create a league.
+- Copy the invite link.
+- Share it with friends.
+- Compete together in the ranking.
+
+### Scope
+- Show the card only when the authenticated user has no active private league memberships.
+- Do not show it to users who already belong to at least one active private league.
+- On desktop, place it below the top dashboard row and let it occupy the full available width.
+- On mobile, stack it after the main daily/action modules.
+- Suggested title: "Jugá con tus amigos".
+- Suggested subtitle: "Creá tu propia liga, compartí el link y competí con tu grupo durante el Mundial."
+- Include a short step-by-step:
+  - "Creá tu liga" - "Elegí el nombre que más te guste."
+  - "Copiá el link" - "El sistema genera un link para invitar."
+  - "Compartilo con tus amigos" - "Mandalo por WhatsApp, Telegram o donde quieras."
+  - "Compitan en su ranking" - "Tus amigos piden entrar y juegan en la misma tabla."
+- Include a short note:
+  - "Tus amigos se suman desde un link y vos aprobás el ingreso."
+- Include clear CTAs:
+  - primary: "Crear mi liga"
+  - secondary: "Buscar liga" or "Tengo un código"
+- Icons may be inline SVGs, but they must be visually polished, consistent, and aligned with the Prode style.
+- The card must feel premium, friendly, and useful, because it is the main welcome content for users with no social activity.
+
+### Out of scope
+- No changes to league creation business rules.
+- No automatic joining.
+- No bypassing owner approval.
+- No changes to invitation-link logic.
+- No external icon packages.
+- No image upload.
+- No scoring, predictions, API sync, auth, Railway, production config, or migrations.
+
+### Acceptance criteria
+- Users with no active private leagues see the onboarding CTA card.
+- Users with active private leagues do not see it.
+- The card is visually important and not a small placeholder.
+- The card works well on mobile and desktop.
+- CTA links go to the correct existing create/search/join league flows.
+- Existing private league approval/invitation rules remain unchanged.
+
+### Suggested commit message
+feat: add league onboarding dashboard card
+
+### Ticket ID
+E18-T05
+
+### Title
+Compact dashboard prediction state indicators
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+Medium
+
+### Objective
+Make compact dashboard match rows easier to scan by replacing repeated state text with small visual indicators.
+
+### Scope
+- In compact dashboard match rows, avoid repeated visible labels such as "Sin pronóstico".
+- Use compact indicators:
+  - gray dot = no prediction
+  - green dot = trend/correct direction
+  - red dot = incorrect
+  - violet star = exact
+- Use accessible labels/title text where needed, but avoid visible legend clutter.
+- Apply to "Hoy en el Mundial" and any compact live/daily dashboard rows where the current text takes too much space.
+- Preserve meaning for provisional vs final states:
+  - if match is live-ish, indicators are provisional
+  - if match is finished/scored, indicators represent the final scored prediction state when available
+
+### Out of scope
+- No scoring changes.
+- No prediction value visibility changes before allowed time.
+- No ranking indicator changes unless already using a shared compact indicator component and safe to reuse.
+- No dashboard data service rewrite unless needed.
+
+### Acceptance criteria
+- Compact rows no longer repeat long state text.
+- Visual indicators are clear, consistent, and accessible.
+- Prediction values are not leaked before allowed visibility rules.
+- Live-ish indicators do not imply final points.
+
+### Suggested commit message
+style: compact dashboard prediction indicators
+
+### Ticket ID
+E18-T06
+
+### Title
+Remove duplicate dashboard logo
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+Medium
+
+### Objective
+Clean up the dashboard header by removing the duplicated logo inside the internal dashboard header/card.
+
+### Scope
+- Keep the global navigation logo unchanged.
+- Remove the repeated logo from the internal dashboard header/card.
+- Keep the internal dashboard header with:
+  - eyebrow/caption such as "INICIO"
+  - title "Mi Prode"
+  - existing user/avatar/admin badge area if present
+- Improve spacing, especially on mobile.
+
+### Out of scope
+- No broad navigation redesign.
+- No dashboard feature changes.
+- No avatar logic changes.
+- No route, auth, scoring, prediction, league, API sync, Railway, production config, or migration changes.
+
+### Acceptance criteria
+- The logo is not visually repeated in the dashboard header.
+- The dashboard header remains recognizable and clean.
+- Existing nav/header behavior remains unchanged.
+
+### Suggested commit message
+style: remove duplicate dashboard logo
+
+### Ticket ID
+E18-T07
+
+### Title
+QA dashboard responsive and social activation
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Validate the EPIC 18 dashboard changes locally and in staging before any production release.
+
+### Scope
+- Update `docs/qa-checklist.md` with EPIC 18 checks if needed.
+- Validate desktop layout:
+  - 8/12 pending predictions
+  - 4/12 daily sidebar
+  - friend activity sidebar only when user has private leagues
+  - league onboarding card full-width only when user has no private leagues
+- Validate mobile stacked layout.
+- Validate "Hoy en el Mundial" behavior for scheduled, live-ish, and finished matches.
+- Validate compact prediction indicators.
+- Validate the onboarding card CTAs.
+- Run:
+  - `php artisan test`
+  - `npm run build`
+  - `PLAYWRIGHT_BASE_URL=http://127.0.0.1:8100 npm run test:e2e`
+- After local validation, run staging QA before production.
+
+### Out of scope
+- No production deploy.
+- No production E2E writes.
+- No new feature work.
+- No unrelated UI redesign.
+
+### Acceptance criteria
+- Local tests pass.
+- Frontend build passes.
+- Local Playwright passes or any failures are documented/fixed.
+- Staging QA path is documented.
+- Follow-up bugs are captured in `docs/backlog.md`.
+
+### Suggested commit message
+test: cover dashboard responsive activation
