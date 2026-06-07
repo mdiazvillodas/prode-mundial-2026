@@ -4,6 +4,7 @@
 
 @php
     $statusMessages = [
+        'avatar-updated' => __('Avatar actualizado.'),
         'profile-updated' => __('Perfil actualizado.'),
         'password-updated' => __('Contraseña actualizada.'),
         'verification-code-sent' => __('Te enviamos un nuevo código de verificación.'),

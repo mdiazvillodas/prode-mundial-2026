@@ -40,6 +40,10 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 - Confirm Google-created users have verified email status in admin/database checks.
 - Attempt duplicate email registration and confirm a friendly validation error.
 - Use forgot password and reset password if mail delivery is configured for the environment.
+- For a verified user with no avatar choice, open the dashboard and confirm the avatar prompt appears.
+- Choose `Sin avatar` and confirm the prompt does not appear again.
+- Choose a predefined avatar from `/profile` and confirm the saved avatar remains selected after reload.
+- Submit an invalid avatar key through a crafted request and confirm it is rejected with a friendly validation error.
 - Confirm no API keys, stack traces, or technical provider errors are shown to users.
 
 ## B. Predictions

@@ -3719,7 +3719,7 @@ E17-T02
 Add predefined profile avatar system
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -3729,6 +3729,8 @@ High
 
 ### Objective
 Allow users to choose a predefined local avatar for profile identity without uploading custom images and without using Google profile photos.
+
+Implemented the backend foundation with a nullable `users.profile_avatar_key` field, `User` helpers for avatar choice state and rendering metadata, validation through `App\Support\ProfileAvatarCatalog`, and a compact `<x-profile-avatar>` Blade component that falls back to the local default/silhouette asset when the user has not chosen an avatar or has an invalid stored key. `null` remains the unselected state, while `default` is an explicit user choice.
 
 ### Scope
 - Add a user avatar key field or equivalent.
@@ -3761,7 +3763,7 @@ E17-T03
 Prompt users to choose avatar
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -3771,6 +3773,8 @@ High
 
 ### Objective
 Show a profile avatar selection modal to users who have not chosen an avatar yet.
+
+Implemented with an authenticated `PATCH /profile/avatar` route (`profile.avatar.update`) that validates choices against `App\Support\ProfileAvatarCatalog`, stores only configured local avatar keys, and accepts `default` as an explicit choice. Added a reusable avatar selection form, a verified-app layout prompt for users whose `profile_avatar_key` is still null, and a simple avatar section on the profile edit page so users can change the choice later.
 
 ### Scope
 - Show the modal only when the authenticated user's avatar choice is missing/null.

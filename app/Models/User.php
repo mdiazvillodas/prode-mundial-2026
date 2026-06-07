@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\ProfileAvatarCatalog;
 use Database\Factories\UserFactory;
+use InvalidArgumentException;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,6 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'google_id',
         'avatar_url',
+        'profile_avatar_key',
         'auth_provider',
     ];
 
@@ -62,6 +65,41 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function hasChosenProfileAvatar(): bool
+    {
+        return ProfileAvatarCatalog::isValid($this->profile_avatar_key);
+    }
+
+    /**
+     * @return array{key: string, label: string, path: string, url: string}
+     */
+    public function profileAvatar(): array
+    {
+        return ProfileAvatarCatalog::get($this->profile_avatar_key)
+            ?? ProfileAvatarCatalog::default();
+    }
+
+    public function profileAvatarUrl(): string
+    {
+        return $this->profileAvatar()['url'];
+    }
+
+    public function profileAvatarLabel(): string
+    {
+        return $this->profileAvatar()['label'];
+    }
+
+    public function setProfileAvatarKey(?string $key): self
+    {
+        if ($key !== null && ! ProfileAvatarCatalog::isValid($key)) {
+            throw new InvalidArgumentException('Invalid profile avatar key.');
+        }
+
+        $this->profile_avatar_key = $key;
+
+        return $this;
     }
 
     public function predictions(): HasMany

@@ -33,6 +33,8 @@
             <main>
                 {{ $slot }}
             </main>
+
+            @include('profile.partials.avatar-prompt-modal')
         </div>
     </body>
 </html>

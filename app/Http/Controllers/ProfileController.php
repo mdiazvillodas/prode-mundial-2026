@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Support\ProfileAvatarCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -35,6 +37,26 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'profile_avatar_key' => [
+                'required',
+                'string',
+                Rule::in(ProfileAvatarCatalog::all()->keys()->all()),
+            ],
+        ], [
+            'profile_avatar_key.required' => 'Elegí un avatar para continuar.',
+            'profile_avatar_key.in' => 'El avatar elegido no está disponible.',
+        ]);
+
+        $request->user()
+            ->setProfileAvatarKey($validated['profile_avatar_key'])
+            ->save();
+
+        return Redirect::back()->with('status', 'avatar-updated');
     }
 
     /**

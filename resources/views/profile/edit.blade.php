@@ -8,6 +8,27 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-3xl space-y-5">
+                    <div class="flex items-center gap-4">
+                        <x-profile-avatar :user="$user" size="lg" />
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">
+                                {{ __('Avatar') }}
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-600">
+                                {{ __('Elegí una imagen local para tu perfil. No usamos fotos de Google ni subidas externas.') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    @include('profile.partials.avatar-selection-form', [
+                        'user' => $user,
+                        'submitLabel' => __('Actualizar avatar'),
+                    ])
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     @include('profile.partials.update-profile-information-form')
                 </div>
