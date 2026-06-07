@@ -1601,7 +1601,7 @@ E9-T02
 Add ranking recalculation admin action
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 5
@@ -3801,7 +3801,7 @@ E17-T04
 Add local avatar assets and catalog
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -3812,9 +3812,12 @@ Medium
 ### Objective
 Add the first local avatar asset set and a maintainable avatar catalog.
 
+### Note
+Implemented the avatar catalog foundation with the corrected prepared local asset set: `public/avatars/0.png` as the default/silhouette option and `public/avatars/1.png` through `public/avatars/9.png` as selectable predefined avatars. Added `config/profile-avatars.php` with Spanish labels and `App\Support\ProfileAvatarCatalog` helpers for listing, lookup, validation, default retrieval, public paths, and asset URLs. Added focused tests proving the catalog shape, valid/invalid keys, default avatar, and configured asset existence.
+
 ### Scope
 - Add local avatar assets under `public/avatars` or an equivalent public asset path.
-- Include an initial set of 7 male avatars, 3 female avatars, and 1 default/silhouette avatar.
+- Include the prepared corrected set of 9 selectable avatars and 1 default/silhouette avatar.
 - Add a config/catalog file such as `config/profile-avatars.php` with keys, labels, and asset paths.
 - Add tests or validation ensuring configured assets exist.
 - Keep assets generic and not based on real people.
