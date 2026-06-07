@@ -4149,7 +4149,7 @@ E18-T02
 Add daily World Cup sidebar card to dashboard
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4201,7 +4201,7 @@ E18-T03
 Improve dashboard desktop grid layout
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4211,6 +4211,8 @@ High
 
 ### Objective
 Use desktop width better by moving from fully stacked cards to a responsive dashboard grid.
+
+Implemented as a Blade-only dashboard layout update: the top dashboard modules now use a conditional responsive grid with "Te falta pronosticar" in the main 8/12 desktop column when present and "Hoy en el Mundial" plus "Tus amigos ya se movieron" stacked in a compact 4/12 sidebar. Mobile remains stacked in the existing action-first order, and no empty sidebar column is reserved when sidebar modules are absent.
 
 ### Scope
 - On desktop, arrange the first dashboard section as:
