@@ -82,24 +82,49 @@ class StagingDemoSeeder extends Seeder
                 'username' => 'demo_admin',
                 'email' => 'admin@prode.test',
                 'role' => User::ROLE_ADMIN,
+                'profile_avatar_key' => 'avatar-09',
             ],
             'mariano' => [
                 'name' => 'Mariano Demo',
                 'username' => 'mariano_demo',
                 'email' => 'mariano@prode.test',
                 'role' => User::ROLE_USER,
+                'profile_avatar_key' => 'avatar-05',
             ],
             'ana' => [
                 'name' => 'Ana Demo',
                 'username' => 'ana_demo',
                 'email' => 'ana@prode.test',
                 'role' => User::ROLE_USER,
+                'profile_avatar_key' => 'avatar-01',
             ],
             'juan' => [
                 'name' => 'Juan Demo',
                 'username' => 'juan_demo',
                 'email' => 'juan@prode.test',
                 'role' => User::ROLE_USER,
+                'profile_avatar_key' => 'default',
+            ],
+            'lucia' => [
+                'name' => 'Lucía Demo',
+                'username' => 'lucia_demo',
+                'email' => 'lucia@prode.test',
+                'role' => User::ROLE_USER,
+                'profile_avatar_key' => 'avatar-02',
+            ],
+            'diego' => [
+                'name' => 'Diego Demo',
+                'username' => 'diego_demo',
+                'email' => 'diego@prode.test',
+                'role' => User::ROLE_USER,
+                'profile_avatar_key' => 'avatar-03',
+            ],
+            'sofia' => [
+                'name' => 'Sofía Demo',
+                'username' => 'sofia_demo',
+                'email' => 'sofia@prode.test',
+                'role' => User::ROLE_USER,
+                'profile_avatar_key' => null,
             ],
         ];
 
@@ -114,6 +139,7 @@ class StagingDemoSeeder extends Seeder
                     'password' => 'password',
                     'role' => $user['role'],
                     'email_verified_at' => now(),
+                    'profile_avatar_key' => $user['profile_avatar_key'] ?? null,
                 ],
             );
         }
@@ -150,6 +176,38 @@ class StagingDemoSeeder extends Seeder
                 'lookup' => ['stage' => 'group', 'group' => 'E', 'team_a_id' => $teams['ENG']->id, 'team_b_id' => $teams['JPN']->id],
                 'values' => ['starts_at' => $now->addMinutes(30), 'prediction_closes_at' => $now->addMinutes(25), 'status' => TournamentMatch::STATUS_OPEN],
             ],
+            'eng_mex_engagement_day' => [
+                'lookup' => ['stage' => 'group', 'group' => 'F', 'team_a_id' => $teams['ENG']->id, 'team_b_id' => $teams['MEX']->id],
+                'values' => ['starts_at' => $now->addDays(1)->setTime(13, 0), 'status' => TournamentMatch::STATUS_OPEN, 'round' => 'E17 engagement next match day'],
+            ],
+            'ger_jpn_engagement_day' => [
+                'lookup' => ['stage' => 'group', 'group' => 'F', 'team_a_id' => $teams['GER']->id, 'team_b_id' => $teams['JPN']->id],
+                'values' => ['starts_at' => $now->addDays(1)->setTime(16, 0), 'status' => TournamentMatch::STATUS_OPEN, 'round' => 'E17 engagement next match day'],
+            ],
+            'fra_mex_engagement_day' => [
+                'lookup' => ['stage' => 'group', 'group' => 'F', 'team_a_id' => $teams['FRA']->id, 'team_b_id' => $teams['MEX']->id],
+                'values' => ['starts_at' => $now->addDays(1)->setTime(19, 0), 'status' => TournamentMatch::STATUS_OPEN, 'round' => 'E17 engagement next match day'],
+            ],
+            'uru_jpn_engagement_day' => [
+                'lookup' => ['stage' => 'group', 'group' => 'F', 'team_a_id' => $teams['URU']->id, 'team_b_id' => $teams['JPN']->id],
+                'values' => ['starts_at' => $now->addDays(1)->setTime(22, 0), 'status' => TournamentMatch::STATUS_OPEN, 'round' => 'E17 engagement next match day'],
+            ],
+            'arg_bra_live_exact' => [
+                'lookup' => ['stage' => 'group', 'group' => 'G', 'team_a_id' => $teams['ARG']->id, 'team_b_id' => $teams['BRA']->id],
+                'values' => ['starts_at' => $now->subMinutes(25), 'prediction_closes_at' => $now->subMinutes(30), 'status' => TournamentMatch::STATUS_LOCKED, 'team_a_score' => 1, 'team_b_score' => 0, 'api_status' => '1H', 'round' => 'E17 live exact demo'],
+            ],
+            'esp_fra_live_trend' => [
+                'lookup' => ['stage' => 'group', 'group' => 'G', 'team_a_id' => $teams['ESP']->id, 'team_b_id' => $teams['FRA']->id],
+                'values' => ['starts_at' => $now->subMinutes(40), 'prediction_closes_at' => $now->subMinutes(45), 'status' => TournamentMatch::STATUS_LOCKED, 'team_a_score' => 2, 'team_b_score' => 1, 'api_status' => '1H', 'round' => 'E17 live trend demo'],
+            ],
+            'usa_mex_live_incorrect' => [
+                'lookup' => ['stage' => 'group', 'group' => 'G', 'team_a_id' => $teams['USA']->id, 'team_b_id' => $teams['MEX']->id],
+                'values' => ['starts_at' => $now->subMinutes(70), 'prediction_closes_at' => $now->subMinutes(75), 'status' => TournamentMatch::STATUS_LOCKED, 'team_a_score' => 0, 'team_b_score' => 2, 'api_status' => '2H', 'round' => 'E17 live incorrect demo'],
+            ],
+            'ger_eng_live_missing' => [
+                'lookup' => ['stage' => 'group', 'group' => 'G', 'team_a_id' => $teams['GER']->id, 'team_b_id' => $teams['ENG']->id],
+                'values' => ['starts_at' => $now->subMinutes(15), 'prediction_closes_at' => $now->subMinutes(20), 'status' => TournamentMatch::STATUS_LOCKED, 'team_a_score' => 0, 'team_b_score' => 0, 'api_status' => 'LIVE', 'round' => 'E17 live missing demo'],
+            ],
             'arg_fra_finished' => [
                 'lookup' => ['stage' => 'group', 'group' => 'A', 'team_a_id' => $teams['ARG']->id, 'team_b_id' => $teams['FRA']->id],
                 'values' => ['starts_at' => $now->subDay()->setTime(20, 0), 'status' => TournamentMatch::STATUS_FINISHED, 'team_a_score' => 2, 'team_b_score' => 1, 'winner_team_id' => $teams['ARG']->id],
@@ -157,6 +215,14 @@ class StagingDemoSeeder extends Seeder
             'bra_uru_finished' => [
                 'lookup' => ['stage' => 'group', 'group' => 'B', 'team_a_id' => $teams['BRA']->id, 'team_b_id' => $teams['URU']->id],
                 'values' => ['starts_at' => $now->subDays(2)->setTime(19, 0), 'status' => TournamentMatch::STATUS_FINISHED, 'team_a_score' => 1, 'team_b_score' => 1, 'winner_team_id' => null],
+            ],
+            'ger_usa_finished_form' => [
+                'lookup' => ['stage' => 'group', 'group' => 'H', 'team_a_id' => $teams['GER']->id, 'team_b_id' => $teams['USA']->id],
+                'values' => ['starts_at' => $now->subDays(3)->setTime(18, 0), 'status' => TournamentMatch::STATUS_FINISHED, 'team_a_score' => 3, 'team_b_score' => 2, 'winner_team_id' => $teams['GER']->id, 'round' => 'E17 finished form demo'],
+            ],
+            'mex_jpn_finished_form' => [
+                'lookup' => ['stage' => 'group', 'group' => 'H', 'team_a_id' => $teams['MEX']->id, 'team_b_id' => $teams['JPN']->id],
+                'values' => ['starts_at' => $now->subDays(4)->setTime(21, 0), 'status' => TournamentMatch::STATUS_FINISHED, 'team_a_score' => 0, 'team_b_score' => 1, 'winner_team_id' => $teams['JPN']->id, 'round' => 'E17 finished form demo'],
             ],
             'esp_usa_knockout' => [
                 'lookup' => ['stage' => 'round_of_16', 'group' => null, 'team_a_id' => $teams['ESP']->id, 'team_b_id' => $teams['USA']->id],
@@ -217,20 +283,17 @@ class StagingDemoSeeder extends Seeder
             ],
         );
 
-        LeagueMembership::query()->updateOrCreate(
-            ['private_league_id' => $league->id, 'user_id' => $users['mariano']->id],
-            ['status' => LeagueMembership::STATUS_ACTIVE, 'joined_at' => now()],
-        );
-
-        LeagueMembership::query()->updateOrCreate(
-            ['private_league_id' => $league->id, 'user_id' => $users['ana']->id],
-            ['status' => LeagueMembership::STATUS_ACTIVE, 'joined_at' => now()],
-        );
+        foreach (['mariano', 'ana', 'juan', 'lucia', 'diego'] as $member) {
+            LeagueMembership::query()->updateOrCreate(
+                ['private_league_id' => $league->id, 'user_id' => $users[$member]->id],
+                ['status' => LeagueMembership::STATUS_ACTIVE, 'joined_at' => now()],
+            );
+        }
 
         LeagueJoinRequest::query()->updateOrCreate(
             [
                 'private_league_id' => $league->id,
-                'user_id' => $users['juan']->id,
+                'user_id' => $users['sofia']->id,
                 'status' => LeagueJoinRequest::STATUS_PENDING,
             ],
             [
@@ -252,6 +315,20 @@ class StagingDemoSeeder extends Seeder
             ['user' => 'ana', 'match' => 'arg_usa_open', 'a' => 1, 'b' => 1],
             ['user' => 'juan', 'match' => 'bra_esp_open', 'a' => 1, 'b' => 2],
             ['user' => 'mariano', 'match' => 'eng_jpn_closing', 'a' => 2, 'b' => 1],
+            ['user' => 'mariano', 'match' => 'eng_mex_engagement_day', 'a' => 1, 'b' => 0],
+            ['user' => 'mariano', 'match' => 'ger_jpn_engagement_day', 'a' => 2, 'b' => 1],
+            ['user' => 'ana', 'match' => 'eng_mex_engagement_day', 'a' => 2, 'b' => 0],
+            ['user' => 'ana', 'match' => 'ger_jpn_engagement_day', 'a' => 1, 'b' => 1],
+            ['user' => 'ana', 'match' => 'fra_mex_engagement_day', 'a' => 2, 'b' => 1],
+            ['user' => 'ana', 'match' => 'uru_jpn_engagement_day', 'a' => 1, 'b' => 0],
+            ['user' => 'juan', 'match' => 'eng_mex_engagement_day', 'a' => 1, 'b' => 1],
+            ['user' => 'juan', 'match' => 'ger_jpn_engagement_day', 'a' => 2, 'b' => 0],
+            ['user' => 'juan', 'match' => 'fra_mex_engagement_day', 'a' => 1, 'b' => 2],
+            ['user' => 'lucia', 'match' => 'eng_mex_engagement_day', 'a' => 0, 'b' => 0],
+            ['user' => 'lucia', 'match' => 'ger_jpn_engagement_day', 'a' => 3, 'b' => 1],
+            ['user' => 'mariano', 'match' => 'arg_bra_live_exact', 'a' => 1, 'b' => 0],
+            ['user' => 'mariano', 'match' => 'esp_fra_live_trend', 'a' => 1, 'b' => 0],
+            ['user' => 'mariano', 'match' => 'usa_mex_live_incorrect', 'a' => 1, 'b' => 0],
             ['user' => 'ana', 'match' => 'esp_usa_knockout', 'a' => 1, 'b' => 0, 'qualified' => 'ESP'],
             ['user' => 'juan', 'match' => 'esp_usa_knockout', 'a' => 2, 'b' => 1, 'qualified' => 'ESP'],
         ];
@@ -275,6 +352,12 @@ class StagingDemoSeeder extends Seeder
             ['user' => 'mariano', 'match' => 'bra_uru_finished', 'a' => 1, 'b' => 1],
             ['user' => 'ana', 'match' => 'bra_uru_finished', 'a' => 2, 'b' => 2],
             ['user' => 'juan', 'match' => 'bra_uru_finished', 'a' => 2, 'b' => 0],
+            ['user' => 'mariano', 'match' => 'ger_usa_finished_form', 'a' => 2, 'b' => 1],
+            ['user' => 'ana', 'match' => 'ger_usa_finished_form', 'a' => 3, 'b' => 2],
+            ['user' => 'juan', 'match' => 'ger_usa_finished_form', 'a' => 1, 'b' => 1],
+            ['user' => 'mariano', 'match' => 'mex_jpn_finished_form', 'a' => 1, 'b' => 0],
+            ['user' => 'ana', 'match' => 'mex_jpn_finished_form', 'a' => 0, 'b' => 1],
+            ['user' => 'lucia', 'match' => 'mex_jpn_finished_form', 'a' => 2, 'b' => 1],
         ];
 
         foreach ($scoredPredictions as $prediction) {
@@ -289,6 +372,8 @@ class StagingDemoSeeder extends Seeder
 
         app(MatchPredictionSettlementService::class)->score($matches['arg_fra_finished']->refresh());
         app(MatchPredictionSettlementService::class)->score($matches['bra_uru_finished']->refresh());
+        app(MatchPredictionSettlementService::class)->score($matches['ger_usa_finished_form']->refresh());
+        app(MatchPredictionSettlementService::class)->score($matches['mex_jpn_finished_form']->refresh());
     }
 
     private function upsertPrediction(

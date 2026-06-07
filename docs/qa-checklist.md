@@ -26,6 +26,8 @@ Do not run destructive demo reset commands in production or live mode. Do not us
 
 If `/predictions` has no editable matches during smoke testing, run `php artisan demo:reset-staging --force` to reseed deterministic staging data with a future open match.
 
+The staging demo reset also includes dashboard engagement scenarios: avatar choice states, a multi-member private league, a four-match next engagement day with varied friend prediction completion, live-ish partial-score matches, and finished scored matches for future form/GF/GC checks.
+
 ## A. Auth
 
 - Register with email and password.

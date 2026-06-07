@@ -40,7 +40,7 @@ class DemoResetStagingCommand extends Command
         ]);
 
         $this->components->info('Staging demo QA data is ready.');
-        $this->line('Demo users: admin@prode.test, mariano@prode.test, ana@prode.test, juan@prode.test');
+        $this->line('Demo users: admin@prode.test, mariano@prode.test, ana@prode.test, juan@prode.test, lucia@prode.test, diego@prode.test, sofia@prode.test');
         $this->line('Demo password: password');
 
         return self::SUCCESS;

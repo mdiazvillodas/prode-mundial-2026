@@ -3848,7 +3848,7 @@ E17-T05
 Add dashboard engagement demo data
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -3858,6 +3858,8 @@ High
 
 ### Objective
 Create or extend local/staging demo data so the new dashboard can be tested with realistic engagement scenarios.
+
+Implemented by extending `Database\Seeders\StagingDemoSeeder` only. The deterministic local/staging dataset now includes demo users with `profile_avatar_key` null, `default`, and valid avatar keys; a shared private league with five active members; a four-match next engagement day with main-user missing-prediction gaps and friend completion counts of 4/4, 3/4, 2/4, and 0/4; live-ish partial-score matches with `api_status` values; and additional finished/scored matches for future GF/GC and recent-form dashboard work. Existing safe reset guards and demo credentials remain unchanged.
 
 ### Scope
 - Include users with and without avatar choices.
