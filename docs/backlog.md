@@ -1899,7 +1899,7 @@ E11-T00
 Define Prode design system tokens
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Sprint 7
@@ -4159,6 +4159,8 @@ High
 
 ### Objective
 Replace the current narrow "En juego" concept with a compact right-side dashboard card showing the user's local World Cup day context.
+
+Implemented by extending `App\Services\Dashboard\LiveDashboardDataService` with `daily_matches`, a plain-array dashboard data section that selects the relevant viewer-local match day from actual fixture dates and includes scheduled, live-ish, and finished matches. The `/dashboard` Blade view now renders a compact "Hoy en el Mundial" card using kickoff times for scheduled rows, scores/status/sync age for live-ish rows, and scores for finished rows, while preserving pending-prediction behavior and existing dashboard route wiring.
 
 ### Scope
 - Add/adjust dashboard data so the card can show matches for the relevant local day.

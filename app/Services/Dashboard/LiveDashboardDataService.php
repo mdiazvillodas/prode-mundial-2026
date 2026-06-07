@@ -39,6 +39,7 @@ class LiveDashboardDataService
         return [
             'timezone' => $timezone,
             'pending_predictions' => $this->pendingPredictions($user, $timezone, $teamAverages),
+            'daily_matches' => $this->dailyMatches($user, $timezone),
             'live_matches' => $this->liveMatches($user, $timezone),
             'friend_activity' => $this->friendActivity($user, $timezone),
             'league_summary' => $this->leagueSummary($user),
@@ -81,6 +82,44 @@ class LiveDashboardDataService
             ]),
             'matches' => $dayMatches
                 ->map(fn (TournamentMatch $match): array => $this->matchSummary($match, $timezone, $teamAverages))
+                ->values()
+                ->all(),
+            ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function dailyMatches(User $user, string $timezone): ?array
+    {
+        $matchesByDate = TournamentMatch::query()
+            ->with([
+                'teamA',
+                'teamB',
+                'predictions' => fn ($query) => $query->where('user_id', $user->id),
+            ])
+            ->whereNotNull('starts_at')
+            ->orderBy('starts_at')
+            ->get()
+            ->groupBy(fn (TournamentMatch $match): string => $this->localDate($match->starts_at, $timezone))
+            ->sortKeys();
+
+        if ($matchesByDate->isEmpty()) {
+            return null;
+        }
+
+        $today = now()->timezone($timezone)->toDateString();
+        $localDate = $this->relevantLocalDate($matchesByDate->keys(), $today);
+        $matches = $matchesByDate->get($localDate, collect())->values();
+
+        if ($matches->isEmpty()) {
+            return null;
+        }
+
+        return [
+            'local_date' => $localDate,
+            'matches' => $matches
+                ->map(fn (TournamentMatch $match): array => $this->dailyMatchSummary($match, $timezone))
                 ->values()
                 ->all(),
         ];
@@ -202,6 +241,37 @@ class LiveDashboardDataService
             'local_date' => $localDate,
             'total_matches' => $totalMatches,
             'friends' => $friends,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function dailyMatchSummary(TournamentMatch $match, string $timezone): array
+    {
+        $prediction = $match->predictions->first();
+
+        return [
+            'id' => $match->id,
+            'local_date' => $this->localDate($match->starts_at, $timezone),
+            'kickoff_local_time' => $this->localTime($match->starts_at, $timezone),
+            'team_a' => $this->teamSummary($match->teamA),
+            'team_b' => $this->teamSummary($match->teamB),
+            'score' => [
+                'team_a' => $match->team_a_score,
+                'team_b' => $match->team_b_score,
+            ],
+            'status' => $match->status,
+            'api_status' => $match->api_status,
+            'display_state' => $this->displayState($match),
+            'status_label' => $this->dailyStatusLabel($match),
+            'user_prediction' => $prediction ? [
+                'team_a_score' => $prediction->team_a_score,
+                'team_b_score' => $prediction->team_b_score,
+            ] : null,
+            'provisional_state' => $this->provisionalPredictionState($match, $prediction),
+            'last_synced_at' => $match->last_synced_at?->toIso8601String(),
+            'last_synced_minutes_ago' => $match->last_synced_at?->diffInMinutes(now()),
         ];
     }
 
@@ -330,6 +400,32 @@ class LiveDashboardDataService
         return 'draw';
     }
 
+    private function displayState(TournamentMatch $match): string
+    {
+        if (in_array($match->api_status, self::LIVE_API_STATUSES, true)) {
+            return 'live';
+        }
+
+        if ($match->status === TournamentMatch::STATUS_FINISHED) {
+            return 'finished';
+        }
+
+        return 'scheduled';
+    }
+
+    private function dailyStatusLabel(TournamentMatch $match): string
+    {
+        if (in_array($match->api_status, self::LIVE_API_STATUSES, true)) {
+            return $match->api_status ?? 'En juego';
+        }
+
+        if ($match->status === TournamentMatch::STATUS_FINISHED) {
+            return 'Finalizado';
+        }
+
+        return 'Programado';
+    }
+
     /**
      * @return array<int, array{gf: float, gc: float, played: int}>
      */
@@ -435,6 +531,17 @@ class LiveDashboardDataService
     private function localTime(?CarbonInterface $date, string $timezone): ?string
     {
         return $date?->copy()->timezone($timezone)->format('H:i');
+    }
+
+    /**
+     * @param  Collection<int, string>  $localDates
+     */
+    private function relevantLocalDate(Collection $localDates, string $today): string
+    {
+        $dates = $localDates->values();
+
+        return $dates->first(fn (string $date): bool => $date >= $today)
+            ?? (string) $dates->last();
     }
 
     private function resolveTimezone(?string $timezone): string

@@ -97,6 +97,68 @@ class LiveDashboardDataServiceTest extends TestCase
         $this->assertSame('none', $states[$none->id]);
     }
 
+    public function test_daily_matches_include_scheduled_live_and_finished_matches_for_relevant_local_day(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create();
+
+        $scheduled = $this->match($tournament, $teams['ARG'], $teams['USA'], '2026-06-10 18:00:00');
+        $live = $this->liveMatch($tournament, $teams['BRA'], $teams['ESP'], 1, 0, '1H');
+        $finished = $this->finishedMatchAt($tournament, $teams['FRA'], $teams['MEX'], 2, 2, '2026-06-10 09:00:00');
+        $future = $this->match($tournament, $teams['GER'], $teams['JPN'], '2026-06-11 18:00:00');
+
+        $data = app(LiveDashboardDataService::class)->forUser($user, 'UTC')['daily_matches'];
+
+        $this->assertSame('2026-06-10', $data['local_date']);
+        $this->assertSame([$finished->id, $live->id, $scheduled->id], collect($data['matches'])->pluck('id')->all());
+        $this->assertSame(['finished', 'live', 'scheduled'], collect($data['matches'])->pluck('display_state')->all());
+        $this->assertFalse(collect($data['matches'])->pluck('id')->contains($future->id));
+    }
+
+    public function test_daily_matches_do_not_disappear_when_there_are_no_live_matches(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create();
+
+        $scheduled = $this->match($tournament, $teams['ARG'], $teams['USA'], '2026-06-10 18:00:00');
+        $finished = $this->finishedMatchAt($tournament, $teams['BRA'], $teams['ESP'], 3, 1, '2026-06-10 09:00:00');
+
+        $data = app(LiveDashboardDataService::class)->forUser($user, 'UTC')['daily_matches'];
+
+        $this->assertSame('2026-06-10', $data['local_date']);
+        $this->assertSame([$finished->id, $scheduled->id], collect($data['matches'])->pluck('id')->all());
+    }
+
+    public function test_daily_matches_respect_local_timezone_day_grouping(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create();
+
+        $localToday = $this->match($tournament, $teams['ARG'], $teams['USA'], '2026-06-09 22:30:00');
+        $utcToday = $this->match($tournament, $teams['BRA'], $teams['ESP'], '2026-06-10 18:00:00');
+
+        $data = app(LiveDashboardDataService::class)->forUser($user, 'Europe/Madrid')['daily_matches'];
+
+        $this->assertSame('2026-06-10', $data['local_date']);
+        $this->assertSame([$localToday->id, $utcToday->id], collect($data['matches'])->pluck('id')->all());
+        $this->assertSame('00:30', $data['matches'][0]['kickoff_local_time']);
+    }
+
+    public function test_daily_matches_can_coexist_with_pending_predictions_for_same_match_day(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create();
+
+        $match = $this->match($tournament, $teams['ARG'], $teams['USA'], '2026-06-10 18:00:00');
+
+        $data = app(LiveDashboardDataService::class)->forUser($user, 'UTC');
+
+        $this->assertSame('2026-06-10', $data['pending_predictions']['local_date']);
+        $this->assertSame('2026-06-10', $data['daily_matches']['local_date']);
+        $this->assertSame([$match->id], collect($data['pending_predictions']['matches'])->pluck('id')->all());
+        $this->assertSame([$match->id], collect($data['daily_matches']['matches'])->pluck('id')->all());
+    }
+
     public function test_friend_activity_deduplicates_users_sorts_by_completion_and_hides_prediction_values(): void
     {
         [$tournament, $teams] = $this->seedTournamentAndTeams();
@@ -273,12 +335,19 @@ class LiveDashboardDataServiceTest extends TestCase
 
     private function finishedMatch(Tournament $tournament, Team $teamA, Team $teamB, int $scoreA, int $scoreB): TournamentMatch
     {
+        return $this->finishedMatchAt($tournament, $teamA, $teamB, $scoreA, $scoreB, '2026-06-09 18:00:00');
+    }
+
+    private function finishedMatchAt(Tournament $tournament, Team $teamA, Team $teamB, int $scoreA, int $scoreB, string $startsAt): TournamentMatch
+    {
+        $startsAt = Carbon::parse($startsAt, 'UTC');
+
         return TournamentMatch::factory()->create([
             'tournament_id' => $tournament->id,
             'team_a_id' => $teamA->id,
             'team_b_id' => $teamB->id,
-            'starts_at' => Carbon::parse('2026-06-09 18:00:00', 'UTC'),
-            'prediction_closes_at' => Carbon::parse('2026-06-09 17:55:00', 'UTC'),
+            'starts_at' => $startsAt,
+            'prediction_closes_at' => $startsAt->copy()->subMinutes(5),
             'stage' => 'group',
             'status' => TournamentMatch::STATUS_FINISHED,
             'team_a_score' => $scoreA,

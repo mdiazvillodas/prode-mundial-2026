@@ -1,7 +1,8 @@
 @php
     $dashboardData = $liveDashboardData ?? [];
     $pendingPredictions = $dashboardData['pending_predictions'] ?? null;
-    $liveMatches = collect($dashboardData['live_matches'] ?? []);
+    $dailyMatches = $dashboardData['daily_matches'] ?? null;
+    $dailyMatchRows = collect($dailyMatches['matches'] ?? []);
     $friendActivity = $dashboardData['friend_activity'] ?? null;
     $friends = collect($friendActivity['friends'] ?? []);
     $leagueSummary = $dashboardData['league_summary'] ?? [];
@@ -146,43 +147,60 @@
                 </section>
             @endif
 
-            @if ($liveMatches->isNotEmpty())
+            @if ($dailyMatchRows->isNotEmpty())
                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100 sm:p-5">
                     <div class="flex items-center justify-between gap-3">
-                        <h2 class="text-lg font-black text-blue-950">{{ __('En juego') }}</h2>
+                        <div>
+                            <h2 class="text-lg font-black text-blue-950">{{ __('Hoy en el Mundial') }}</h2>
+                            @if (! empty($dailyMatches['local_date']))
+                                <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+                                    {{ $formatLocalDate($dailyMatches['local_date']) }}
+                                </p>
+                            @endif
+                        </div>
                         <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800">
-                            {{ $liveMatches->count() }}
+                            {{ $dailyMatchRows->count() }}
                         </span>
                     </div>
 
                     <div class="mt-3 space-y-2">
-                        @foreach ($liveMatches as $match)
+                        @foreach ($dailyMatchRows as $match)
                             @php($state = $stateStyles[$match['provisional_state'] ?? 'none'] ?? $stateStyles['none'])
                             <article class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="min-w-0 flex-1">
                                         <div class="flex items-center gap-2 text-sm font-black text-blue-950">
                                             <span class="truncate">{{ $match['team_a']['short_name'] ?? $match['team_a']['name'] ?? __('TBD') }}</span>
-                                            <span class="rounded-lg bg-white px-2 py-1 text-base tabular-nums ring-1 ring-slate-200">
-                                                {{ $match['score']['team_a'] ?? '-' }}-{{ $match['score']['team_b'] ?? '-' }}
-                                            </span>
+                                            @if (($match['display_state'] ?? 'scheduled') === 'scheduled')
+                                                <span class="rounded-lg bg-white px-2 py-1 text-xs tabular-nums text-slate-600 ring-1 ring-slate-200">
+                                                    {{ $match['kickoff_local_time'] ?? '--:--' }}
+                                                </span>
+                                            @else
+                                                <span class="rounded-lg bg-white px-2 py-1 text-base tabular-nums ring-1 ring-slate-200">
+                                                    {{ $match['score']['team_a'] ?? '-' }}-{{ $match['score']['team_b'] ?? '-' }}
+                                                </span>
+                                            @endif
                                             <span class="truncate">{{ $match['team_b']['short_name'] ?? $match['team_b']['name'] ?? __('TBD') }}</span>
                                         </div>
 
                                         <div class="mt-2 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
-                                            <span class="rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">{{ $match['status_label'] }}</span>
+                                            @if (! empty($match['status_label']) && ($match['display_state'] ?? null) !== 'scheduled')
+                                                <span class="rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">{{ $match['status_label'] }}</span>
+                                            @endif
                                             @if ($match['user_prediction'])
                                                 <span>{{ __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']]) }}</span>
                                             @endif
-                                            @if (($match['last_synced_minutes_ago'] ?? null) !== null)
+                                            @if (($match['display_state'] ?? null) === 'live' && ($match['last_synced_minutes_ago'] ?? null) !== null)
                                                 <span>{{ __('Actualizado hace :minutes min', ['minutes' => (int) $match['last_synced_minutes_ago']]) }}</span>
                                             @endif
                                         </div>
                                     </div>
 
-                                    <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ring-1 {{ $state['class'] }}">
-                                        {{ $state['label'] }}
-                                    </span>
+                                    @if (($match['display_state'] ?? null) !== 'scheduled')
+                                        <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ring-1 {{ $state['class'] }}">
+                                            {{ $state['label'] }}
+                                        </span>
+                                    @endif
                                 </div>
                             </article>
                         @endforeach
