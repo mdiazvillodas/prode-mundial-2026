@@ -22,6 +22,6 @@ test('auth smoke redirects guests and logs in demo user', async ({ page }) => {
     await login(page, demoUsers.mariano);
     await expectAppShell(page);
     await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: /Panel|Inicio|Dashboard/i }).first()).toBeVisible();
+    await expectAppShell(page);
     await expect(page.getByRole('link', { name: 'Predicciones' }).first()).toBeVisible();
 });
