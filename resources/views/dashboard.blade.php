@@ -11,22 +11,27 @@
     $privateLeagueSummaries = collect($leagueSummary['private_leagues'] ?? []);
     $timezone = $dashboardData['timezone'] ?? config('app.timezone');
 
-    $stateStyles = [
+    $stateIndicators = [
         'exact' => [
             'label' => __('Exacto'),
-            'class' => 'bg-violet-100 text-violet-800 ring-violet-200',
+            'isDot' => false,
+            'symbol' => '★',
+            'color' => 'text-violet-800',
         ],
         'trend' => [
             'label' => __('Tendencia'),
-            'class' => 'bg-emerald-100 text-emerald-800 ring-emerald-200',
+            'isDot' => true,
+            'color' => 'bg-emerald-700',
         ],
         'incorrect' => [
             'label' => __('No va'),
-            'class' => 'bg-red-100 text-red-800 ring-red-200',
+            'isDot' => true,
+            'color' => 'bg-red-700',
         ],
         'none' => [
             'label' => __('Sin pronóstico'),
-            'class' => 'bg-slate-100 text-slate-600 ring-slate-200',
+            'isDot' => true,
+            'color' => 'bg-slate-500',
         ],
     ];
 
@@ -170,7 +175,7 @@
 
                                     <div class="mt-3 space-y-2">
                                         @foreach ($dailyMatchRows as $match)
-                                            @php($state = $stateStyles[$match['provisional_state'] ?? 'none'] ?? $stateStyles['none'])
+                                            @php($state = $stateIndicators[$match['provisional_state'] ?? 'none'] ?? $stateIndicators['none'])
                                             <article class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
                                                 <div class="flex items-center justify-between gap-3">
                                                     <div class="min-w-0 flex-1">
@@ -202,9 +207,24 @@
                                                     </div>
 
                                                     @if (($match['display_state'] ?? null) !== 'scheduled')
-                                                        <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ring-1 {{ $state['class'] }}">
-                                                            {{ $state['label'] }}
-                                                        </span>
+                                                        @if ($state['isDot'] ?? false)
+                                                            <span
+                                                                class="shrink-0 h-2.5 w-2.5 rounded-full {{ $state['color'] }}"
+                                                                title="{{ $state['label'] }}"
+                                                                aria-label="{{ $state['label'] }}"
+                                                            >
+                                                                <span class="sr-only">{{ $state['label'] }}</span>
+                                                            </span>
+                                                        @else
+                                                            <span
+                                                                class="shrink-0 {{ $state['color'] }} text-sm leading-none"
+                                                                title="{{ $state['label'] }}"
+                                                                aria-label="{{ $state['label'] }}"
+                                                            >
+                                                                {{ $state['symbol'] }}
+                                                                <span class="sr-only">{{ $state['label'] }}</span>
+                                                            </span>
+                                                        @endif
                                                     @endif
                                                 </div>
                                             </article>

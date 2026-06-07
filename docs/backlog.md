@@ -4314,7 +4314,7 @@ E18-T05
 Compact dashboard prediction state indicators
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4324,6 +4324,9 @@ Medium
 
 ### Objective
 Make compact dashboard match rows easier to scan by replacing repeated state text with small visual indicators.
+
+### Note
+Implemented compact dashboard indicators in the "Hoy en el Mundial" rows. Replaced repeated visible state labels such as "Sin pronóstico" with accessible visual indicators: violet star for exact, green dot for trend/correct direction, red dot for incorrect, and gray dot for no prediction. Accessibility is preserved with title, aria-label, and sr-only labels. No scoring, prediction rules, layout, data service, or business logic changes were made.
 
 ### Scope
 - In compact dashboard match rows, avoid repeated visible labels such as "Sin pronóstico".
