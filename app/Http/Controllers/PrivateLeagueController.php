@@ -8,6 +8,7 @@ use App\Models\LeagueAuditLog;
 use App\Models\PrivateLeague;
 use App\Models\User;
 use App\Services\PredictionScoringService;
+use App\Services\Rankings\RecentFormService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -88,7 +89,7 @@ class PrivateLeagueController extends Controller
             ->with('status', __('Liga privada creada.'));
     }
 
-    public function show(Request $request, PrivateLeague $privateLeague): View
+    public function show(Request $request, PrivateLeague $privateLeague, RecentFormService $recentForm): View
     {
         abort_unless($this->canViewLeague($request, $privateLeague), 403);
 
@@ -110,7 +111,7 @@ class PrivateLeagueController extends Controller
 
         return view('private-leagues.show', [
             'invitationUrl' => route('private-leagues.invite', $privateLeague->code),
-            'leaderboard' => $this->privateLeagueLeaderboard($privateLeague->id),
+            'leaderboard' => $recentForm->attachToEntries($this->privateLeagueLeaderboard($privateLeague->id)),
             'privateLeague' => $privateLeague,
         ]);
     }

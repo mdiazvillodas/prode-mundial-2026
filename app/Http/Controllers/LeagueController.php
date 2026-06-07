@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\LeagueMembership;
 use App\Services\PredictionScoringService;
+use App\Services\Rankings\RecentFormService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class LeagueController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, RecentFormService $recentForm): View
     {
         $privateLeagues = $request->user()
             ->leagueMemberships()
@@ -24,11 +25,11 @@ class LeagueController extends Controller
             ->values();
 
         $privateLeaderboards = $privateLeagues->mapWithKeys(fn ($privateLeague) => [
-            $privateLeague->id => $this->privateLeagueLeaderboard($privateLeague->id),
+            $privateLeague->id => $recentForm->attachToEntries($this->privateLeagueLeaderboard($privateLeague->id)),
         ]);
 
         return view('leagues.index', [
-            'globalLeaderboard' => $this->globalLeaderboard(),
+            'globalLeaderboard' => $recentForm->attachToEntries($this->globalLeaderboard()),
             'privateLeaderboards' => $privateLeaderboards,
             'privateLeagues' => $privateLeagues,
         ]);

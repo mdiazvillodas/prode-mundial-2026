@@ -102,6 +102,9 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 
 - Open the general leaderboard.
 - Confirm users, points, exact counts, tendency/correct-outcome counts, and ranking positions render.
+- Confirm compact recent-form indicators render when finished/scored matches exist.
+- Confirm exact, trend, incorrect, and no-prediction indicators are visually distinct.
+- Confirm recent-form indicators do not show prediction score values.
 - Open a private league leaderboard when available.
 - Confirm removed or non-member users are excluded from private league ranking.
 - After simulated results, confirm rankings update consistently.

@@ -3992,7 +3992,7 @@ E17-T08
 Add recent form indicators to rankings
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4002,6 +4002,8 @@ Medium
 
 ### Objective
 Make league rankings more engaging by showing each user's recent prediction form.
+
+Implemented with `App\Services\Rankings\RecentFormService`, which attaches compact recent-form states to existing leaderboard entries without changing ranking queries or order. The shared `x-ranking-table` now renders a small recent-form column when form data exists, using the latest finished/scored match sequence for all users and states for exact, trend, incorrect, and no prediction. The league hub, private league detail, and `/leaderboard` all use the computed indicators.
 
 ### Scope
 - Add compact recent form indicators to general and private league rankings.

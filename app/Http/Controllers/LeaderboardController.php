@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Services\PredictionScoringService;
+use App\Services\Rankings\RecentFormService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class LeaderboardController extends Controller
 {
-    public function index(): View
+    public function index(RecentFormService $recentForm): View
     {
         $leaderboard = DB::table('users')
             ->join('predictions', 'predictions.user_id', '=', 'users.id')
@@ -30,7 +31,7 @@ class LeaderboardController extends Controller
             ->get();
 
         return view('leaderboard.index', [
-            'leaderboard' => $leaderboard,
+            'leaderboard' => $recentForm->attachToEntries($leaderboard),
         ]);
     }
 }
