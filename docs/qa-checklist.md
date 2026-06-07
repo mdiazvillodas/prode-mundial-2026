@@ -44,6 +44,7 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Use forgot password and reset password if mail delivery is configured for the environment.
 - For a verified user with no avatar choice, open the dashboard and confirm the avatar prompt appears.
 - Choose `Sin avatar` and confirm the prompt does not appear again.
+- Choose a valid predefined avatar from the prompt and confirm the prompt does not appear again.
 - Choose a predefined avatar from `/profile` and confirm the saved avatar remains selected after reload.
 - Submit an invalid avatar key through a crafted request and confirm it is rejected with a friendly validation error.
 - Confirm no API keys, stack traces, or technical provider errors are shown to users.
@@ -67,7 +68,7 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 
 - Open `/dashboard` as a verified user with staging demo data.
 - Confirm the page does not show the old large `Hola` hero or generic metric cards.
-- Confirm `Te falta pronosticar` appears only when the user has missing predictions and each row links to the correct `/predictions` date.
+- Confirm `Te falta pronosticar` appears only when the user has missing predictions and each row links to the correct `/predictions` date/timezone.
 - Confirm `En juego` appears only for live-ish matches and shows score, user prediction when present, provisional state, and sync age when available.
 - Confirm `Tus amigos ya se movieron` shows friend completion counts without revealing prediction values.
 - Confirm the compact league summary links to `/leagues`.
@@ -107,6 +108,7 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Confirm recent-form indicators do not show prediction score values.
 - Open a private league leaderboard when available.
 - Confirm removed or non-member users are excluded from private league ranking.
+- Confirm ranking order, points, exact counts, tendency counts, and scored prediction counts are unchanged by recent-form indicators.
 - After simulated results, confirm rankings update consistently.
 
 ## F. Admin

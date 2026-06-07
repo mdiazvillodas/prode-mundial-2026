@@ -4039,7 +4039,7 @@ E17-T09
 QA dashboard engagement sprint
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4049,6 +4049,8 @@ High
 
 ### Objective
 Validate the avatar, dashboard, demo data, and ranking-form changes before staging/production release.
+
+Completed QA closure for EPIC 17 by reviewing and tightening `docs/qa-checklist.md` coverage for avatar prompt behavior, dashboard live-home modules, prediction date/timezone links, friend activity privacy, hidden empty modules, and ranking recent-form invariants. Validation passed with `php artisan test`, `npm run build`, and `git diff --check`. No follow-up tickets were needed.
 
 ### Scope
 - Update `docs/qa-checklist.md` if flows change.
