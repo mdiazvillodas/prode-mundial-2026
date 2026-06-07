@@ -63,6 +63,16 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - In Europe/Madrid, confirm Argentina vs Algeria on `17/06/2026 01:00 UTC` shows as `17/06/2026 03:00` on `/predictions`.
 - Confirm the same match shows `Editar hasta 02:55` on `/predictions`.
 
+## B2. Dashboard
+
+- Open `/dashboard` as a verified user with staging demo data.
+- Confirm the page does not show the old large `Hola` hero or generic metric cards.
+- Confirm `Te falta pronosticar` appears only when the user has missing predictions and each row links to the correct `/predictions` date.
+- Confirm `En juego` appears only for live-ish matches and shows score, user prediction when present, provisional state, and sync age when available.
+- Confirm `Tus amigos ya se movieron` shows friend completion counts without revealing prediction values.
+- Confirm the compact league summary links to `/leagues`.
+- Confirm modules with no data are hidden rather than replaced by filler cards.
+
 ## C. Calendar
 
 - Open `/calendar`.

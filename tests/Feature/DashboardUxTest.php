@@ -6,6 +6,7 @@ use App\Models\Prediction;
 use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Models\User;
+use Database\Seeders\StagingDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,8 +27,8 @@ class DashboardUxTest extends TestCase
             'role' => User::ROLE_USER,
         ]);
         $otherUser = User::factory()->create(['username' => 'leader']);
-        $teamA = Team::factory()->create(['name' => 'Argentina']);
-        $teamB = Team::factory()->create(['name' => 'United States']);
+        $teamA = Team::factory()->create(['name' => 'Argentina', 'short_name' => 'ARG']);
+        $teamB = Team::factory()->create(['name' => 'United States', 'short_name' => 'USA']);
 
         Prediction::factory()->create([
             'user_id' => $user->id,
@@ -55,12 +56,16 @@ class DashboardUxTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Hola, Mariano Demo')
-            ->assertSee('Liga general')
-            ->assertSee('Puntos')
+            ->assertSee('Mi Prode')
+            ->assertSee('Te falta pronosticar')
+            ->assertSee('ARG')
+            ->assertSee('USA')
+            ->assertSee('General')
+            ->assertSee('6 pts')
             ->assertSee('#1')
             ->assertSee('Predicciones')
-            ->assertSee('Cargar predicciones')
+            ->assertDontSee('Hola, Mariano Demo')
+            ->assertDontSee('Cargar predicciones')
             ->assertSee('Ligas')
             ->assertSee('Historial')
             ->assertSee('Calendario')
@@ -84,5 +89,22 @@ class DashboardUxTest extends TestCase
             ->assertOk()
             ->assertDontSee('Panel admin')
             ->assertDontSee(route('admin.dashboard'), false);
+    }
+
+    public function test_dashboard_renders_live_and_friend_activity_modules_from_demo_data(): void
+    {
+        $this->seed(StagingDemoSeeder::class);
+
+        $user = User::query()->where('email', 'mariano@prode.test')->firstOrFail();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Te falta pronosticar')
+            ->assertSee('En juego')
+            ->assertSee('Tus amigos ya se movieron')
+            ->assertSee('Ana Demo')
+            ->assertDontSee('Estado provisional según última sincronización')
+            ->assertDontSee('Hola, Mariano Demo');
     }
 }

@@ -3937,7 +3937,7 @@ E17-T07
 Redesign dashboard as mobile-first live home
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -3947,6 +3947,8 @@ High
 
 ### Objective
 Replace the current generic dashboard with a mobile-first dashboard focused on action, live-ish match tracking, and private-league social activity.
+
+Implemented a mobile-first `/dashboard` live home backed by `liveDashboardData`. The old large greeting hero and generic metric cards were replaced with conditional modules for nearest-day missing predictions, compact live-ish match tracking, private-league friend completion activity, and a secondary league summary. Pending match rows link directly to the prepared `/predictions` date/timezone URL, empty modules are hidden, and the existing route/auth/avatar prompt behavior remains unchanged.
 
 ### Scope
 - Redesign `/dashboard`.
