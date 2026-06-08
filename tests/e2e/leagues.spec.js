@@ -15,6 +15,6 @@ test('leagues smoke shows general league and private league ranking', async ({ p
     if (await privateLeagueTab.isVisible().catch(() => false)) {
         await privateLeagueTab.click();
         await expect(page.getByText('Liga privada').first()).toBeVisible();
-        await expect(page.getByText('Tabla de posiciones de la liga', { exact: true })).toBeVisible();
+        await expect(page.getByText('Tabla de posiciones de la liga', { exact: true }).first()).toBeVisible();
     }
 });
