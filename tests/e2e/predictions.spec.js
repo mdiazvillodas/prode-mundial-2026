@@ -26,10 +26,15 @@ test('prediction pre-results smoke loads and saves an editable prediction when a
         const isActive = await chip.getAttribute('data-active-date-chip') !== null;
 
         if (!isActive) {
-            await Promise.all([
-                page.waitForNavigation({ url: /\/predictions/, waitUntil: 'networkidle' }),
-                chip.click(),
-            ]);
+            const chipHref = await chip.getAttribute('href');
+            const targetUrl = new URL(chipHref, page.url());
+
+            await chip.click();
+            await page.waitForURL((url) => (
+                url.pathname === '/predictions'
+                && url.searchParams.get('date') === targetUrl.searchParams.get('date')
+                && url.searchParams.get('tz') === targetUrl.searchParams.get('tz')
+            ));
         }
 
         await expect(page.locator('[data-date-nav]')).toBeVisible();
