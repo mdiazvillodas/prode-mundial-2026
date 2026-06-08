@@ -35,6 +35,7 @@ class LiveDashboardDataService
     {
         $timezone = $this->resolveTimezone($timezone);
         $teamAverages = $this->teamGoalAverages();
+        $leagueSummary = $this->leagueSummary($user);
 
         return [
             'timezone' => $timezone,
@@ -42,7 +43,8 @@ class LiveDashboardDataService
             'daily_matches' => $this->dailyMatches($user, $timezone),
             'live_matches' => $this->liveMatches($user, $timezone),
             'friend_activity' => $this->friendActivity($user, $timezone),
-            'league_summary' => $this->leagueSummary($user),
+            'league_summary' => $leagueSummary,
+            'has_active_private_leagues' => ! empty($leagueSummary['private_leagues']),
         ];
     }
 

@@ -4318,7 +4318,10 @@ E18-T04
 Add private league onboarding CTA to dashboard
 
 ### Status
-Todo
+Done
+
+### Note
+Implemented the "Jugá con tus amigos" onboarding card on the dashboard for users without active private leagues. The card explains the social flow to create a league, copy/share the invite link, and compete with friends, using polished inline SVG steps and existing league routes. It is hidden for users with active private leagues and does not change league creation, invitation approval rules, scoring, predictions, API sync, auth, migrations, or production config.
 
 ### Sprint
 Next sprint

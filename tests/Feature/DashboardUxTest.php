@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Prediction;
+use App\Models\PrivateLeague;
 use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Models\User;
@@ -90,6 +91,38 @@ class DashboardUxTest extends TestCase
             ->assertOk()
             ->assertDontSee('Panel admin')
             ->assertDontSee(route('admin.dashboard'), false);
+    }
+
+    public function test_dashboard_shows_private_league_onboarding_for_users_without_active_private_leagues(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_USER]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Jugá con tus amigos')
+            ->assertSee('Creá tu propia liga, compartí el link y competí con tu grupo durante el Mundial.')
+            ->assertSee('Crear mi liga')
+            ->assertSee('Buscar liga')
+            ->assertSee(route('private-leagues.create'), false)
+            ->assertSee(route('private-leagues.search'), false);
+    }
+
+    public function test_dashboard_hides_private_league_onboarding_for_users_with_active_private_leagues(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_USER]);
+
+        PrivateLeague::query()->create([
+            'owner_id' => $user->id,
+            'name' => 'Liga Activa',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Jugá con tus amigos')
+            ->assertDontSee('Crear mi liga')
+            ->assertDontSee('Tus amigos se suman desde un link');
     }
 
     public function test_dashboard_renders_live_and_friend_activity_modules_from_demo_data(): void

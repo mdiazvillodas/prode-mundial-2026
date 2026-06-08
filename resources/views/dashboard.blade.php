@@ -5,6 +5,7 @@
     $dailyMatchRows = collect($dailyMatches['matches'] ?? []);
     $friendActivity = $dashboardData['friend_activity'] ?? null;
     $friends = collect($friendActivity['friends'] ?? []);
+    $hasActivePrivateLeagues = (bool) ($dashboardData['has_active_private_leagues'] ?? false);
     $hasDashboardSidebar = $dailyMatchRows->isNotEmpty() || $friends->isNotEmpty();
     $leagueSummary = $dashboardData['league_summary'] ?? [];
     $generalSummary = $leagueSummary['general'] ?? null;
@@ -268,6 +269,64 @@
                     @endif
                 </div>
             @endif
+
+            @unless ($hasActivePrivateLeagues)
+                <section class="overflow-hidden rounded-2xl bg-blue-950 text-white shadow-lg shadow-blue-950/10 ring-1 ring-blue-900/20">
+                    <div class="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                        <div class="min-w-0">
+                            <p class="text-xs font-black uppercase tracking-[0.16em] text-emerald-200">
+                                {{ __('Liga privada') }}
+                            </p>
+                            <h2 class="mt-2 text-2xl font-black leading-tight sm:text-3xl">
+                                {{ __('Jugá con tus amigos') }}
+                            </h2>
+                            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-sky-100">
+                                {{ __('Creá tu propia liga, compartí el link y competí con tu grupo durante el Mundial.') }}
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col gap-3 sm:flex-row lg:justify-end">
+                            <a
+                                href="{{ route('private-leagues.create') }}"
+                                class="inline-flex items-center justify-center rounded-xl bg-emerald-400 px-4 py-3 text-sm font-black text-blue-950 shadow-sm transition hover:bg-emerald-300 focus:outline-none focus:ring-4 focus:ring-emerald-200/40"
+                            >
+                                {{ __('Crear mi liga') }}
+                            </a>
+                            <a
+                                href="{{ route('private-leagues.search') }}"
+                                class="inline-flex items-center justify-center rounded-xl bg-white/10 px-4 py-3 text-sm font-black text-white ring-1 ring-white/15 transition hover:bg-white/15 focus:outline-none focus:ring-4 focus:ring-sky-200/30"
+                            >
+                                {{ __('Buscar liga') }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-white/10 bg-white/[0.03] px-5 py-5 sm:px-6">
+                        <div class="grid gap-3 md:grid-cols-4">
+                            @foreach ([
+                                ['title' => __('Creá tu liga'), 'body' => __('Elegí el nombre que más te guste.'), 'path' => 'M12 5v14m7-7H5'],
+                                ['title' => __('Copiá el link'), 'body' => __('El sistema genera un link para invitar.'), 'path' => 'M10 13a5 5 0 0 0 7.1 0l1.4-1.4a5 5 0 0 0-7.1-7.1L10 5.9m4 5.1a5 5 0 0 0-7.1 0l-1.4 1.4a5 5 0 0 0 7.1 7.1L14 18.1'],
+                                ['title' => __('Compartilo con tus amigos'), 'body' => __('Mandalo por WhatsApp, Telegram o donde quieras.'), 'path' => 'M8 12h8m-8-4h8m-8 8h5m8-4a9 9 0 1 1-4.2-7.6L21 3v6h-6l2.2-2.2'],
+                                ['title' => __('Compitan en su ranking'), 'body' => __('Tus amigos piden entrar y juegan en la misma tabla.'), 'path' => 'M7 20V10m5 10V4m5 16v-7M5 20h14'],
+                            ] as $step)
+                                <div class="rounded-xl bg-white/[0.08] p-3 ring-1 ring-white/10">
+                                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-300/15 text-emerald-200 ring-1 ring-emerald-200/20">
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="h-5 w-5">
+                                            <path d="{{ $step['path'] }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="mt-3 text-sm font-black text-white">{{ $step['title'] }}</h3>
+                                    <p class="mt-1 text-xs font-semibold leading-5 text-sky-100/85">{{ $step['body'] }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <p class="mt-4 text-xs font-bold text-emerald-100">
+                            {{ __('Tus amigos se suman desde un link y vos aprobás el ingreso.') }}
+                        </p>
+                    </div>
+                </section>
+            @endunless
 
             @if ($generalSummary || $privateLeagueSummaries->isNotEmpty())
                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100 sm:p-5">
