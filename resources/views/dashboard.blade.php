@@ -12,6 +12,11 @@
     $showCompactGeneralSidebar = ! $hasActivePrivateLeagues && $generalSummary;
     $hasDashboardSidebar = $dailyMatchRows->isNotEmpty() || $friends->isNotEmpty() || $showCompactGeneralSidebar;
     $timezone = $dashboardData['timezone'] ?? config('app.timezone');
+    $dailyLastSyncedMinutes = $dailyMatchRows
+        ->pluck('last_synced_minutes_ago')
+        ->filter(fn ($minutes) => $minutes !== null)
+        ->map(fn ($minutes) => (int) $minutes)
+        ->min();
 
     $stateIndicators = [
         'exact' => [
@@ -31,9 +36,9 @@
             'color' => 'bg-red-700',
         ],
         'none' => [
-            'label' => __('Sin pronóstico'),
+            'label' => __('Sin predicción'),
             'isDot' => true,
-            'color' => 'bg-slate-500',
+            'color' => 'border border-slate-400 bg-white',
         ],
     ];
 
@@ -102,7 +107,9 @@
                                                 <div class="min-w-0 flex-1">
                                                     <div class="flex items-center gap-2">
                                                         @foreach (['team_a', 'team_b'] as $teamKey)
-                                                            @php($team = $match[$teamKey] ?? null)
+                                                            @php
+                                                                $team = $match[$teamKey] ?? null;
+                                                            @endphp
                                                             <div class="flex min-w-0 items-center gap-2">
                                                                 <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-[10px] font-black text-slate-600 ring-1 ring-white">
                                                                     @if (! empty($team['flag_path']))
@@ -133,7 +140,9 @@
 
                                                     <div class="mt-2 flex flex-wrap gap-2 text-[11px] font-black text-slate-500">
                                                         @foreach (['team_a', 'team_b'] as $teamKey)
-                                                            @php($team = $match[$teamKey] ?? null)
+                                                            @php
+                                                                $team = $match[$teamKey] ?? null;
+                                                            @endphp
                                                             @if (($team['goals_for_avg'] ?? null) !== null && ($team['goals_against_avg'] ?? null) !== null)
                                                                 <span class="rounded-full bg-slate-100 px-2 py-1">
                                                                     {{ $team['short_name'] }} GF {{ $team['goals_for_avg'] }} · GC {{ $team['goals_against_avg'] }}
@@ -247,7 +256,7 @@
                         <aside class="space-y-4 lg:col-span-4">
                             @if ($dailyMatchRows->isNotEmpty())
                                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
-                                    <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <h2 class="text-lg font-black text-blue-950">{{ __('Hoy en el Mundial') }}</h2>
                                             @if (! empty($dailyMatches['local_date']))
@@ -255,64 +264,91 @@
                                                     {{ $formatLocalDate($dailyMatches['local_date']) }}
                                                 </p>
                                             @endif
+                                            @if ($dailyLastSyncedMinutes !== null)
+                                                <p class="mt-1 text-[11px] font-bold text-slate-400">
+                                                    {{ __('Actualizado hace :minutes min', ['minutes' => $dailyLastSyncedMinutes]) }}
+                                                </p>
+                                            @endif
                                         </div>
-                                        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800">
-                                            {{ $dailyMatchRows->count() }}
+                                        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800 whitespace-nowrap">
+                                            {{ trans_choice(':count partido|:count partidos', $dailyMatchRows->count(), ['count' => $dailyMatchRows->count()]) }}
                                         </span>
                                     </div>
 
                                     <div class="mt-3 space-y-2">
                                         @foreach ($dailyMatchRows as $match)
-                                            @php($state = $stateIndicators[$match['provisional_state'] ?? 'none'] ?? $stateIndicators['none'])
-                                            <article class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
-                                                <div class="flex items-center justify-between gap-3">
-                                                    <div class="min-w-0 flex-1">
-                                                        <div class="flex items-center gap-2 text-sm font-black text-blue-950">
-                                                            <span class="truncate">{{ $match['team_a']['short_name'] ?? $match['team_a']['name'] ?? __('TBD') }}</span>
-                                                            @if (($match['display_state'] ?? 'scheduled') === 'scheduled')
-                                                                <span class="rounded-lg bg-white px-2 py-1 text-xs tabular-nums text-slate-600 ring-1 ring-slate-200">
-                                                                    {{ $match['kickoff_local_time'] ?? '--:--' }}
-                                                                </span>
+                                            @php
+                                                $displayState = $match['display_state'] ?? 'scheduled';
+                                                $state = $stateIndicators[$match['provisional_state'] ?? 'none'] ?? $stateIndicators['none'];
+                                                $teamA = $match['team_a'] ?? [];
+                                                $teamB = $match['team_b'] ?? [];
+                                                $centerLabel = $displayState === 'scheduled'
+                                                    ? ($match['kickoff_local_time'] ?? '--:--')
+                                                    : (($match['score']['team_a'] ?? '-').'-'.($match['score']['team_b'] ?? '-'));
+                                                $predictionLabel = $match['user_prediction']
+                                                    ? __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']])
+                                                    : __('Sin predicción');
+                                                if ($displayState === 'live') {
+                                                    $statusLabel = $match['status_label'] ?? __('En juego');
+                                                } elseif ($displayState === 'finished') {
+                                                    $statusLabel = __('Finalizado');
+                                                } else {
+                                                    $statusLabel = __('Programado');
+                                                }
+                                            @endphp
+                                            <article class="rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-3">
+                                                <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-2">
+                                                    <div class="flex min-w-0 items-center gap-1.5">
+                                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-500 ring-1 ring-slate-200">
+                                                            @if (! empty($teamA['flag_path']))
+                                                                <img src="{{ asset($teamA['flag_path']) }}" alt="{{ __('Bandera de :team', ['team' => $teamA['name'] ?? $teamA['short_name'] ?? __('equipo')]) }}" class="h-full w-full object-cover" loading="lazy">
                                                             @else
-                                                                <span class="rounded-lg bg-white px-2 py-1 text-base tabular-nums ring-1 ring-slate-200">
-                                                                    {{ $match['score']['team_a'] ?? '-' }}-{{ $match['score']['team_b'] ?? '-' }}
-                                                                </span>
+                                                                {{ $teamA['short_name'] ?? 'TBD' }}
                                                             @endif
-                                                            <span class="truncate">{{ $match['team_b']['short_name'] ?? $match['team_b']['name'] ?? __('TBD') }}</span>
-                                                        </div>
-
-                                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
-                                                            @if (! empty($match['status_label']) && ($match['display_state'] ?? null) !== 'scheduled')
-                                                                <span class="rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">{{ $match['status_label'] }}</span>
-                                                            @endif
-                                                            @if ($match['user_prediction'])
-                                                                <span>{{ __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']]) }}</span>
-                                                            @endif
-                                                            @if (($match['display_state'] ?? null) === 'live' && ($match['last_synced_minutes_ago'] ?? null) !== null)
-                                                                <span>{{ __('Actualizado hace :minutes min', ['minutes' => (int) $match['last_synced_minutes_ago']]) }}</span>
-                                                            @endif
-                                                        </div>
+                                                        </span>
+                                                        <span class="truncate text-xs font-black text-blue-950">{{ $teamA['short_name'] ?? $teamA['name'] ?? __('TBD') }}</span>
                                                     </div>
 
-                                                    @if (($match['display_state'] ?? null) !== 'scheduled')
-                                                        @if ($state['isDot'] ?? false)
-                                                            <span
-                                                                class="shrink-0 h-2.5 w-2.5 rounded-full {{ $state['color'] }}"
-                                                                title="{{ $state['label'] }}"
-                                                                aria-label="{{ $state['label'] }}"
-                                                            >
-                                                                <span class="sr-only">{{ $state['label'] }}</span>
-                                                            </span>
-                                                        @else
-                                                            <span
-                                                                class="shrink-0 {{ $state['color'] }} text-sm leading-none"
-                                                                title="{{ $state['label'] }}"
-                                                                aria-label="{{ $state['label'] }}"
-                                                            >
-                                                                {{ $state['symbol'] }}
-                                                                <span class="sr-only">{{ $state['label'] }}</span>
-                                                            </span>
-                                                        @endif
+                                                    <span class="justify-self-center rounded-full bg-white px-2.5 py-1 text-sm font-black tabular-nums text-blue-950 ring-1 ring-slate-200">
+                                                        {{ $centerLabel }}
+                                                    </span>
+
+                                                    <div class="flex min-w-0 items-center justify-end gap-1.5">
+                                                        <span class="truncate text-right text-xs font-black text-blue-950">{{ $teamB['short_name'] ?? $teamB['name'] ?? __('TBD') }}</span>
+                                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-500 ring-1 ring-slate-200">
+                                                            @if (! empty($teamB['flag_path']))
+                                                                <img src="{{ asset($teamB['flag_path']) }}" alt="{{ __('Bandera de :team', ['team' => $teamB['name'] ?? $teamB['short_name'] ?? __('equipo')]) }}" class="h-full w-full object-cover" loading="lazy">
+                                                            @else
+                                                                {{ $teamB['short_name'] ?? 'TBD' }}
+                                                            @endif
+                                                        </span>
+                                                    </div>
+
+                                                    @if ($state['isDot'] ?? false)
+                                                        <span
+                                                            class="h-2.5 w-2.5 shrink-0 rounded-full {{ $state['color'] }}"
+                                                            title="{{ $state['label'] }}"
+                                                            aria-label="{{ $state['label'] }}"
+                                                        >
+                                                            <span class="sr-only">{{ $state['label'] }}</span>
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="{{ $state['color'] }} shrink-0 text-sm leading-none"
+                                                            title="{{ $state['label'] }}"
+                                                            aria-label="{{ $state['label'] }}"
+                                                        >
+                                                            {{ $state['symbol'] }}
+                                                            <span class="sr-only">{{ $state['label'] }}</span>
+                                                        </span>
+                                                    @endif
+                                                </div>
+
+                                                <div class="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] font-bold text-slate-500">
+                                                    <span class="rounded-full bg-white px-2 py-0.5 ring-1 ring-slate-200">{{ $statusLabel }}</span>
+                                                    <span>{{ $predictionLabel }}</span>
+                                                    @if ($displayState === 'live' && ($match['last_synced_minutes_ago'] ?? null) !== null)
+                                                        <span>{{ __('Hace :minutes min', ['minutes' => (int) $match['last_synced_minutes_ago']]) }}</span>
                                                     @endif
                                                 </div>
                                             </article>
@@ -366,10 +402,12 @@
                                         @foreach ($friends->take(6) as $friend)
                                             <div class="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
                                                 <div class="flex min-w-0 items-center gap-3">
-                                                    @php($friendUser = new \App\Models\User([
-                                                        'name' => $friend['name'],
-                                                        'profile_avatar_key' => $friend['avatar']['key'] ?? null,
-                                                    ]))
+                                                    @php
+                                                        $friendUser = new \App\Models\User([
+                                                            'name' => $friend['name'],
+                                                            'profile_avatar_key' => $friend['avatar']['key'] ?? null,
+                                                        ]);
+                                                    @endphp
                                                     <x-profile-avatar :user="$friendUser" size="sm" />
                                                     <div class="min-w-0">
                                                         <p class="truncate text-sm font-black text-blue-950">{{ $friend['name'] }}</p>
@@ -418,7 +456,9 @@
                                             <div class="min-w-0 flex-1">
                                                 <div class="flex items-center gap-2">
                                                     @foreach (['team_a', 'team_b'] as $teamKey)
-                                                        @php($team = $match[$teamKey] ?? null)
+                                                        @php
+                                                            $team = $match[$teamKey] ?? null;
+                                                        @endphp
                                                         <div class="flex min-w-0 items-center gap-2">
                                                             <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-[10px] font-black text-slate-600 ring-1 ring-white">
                                                                 @if (! empty($team['flag_path']))
@@ -449,7 +489,9 @@
 
                                                 <div class="mt-2 flex flex-wrap gap-2 text-[11px] font-black text-slate-500">
                                                     @foreach (['team_a', 'team_b'] as $teamKey)
-                                                        @php($team = $match[$teamKey] ?? null)
+                                                        @php
+                                                            $team = $match[$teamKey] ?? null;
+                                                        @endphp
                                                         @if (($team['goals_for_avg'] ?? null) !== null && ($team['goals_against_avg'] ?? null) !== null)
                                                             <span class="rounded-full bg-slate-100 px-2 py-1">
                                                                 {{ $team['short_name'] }} GF {{ $team['goals_for_avg'] }} · GC {{ $team['goals_against_avg'] }}
@@ -471,7 +513,7 @@
                         <aside class="{{ $pendingPredictions ? 'lg:col-span-4' : 'lg:col-span-12' }} space-y-4">
                             @if ($dailyMatchRows->isNotEmpty())
                                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
-                                    <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <h2 class="text-lg font-black text-blue-950">{{ __('Hoy en el Mundial') }}</h2>
                                             @if (! empty($dailyMatches['local_date']))
@@ -479,64 +521,91 @@
                                                     {{ $formatLocalDate($dailyMatches['local_date']) }}
                                                 </p>
                                             @endif
+                                            @if ($dailyLastSyncedMinutes !== null)
+                                                <p class="mt-1 text-[11px] font-bold text-slate-400">
+                                                    {{ __('Actualizado hace :minutes min', ['minutes' => $dailyLastSyncedMinutes]) }}
+                                                </p>
+                                            @endif
                                         </div>
-                                        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800">
-                                            {{ $dailyMatchRows->count() }}
+                                        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800 whitespace-nowrap">
+                                            {{ trans_choice(':count partido|:count partidos', $dailyMatchRows->count(), ['count' => $dailyMatchRows->count()]) }}
                                         </span>
                                     </div>
 
                                     <div class="mt-3 space-y-2">
                                         @foreach ($dailyMatchRows as $match)
-                                            @php($state = $stateIndicators[$match['provisional_state'] ?? 'none'] ?? $stateIndicators['none'])
-                                            <article class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
-                                                <div class="flex items-center justify-between gap-3">
-                                                    <div class="min-w-0 flex-1">
-                                                        <div class="flex items-center gap-2 text-sm font-black text-blue-950">
-                                                            <span class="truncate">{{ $match['team_a']['short_name'] ?? $match['team_a']['name'] ?? __('TBD') }}</span>
-                                                            @if (($match['display_state'] ?? 'scheduled') === 'scheduled')
-                                                                <span class="rounded-lg bg-white px-2 py-1 text-xs tabular-nums text-slate-600 ring-1 ring-slate-200">
-                                                                    {{ $match['kickoff_local_time'] ?? '--:--' }}
-                                                                </span>
+                                            @php
+                                                $displayState = $match['display_state'] ?? 'scheduled';
+                                                $state = $stateIndicators[$match['provisional_state'] ?? 'none'] ?? $stateIndicators['none'];
+                                                $teamA = $match['team_a'] ?? [];
+                                                $teamB = $match['team_b'] ?? [];
+                                                $centerLabel = $displayState === 'scheduled'
+                                                    ? ($match['kickoff_local_time'] ?? '--:--')
+                                                    : (($match['score']['team_a'] ?? '-').'-'.($match['score']['team_b'] ?? '-'));
+                                                $predictionLabel = $match['user_prediction']
+                                                    ? __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']])
+                                                    : __('Sin predicción');
+                                                if ($displayState === 'live') {
+                                                    $statusLabel = $match['status_label'] ?? __('En juego');
+                                                } elseif ($displayState === 'finished') {
+                                                    $statusLabel = __('Finalizado');
+                                                } else {
+                                                    $statusLabel = __('Programado');
+                                                }
+                                            @endphp
+                                            <article class="rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-3">
+                                                <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-2">
+                                                    <div class="flex min-w-0 items-center gap-1.5">
+                                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-500 ring-1 ring-slate-200">
+                                                            @if (! empty($teamA['flag_path']))
+                                                                <img src="{{ asset($teamA['flag_path']) }}" alt="{{ __('Bandera de :team', ['team' => $teamA['name'] ?? $teamA['short_name'] ?? __('equipo')]) }}" class="h-full w-full object-cover" loading="lazy">
                                                             @else
-                                                                <span class="rounded-lg bg-white px-2 py-1 text-base tabular-nums ring-1 ring-slate-200">
-                                                                    {{ $match['score']['team_a'] ?? '-' }}-{{ $match['score']['team_b'] ?? '-' }}
-                                                                </span>
+                                                                {{ $teamA['short_name'] ?? 'TBD' }}
                                                             @endif
-                                                            <span class="truncate">{{ $match['team_b']['short_name'] ?? $match['team_b']['name'] ?? __('TBD') }}</span>
-                                                        </div>
-
-                                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
-                                                            @if (! empty($match['status_label']) && ($match['display_state'] ?? null) !== 'scheduled')
-                                                                <span class="rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">{{ $match['status_label'] }}</span>
-                                                            @endif
-                                                            @if ($match['user_prediction'])
-                                                                <span>{{ __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']]) }}</span>
-                                                            @endif
-                                                            @if (($match['display_state'] ?? null) === 'live' && ($match['last_synced_minutes_ago'] ?? null) !== null)
-                                                                <span>{{ __('Actualizado hace :minutes min', ['minutes' => (int) $match['last_synced_minutes_ago']]) }}</span>
-                                                            @endif
-                                                        </div>
+                                                        </span>
+                                                        <span class="truncate text-xs font-black text-blue-950">{{ $teamA['short_name'] ?? $teamA['name'] ?? __('TBD') }}</span>
                                                     </div>
 
-                                                    @if (($match['display_state'] ?? null) !== 'scheduled')
-                                                        @if ($state['isDot'] ?? false)
-                                                            <span
-                                                                class="shrink-0 h-2.5 w-2.5 rounded-full {{ $state['color'] }}"
-                                                                title="{{ $state['label'] }}"
-                                                                aria-label="{{ $state['label'] }}"
-                                                            >
-                                                                <span class="sr-only">{{ $state['label'] }}</span>
-                                                            </span>
-                                                        @else
-                                                            <span
-                                                                class="shrink-0 {{ $state['color'] }} text-sm leading-none"
-                                                                title="{{ $state['label'] }}"
-                                                                aria-label="{{ $state['label'] }}"
-                                                            >
-                                                                {{ $state['symbol'] }}
-                                                                <span class="sr-only">{{ $state['label'] }}</span>
-                                                            </span>
-                                                        @endif
+                                                    <span class="justify-self-center rounded-full bg-white px-2.5 py-1 text-sm font-black tabular-nums text-blue-950 ring-1 ring-slate-200">
+                                                        {{ $centerLabel }}
+                                                    </span>
+
+                                                    <div class="flex min-w-0 items-center justify-end gap-1.5">
+                                                        <span class="truncate text-right text-xs font-black text-blue-950">{{ $teamB['short_name'] ?? $teamB['name'] ?? __('TBD') }}</span>
+                                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-500 ring-1 ring-slate-200">
+                                                            @if (! empty($teamB['flag_path']))
+                                                                <img src="{{ asset($teamB['flag_path']) }}" alt="{{ __('Bandera de :team', ['team' => $teamB['name'] ?? $teamB['short_name'] ?? __('equipo')]) }}" class="h-full w-full object-cover" loading="lazy">
+                                                            @else
+                                                                {{ $teamB['short_name'] ?? 'TBD' }}
+                                                            @endif
+                                                        </span>
+                                                    </div>
+
+                                                    @if ($state['isDot'] ?? false)
+                                                        <span
+                                                            class="h-2.5 w-2.5 shrink-0 rounded-full {{ $state['color'] }}"
+                                                            title="{{ $state['label'] }}"
+                                                            aria-label="{{ $state['label'] }}"
+                                                        >
+                                                            <span class="sr-only">{{ $state['label'] }}</span>
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="{{ $state['color'] }} shrink-0 text-sm leading-none"
+                                                            title="{{ $state['label'] }}"
+                                                            aria-label="{{ $state['label'] }}"
+                                                        >
+                                                            {{ $state['symbol'] }}
+                                                            <span class="sr-only">{{ $state['label'] }}</span>
+                                                        </span>
+                                                    @endif
+                                                </div>
+
+                                                <div class="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] font-bold text-slate-500">
+                                                    <span class="rounded-full bg-white px-2 py-0.5 ring-1 ring-slate-200">{{ $statusLabel }}</span>
+                                                    <span>{{ $predictionLabel }}</span>
+                                                    @if ($displayState === 'live' && ($match['last_synced_minutes_ago'] ?? null) !== null)
+                                                        <span>{{ __('Hace :minutes min', ['minutes' => (int) $match['last_synced_minutes_ago']]) }}</span>
                                                     @endif
                                                 </div>
                                             </article>
@@ -565,10 +634,12 @@
                                         @foreach ($friends->take(6) as $friend)
                                             <div class="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
                                                 <div class="flex min-w-0 items-center gap-3">
-                                                    @php($friendUser = new \App\Models\User([
-                                                        'name' => $friend['name'],
-                                                        'profile_avatar_key' => $friend['avatar']['key'] ?? null,
-                                                    ]))
+                                                    @php
+                                                        $friendUser = new \App\Models\User([
+                                                            'name' => $friend['name'],
+                                                            'profile_avatar_key' => $friend['avatar']['key'] ?? null,
+                                                        ]);
+                                                    @endphp
                                                     <x-profile-avatar :user="$friendUser" size="sm" />
                                                     <div class="min-w-0">
                                                         <p class="truncate text-sm font-black text-blue-950">{{ $friend['name'] }}</p>
