@@ -198,6 +198,58 @@ class LiveDashboardDataServiceTest extends TestCase
         $this->assertArrayNotHasKey('team_a_score', $friends[0]);
     }
 
+    public function test_friend_activity_uses_next_four_predictable_matches_across_multiple_days(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create(['username' => 'current']);
+        $friend = User::factory()->create(['name' => 'Friend Four', 'username' => 'friend_four']);
+        $league = $this->privateLeague($user, 'Liga Jornada');
+        $this->addMember($league, $friend);
+
+        $matches = [
+            $this->match($tournament, $teams['ARG'], $teams['USA'], '2026-06-17 18:00:00'),
+            $this->match($tournament, $teams['BRA'], $teams['ESP'], '2026-06-18 18:00:00'),
+            $this->match($tournament, $teams['FRA'], $teams['MEX'], '2026-06-18 21:00:00'),
+            $this->match($tournament, $teams['GER'], $teams['JPN'], '2026-06-18 23:00:00'),
+            $this->match($tournament, $teams['ARG'], $teams['BRA'], '2026-06-19 18:00:00'),
+        ];
+
+        foreach (array_slice($matches, 0, 3) as $match) {
+            Prediction::factory()->create(['user_id' => $friend->id, 'match_id' => $match->id]);
+        }
+
+        $activity = app(LiveDashboardDataService::class)->forUser($user, 'UTC')['friend_activity'];
+
+        $this->assertSame('2026-06-17', $activity['local_date']);
+        $this->assertSame(4, $activity['total_matches']);
+        $this->assertSame(4, $activity['friends'][0]['total_matches']);
+        $this->assertSame(3, $activity['friends'][0]['completed_count']);
+    }
+
+    public function test_friend_activity_total_matches_equals_remaining_matches_when_fewer_than_four_remain(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create(['username' => 'current']);
+        $friend = User::factory()->create(['name' => 'Final Friend', 'username' => 'final_friend']);
+        $league = $this->privateLeague($user, 'Liga Final');
+        $this->addMember($league, $friend);
+
+        $remaining = [
+            $this->match($tournament, $teams['ARG'], $teams['USA'], '2026-07-18 18:00:00'),
+            $this->match($tournament, $teams['BRA'], $teams['ESP'], '2026-07-19 18:00:00'),
+        ];
+
+        Prediction::factory()->create(['user_id' => $friend->id, 'match_id' => $remaining[0]->id]);
+
+        $activity = app(LiveDashboardDataService::class)->forUser($user, 'UTC')['friend_activity'];
+
+        $this->assertSame(2, $activity['total_matches']);
+        $this->assertSame(2, $activity['friends'][0]['total_matches']);
+        $this->assertSame(1, $activity['friends'][0]['completed_count']);
+        $this->assertArrayNotHasKey('predictions', $activity['friends'][0]);
+        $this->assertArrayNotHasKey('team_a_score', $activity['friends'][0]);
+    }
+
     public function test_goal_averages_are_calculated_from_finished_matches(): void
     {
         [$tournament, $teams] = $this->seedTournamentAndTeams();

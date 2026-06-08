@@ -181,15 +181,15 @@ class LiveDashboardDataService
             ->orderBy('starts_at')
             ->get()
             ->filter(fn (TournamentMatch $match): bool => $match->isPredictable())
-            ->groupBy(fn (TournamentMatch $match): string => $this->localDate($match->starts_at, $timezone))
-            ->sortKeys();
+            ->take(4)
+            ->values();
 
         if ($matches->isEmpty()) {
             return null;
         }
 
-        $localDate = (string) $matches->keys()->first();
-        $matchIds = $matches->first()->pluck('id')->all();
+        $localDate = $this->localDate($matches->first()->starts_at, $timezone);
+        $matchIds = $matches->pluck('id')->all();
         $totalMatches = count($matchIds);
 
         if ($totalMatches === 0) {
