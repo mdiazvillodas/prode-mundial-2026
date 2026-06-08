@@ -410,6 +410,9 @@
                                                             'name' => $friend['name'],
                                                             'profile_avatar_key' => $friend['avatar']['key'] ?? null,
                                                         ]);
+                                                        $completedFriendPredictions = min(4, max(0, (int) ($friend['completed_count'] ?? 0)));
+                                                        $totalFriendPredictions = min(4, max(0, (int) ($friend['total_matches'] ?? 4)));
+                                                        $friendIndicatorSlots = max(1, $totalFriendPredictions);
                                                     @endphp
                                                     <x-profile-avatar :user="$friendUser" size="sm" />
                                                     <div class="min-w-0">
@@ -417,9 +420,20 @@
                                                         <p class="truncate text-xs font-bold text-slate-500">{{ '@'.$friend['username'] }}</p>
                                                     </div>
                                                 </div>
-                                                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800">
-                                                    {{ $friend['completed_count'] }}/{{ $friend['total_matches'] }}
-                                                </span>
+                                                <div
+                                                    class="flex shrink-0 items-center gap-1.5"
+                                                    aria-label="{{ __(':completed de :total predicciones cargadas', ['completed' => $completedFriendPredictions, 'total' => $totalFriendPredictions]) }}"
+                                                >
+                                                    <span class="sr-only">{{ __(':completed de :total predicciones cargadas', ['completed' => $completedFriendPredictions, 'total' => $totalFriendPredictions]) }}</span>
+                                                    <span class="flex items-center gap-1" aria-hidden="true">
+                                                        @for ($slot = 1; $slot <= $friendIndicatorSlots; $slot++)
+                                                            <span class="h-2.5 w-2.5 rounded-full {{ $slot <= $completedFriendPredictions ? 'bg-emerald-500 ring-1 ring-emerald-600/20' : 'bg-white ring-1 ring-slate-300' }}"></span>
+                                                        @endfor
+                                                    </span>
+                                                    <span class="text-[11px] font-black tabular-nums text-slate-500">
+                                                        {{ $completedFriendPredictions }}/{{ $totalFriendPredictions }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -645,6 +659,9 @@
                                                             'name' => $friend['name'],
                                                             'profile_avatar_key' => $friend['avatar']['key'] ?? null,
                                                         ]);
+                                                        $completedFriendPredictions = min(4, max(0, (int) ($friend['completed_count'] ?? 0)));
+                                                        $totalFriendPredictions = min(4, max(0, (int) ($friend['total_matches'] ?? 4)));
+                                                        $friendIndicatorSlots = max(1, $totalFriendPredictions);
                                                     @endphp
                                                     <x-profile-avatar :user="$friendUser" size="sm" />
                                                     <div class="min-w-0">
@@ -652,9 +669,20 @@
                                                         <p class="truncate text-xs font-bold text-slate-500">{{ '@'.$friend['username'] }}</p>
                                                     </div>
                                                 </div>
-                                                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-800">
-                                                    {{ $friend['completed_count'] }}/{{ $friend['total_matches'] }}
-                                                </span>
+                                                <div
+                                                    class="flex shrink-0 items-center gap-1.5"
+                                                    aria-label="{{ __(':completed de :total predicciones cargadas', ['completed' => $completedFriendPredictions, 'total' => $totalFriendPredictions]) }}"
+                                                >
+                                                    <span class="sr-only">{{ __(':completed de :total predicciones cargadas', ['completed' => $completedFriendPredictions, 'total' => $totalFriendPredictions]) }}</span>
+                                                    <span class="flex items-center gap-1" aria-hidden="true">
+                                                        @for ($slot = 1; $slot <= $friendIndicatorSlots; $slot++)
+                                                            <span class="h-2.5 w-2.5 rounded-full {{ $slot <= $completedFriendPredictions ? 'bg-emerald-500 ring-1 ring-emerald-600/20' : 'bg-white ring-1 ring-slate-300' }}"></span>
+                                                        @endfor
+                                                    </span>
+                                                    <span class="text-[11px] font-black tabular-nums text-slate-500">
+                                                        {{ $completedFriendPredictions }}/{{ $totalFriendPredictions }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
