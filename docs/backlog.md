@@ -3479,6 +3479,75 @@ Implemented `API_FOOTBALL_ALLOW_PRODUCTION_SYNC=false` in service config and a s
 Allow controlled production API sync
 
 ### Ticket ID
+OPS-T02
+
+### Title
+Define production backup, release tagging and rollback procedure
+
+### Status
+Todo
+
+### Sprint
+Operational follow-up
+
+### Priority
+High
+
+### Objective
+Define a clear low-risk production release safety procedure covering code rollback, database backup/restore strategy, release tagging, risk classification, and pre/post deploy checks.
+
+### Scope
+- Document that production has auto-deploy OFF and this is an operational advantage.
+- Document that staging has auto-deploy ON and must be validated before production.
+- Define rollback of code as the first response for visual, layout, navigation, or non-data incidents.
+- Define database backup/PITR/restore as a data-recovery layer, not the default rollback mechanism.
+- Reserve database restore for real data incidents involving users, predictions, league memberships, scoring, matches, API sync, or corrupted/incorrect production data.
+- Define simple production tag conventions, for example:
+  - `prod-YYYY-MM-DD-pre-epic18`
+  - `prod-YYYY-MM-DD-epic18`
+  - `prod-YYYY-MM-DD-pre-sensitive-change`
+- Define a pre-deploy checklist:
+  - verify local tests/build
+  - verify staging deploy/QA
+  - inspect git diff/stat/name-only
+  - classify risk by files touched
+  - create or verify DB backup when the deploy is sensitive
+  - tag the previous known-good production commit
+  - confirm production web/cron DB target if the change is infrastructure-related
+- Define a post-deploy checklist:
+  - QA production manually/read-only
+  - do not run the current Playwright suite against production
+  - verify key pages and admin health
+  - tag the successful production release if appropriate
+- Define risk classification:
+  - Low data risk: views, CSS, docs, tests, visual-only Blade changes.
+  - Sensitive deploy: migrations, predictions, scoring/settlement, auth/users, league memberships, API sync/commands, config/env/Railway, DB-related code, destructive commands.
+- Include read-only verification command examples or references for counts/checks.
+- Document that if something looks wrong after production deploy, rollback/redeploy of code should be attempted before touching the database unless data damage is confirmed.
+- Document that restore DB/PITR should be used carefully and only after deciding that production data needs recovery.
+
+### Out of scope
+- No application code changes.
+- No Railway variable changes.
+- No production commands.
+- No real backup or restore execution.
+- No migrations.
+- No changes to scoring, predictions, leagues, auth, API sync, or deployment config.
+- No automatic release tooling yet.
+
+### Acceptance criteria
+- `docs/backlog.md` contains a clear OPS-T02 ticket.
+- The ticket distinguishes code rollback from DB restore.
+- The ticket defines simple production release tags.
+- The ticket defines deploy risk classification.
+- The ticket defines pre/post deploy checklist expectations.
+- The ticket reinforces that production deploys require staging validation first.
+- The ticket makes clear that the user prefers reverting quickly over risking production data.
+
+### Suggested commit message
+docs: add production rollback procedure ticket
+
+### Ticket ID
 E16-T04
 
 ### Title
