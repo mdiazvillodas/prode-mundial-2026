@@ -4432,7 +4432,10 @@ E18-T06
 Remove duplicate dashboard logo
 
 ### Status
-Todo
+Done
+
+### Note
+Removed the duplicated Prode logo from the internal dashboard header while keeping the global navigation logo unchanged. The dashboard header now keeps the "INICIO" eyebrow, "Mi Prode" title, and existing admin/avatar area. No dashboard modules, responsive grid, compact indicators, business logic, or shared navigation behavior were changed.
 
 ### Sprint
 Next sprint

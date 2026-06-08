@@ -45,20 +45,13 @@
         <div class="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
             <header class="rounded-2xl bg-blue-950 px-4 py-4 text-white shadow-lg shadow-blue-950/10 ring-1 ring-blue-900/20 sm:px-5">
                 <div class="flex items-center justify-between gap-4">
-                    <div class="flex min-w-0 items-center gap-3">
-                        <img
-                            src="{{ asset('brand/p26-logo.svg') }}"
-                            alt="{{ __('Prode') }}"
-                            class="h-10 w-auto shrink-0"
-                        >
-                        <div class="min-w-0">
-                            <p class="truncate text-xs font-black uppercase tracking-[0.16em] text-sky-200">
-                                {{ __('Inicio') }}
-                            </p>
-                            <h1 class="truncate text-xl font-black leading-tight sm:text-2xl">
-                                {{ __('Mi Prode') }}
-                            </h1>
-                        </div>
+                    <div class="min-w-0">
+                        <p class="truncate text-xs font-black uppercase tracking-[0.16em] text-sky-200">
+                            {{ __('Inicio') }}
+                        </p>
+                        <h1 class="truncate text-xl font-black leading-tight sm:text-2xl">
+                            {{ __('Mi Prode') }}
+                        </h1>
                     </div>
 
                     <div class="flex shrink-0 items-center gap-2">
