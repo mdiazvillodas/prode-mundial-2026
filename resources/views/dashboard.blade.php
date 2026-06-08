@@ -258,7 +258,7 @@
                                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
-                                            <h2 class="text-lg font-black text-blue-950">{{ __('Hoy en el Mundial') }}</h2>
+                                            <h2 class="text-lg font-black text-blue-950">{{ __('Jornada Mundial') }}</h2>
                                             @if (! empty($dailyMatches['local_date']))
                                                 <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
                                                     {{ $formatLocalDate($dailyMatches['local_date']) }}
@@ -386,7 +386,10 @@
                                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
-                                            <h2 class="text-lg font-black text-blue-950">{{ __('Tus amigos ya se movieron') }}</h2>
+                                            <h2 class="text-lg font-black text-blue-950">{{ __('Tus amigos en la jornada') }}</h2>
+                                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                                {{ __('Predicciones cargadas en los próximos 4 partidos.') }}
+                                            </p>
                                             @if (! empty($friendActivity['local_date']))
                                                 <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
                                                     {{ $formatLocalDate($friendActivity['local_date']) }}
@@ -515,7 +518,7 @@
                                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
-                                            <h2 class="text-lg font-black text-blue-950">{{ __('Hoy en el Mundial') }}</h2>
+                                            <h2 class="text-lg font-black text-blue-950">{{ __('Jornada Mundial') }}</h2>
                                             @if (! empty($dailyMatches['local_date']))
                                                 <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
                                                     {{ $formatLocalDate($dailyMatches['local_date']) }}
@@ -618,7 +621,10 @@
                                 <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
-                                            <h2 class="text-lg font-black text-blue-950">{{ __('Tus amigos ya se movieron') }}</h2>
+                                            <h2 class="text-lg font-black text-blue-950">{{ __('Tus amigos en la jornada') }}</h2>
+                                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                                {{ __('Predicciones cargadas en los próximos 4 partidos.') }}
+                                            </p>
                                             @if (! empty($friendActivity['local_date']))
                                                 <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
                                                     {{ $formatLocalDate($friendActivity['local_date']) }}
