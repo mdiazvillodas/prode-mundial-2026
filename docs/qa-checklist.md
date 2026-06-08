@@ -69,8 +69,21 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Open `/dashboard` as a verified user with staging demo data.
 - Confirm the page does not show the old large `Hola` hero or generic metric cards.
 - Confirm `Te falta pronosticar` appears only when the user has missing predictions and each row links to the correct `/predictions` date/timezone.
-- Confirm `En juego` appears only for live-ish matches and shows score, user prediction when present, provisional state, and sync age when available.
+- On desktop/tablet-wide width, confirm the top dashboard uses the EPIC 18 grid: `Te falta pronosticar` occupies the main 8/12 column and `Hoy en el Mundial` occupies the compact 4/12 sidebar.
+- On mobile width, confirm dashboard modules stack in this order when present: `Te falta pronosticar`, `Hoy en el Mundial`, `Tus amigos ya se movieron`, then the remaining modules.
+- Confirm `Te falta pronosticar` remains the primary daily action when missing predictions exist.
+- Confirm `Hoy en el Mundial` shows the relevant local match day and can include scheduled/upcoming, live-ish, and finished matches.
+- Confirm scheduled rows show kickoff time, while live-ish and finished rows show score/status where useful.
+- Confirm live-ish rows show sync age when available.
+- Confirm compact prediction-state indicators render in `Hoy en el Mundial`: gray dot for no prediction, green dot for trend/correct direction, red dot for incorrect, and violet star for exact.
+- Confirm the compact indicators have accessible labels/tooltips and do not repeat long visible text such as `Sin pronóstico` in every row.
+- Confirm `Tus amigos ya se movieron` appears in the sidebar only when the user has active private leagues and shared friend activity.
 - Confirm `Tus amigos ya se movieron` shows friend completion counts without revealing prediction values.
+- As a user with no active private leagues, confirm the full-width `Jugá con tus amigos` card appears below the top dashboard row.
+- Confirm the onboarding card explains the flow to create a league, copy/share the invite link, and compete in a ranking.
+- Confirm the onboarding CTAs render and point to existing flows: `Crear mi liga` to `/private-leagues/create` and `Buscar liga` to `/private-leagues/search`.
+- As a user with at least one active private league, confirm the `Jugá con tus amigos` card is hidden.
+- Confirm the internal dashboard header no longer repeats the Prode logo; the global navigation logo remains visible.
 - Confirm the compact league summary links to `/leagues`.
 - Confirm modules with no data are hidden rather than replaced by filler cards.
 

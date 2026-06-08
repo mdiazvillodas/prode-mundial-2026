@@ -4479,7 +4479,7 @@ E18-T07
 QA dashboard responsive and social activation
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4489,6 +4489,8 @@ High
 
 ### Objective
 Validate the EPIC 18 dashboard changes locally and in staging before any production release.
+
+Closed EPIC 18 QA/documentation by updating `docs/qa-checklist.md` with responsive dashboard layout, `Hoy en el Mundial`, compact indicators, friend activity, onboarding CTA, CTA route, and duplicate-logo checks. User-confirmed local validation passed after E18-T04 with `php artisan test`, `npm run build`, `git diff --check`, and `PLAYWRIGHT_BASE_URL=http://127.0.0.1:8102 npm run test:e2e`.
 
 ### Scope
 - Update `docs/qa-checklist.md` with EPIC 18 checks if needed.
