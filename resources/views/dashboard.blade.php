@@ -6,10 +6,11 @@
     $friendActivity = $dashboardData['friend_activity'] ?? null;
     $friends = collect($friendActivity['friends'] ?? []);
     $hasActivePrivateLeagues = (bool) ($dashboardData['has_active_private_leagues'] ?? false);
-    $hasDashboardSidebar = $dailyMatchRows->isNotEmpty() || $friends->isNotEmpty();
     $leagueSummary = $dashboardData['league_summary'] ?? [];
     $generalSummary = $leagueSummary['general'] ?? null;
     $privateLeagueSummaries = collect($leagueSummary['private_leagues'] ?? []);
+    $showCompactGeneralSidebar = ! $hasActivePrivateLeagues && $generalSummary;
+    $hasDashboardSidebar = $dailyMatchRows->isNotEmpty() || $friends->isNotEmpty() || $showCompactGeneralSidebar;
     $timezone = $dashboardData['timezone'] ?? config('app.timezone');
 
     $stateIndicators = [
@@ -208,7 +209,7 @@
                             </section>
                         @endunless
 
-                        @if ($generalSummary || $privateLeagueSummaries->isNotEmpty())
+                        @if ($hasActivePrivateLeagues && ($generalSummary || $privateLeagueSummaries->isNotEmpty()))
                             <section class="rounded-2xl bg-white p-5 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
                                 <div class="flex items-center justify-between gap-3">
                                     <h2 class="text-lg font-black text-blue-950">{{ __('Ligas') }}</h2>
@@ -316,6 +317,31 @@
                                                 </div>
                                             </article>
                                         @endforeach
+                                    </div>
+                                </section>
+                            @endif
+
+                            @if ($showCompactGeneralSidebar)
+                                <section class="rounded-2xl bg-blue-950 p-4 text-white shadow-sm shadow-blue-900/10 ring-1 ring-blue-900/20">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-xs font-black uppercase tracking-[0.14em] text-sky-200">{{ __('Liga general') }}</p>
+                                            <h2 class="mt-1 text-lg font-black">{{ __('Tu posición') }}</h2>
+                                        </div>
+                                        <a href="{{ route('leagues.index') }}" class="text-xs font-black text-sky-200 hover:text-white">
+                                            {{ __('Ver tabla') }}
+                                        </a>
+                                    </div>
+
+                                    <div class="mt-4 grid grid-cols-2 gap-2">
+                                        <div class="rounded-xl bg-white/10 px-3 py-3 ring-1 ring-white/10">
+                                            <p class="text-[11px] font-black uppercase tracking-[0.12em] text-sky-200">{{ __('Puntos') }}</p>
+                                            <p class="mt-1 text-2xl font-black">{{ (int) ($generalSummary['points'] ?? 0) }}</p>
+                                        </div>
+                                        <div class="rounded-xl bg-white/10 px-3 py-3 ring-1 ring-white/10">
+                                            <p class="text-[11px] font-black uppercase tracking-[0.12em] text-sky-200">{{ __('Puesto') }}</p>
+                                            <p class="mt-1 text-2xl font-black">{{ ($generalSummary['position'] ?? null) ? '#'.$generalSummary['position'] : '-' }}</p>
+                                        </div>
                                     </div>
                                 </section>
                             @endif
