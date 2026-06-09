@@ -334,12 +334,13 @@ class PrivateLeagueController extends Controller
                 'users.id',
                 'users.name',
                 'users.username',
+                'users.profile_avatar_key',
                 DB::raw('COALESCE(SUM(predictions.points_awarded), 0) as total_points'),
                 DB::raw('SUM(CASE WHEN predictions.points_awarded = '.PredictionScoringService::POINTS_EXACT_RESULT.' THEN 1 ELSE 0 END) as exact_results_count'),
                 DB::raw('SUM(CASE WHEN predictions.points_awarded = '.PredictionScoringService::POINTS_CORRECT_OUTCOME.' THEN 1 ELSE 0 END) as trend_count'),
                 DB::raw('COUNT(predictions.id) as scored_predictions_count'),
             ])
-            ->groupBy('users.id', 'users.name', 'users.username')
+            ->groupBy('users.id', 'users.name', 'users.username', 'users.profile_avatar_key')
             ->orderByDesc('total_points')
             ->orderByDesc('exact_results_count')
             ->orderByDesc('trend_count')
