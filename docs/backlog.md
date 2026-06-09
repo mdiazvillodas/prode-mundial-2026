@@ -4524,3 +4524,229 @@ Closed EPIC 18 QA/documentation by updating `docs/qa-checklist.md` with responsi
 
 ### Suggested commit message
 test: cover dashboard responsive activation
+
+## EPIC 19 - Ranking, ligas y gestión social
+
+### Objective
+Improve the rankings, private leagues and social-management UX so league activity feels more human, readable and easy to manage on mobile and desktop.
+
+### Context
+The app already has Liga general, private leagues, owner-approved join requests, invitation links, league rankings, `/leagues` as the primary ranking/leagues hub, and a mobile-first Blade/Tailwind UI. This epic tracks the next visual and interaction polish so implementation does not rely on chat memory.
+
+### General constraints
+- Keep Blade + Tailwind + vanilla JS.
+- Mobile-first.
+- No React, Vue, Inertia or external packages.
+- Avoid gambling/betting language.
+- Keep production safety rules.
+- Validate locally and in staging before production.
+- Do not deploy production as part of these tickets.
+
+### Ticket ID
+E19-T01
+
+### Title
+Refactor visual de tablas de posiciones general y privadas
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Replace the cramped conventional standings table with a more readable mobile-first ranking layout used consistently for both Liga general and private leagues.
+
+### Scope
+- Apply the same visual ranking style to Liga general and private league standings.
+- Use a ranking/card-table hybrid instead of a cramped horizontal table on mobile.
+- Show position, avatar, human display name, `@username`, points, exacts, trends, scored predictions and recent form.
+- Keep current user highlight.
+- Keep first-place highlight.
+- Preserve existing ranking order, scoring, aggregation and tie behavior.
+- Preserve existing routes and business logic.
+
+### Out of scope
+- No scoring changes.
+- No prediction logic changes.
+- No database changes.
+- No league membership rule changes.
+- No new ranking algorithm.
+- No external packages.
+
+### Acceptance criteria
+- Liga general and private league standings use the same readable ranking layout.
+- Mobile no longer feels like a cramped horizontal stats table.
+- Human display names are primary and `@username` remains visible as secondary text.
+- Current user and first-place highlights remain intact.
+- Ranking order, scoring, aggregation and tie behavior are unchanged.
+
+### Suggested commit message
+style: refactor ranking table layout
+
+### Ticket ID
+E19-T02
+
+### Title
+Rediseñar detalle de liga privada y reducir preámbulo
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Simplify the private league detail screen so ranking appears sooner and the page has less repeated header/card preamble.
+
+### Scope
+- Unify the top title area and league summary into a compact league header.
+- Remove or replace the oversized "Ver ligas" CTA with a subtle navigation pattern.
+- Make the ranking the main protagonist of the screen.
+- Keep owner/member permissions unchanged.
+- Keep mobile-first layout.
+
+### Out of scope
+- No route changes unless strictly necessary.
+- No scoring/ranking logic changes.
+- No league rule changes.
+
+### Acceptance criteria
+- Private league detail shows the ranking sooner.
+- The league header is compact and avoids repeated title/preamble content.
+- Navigation back to leagues remains available but visually subtle.
+- Owner/member permissions and league business rules are unchanged.
+
+### Suggested commit message
+style: simplify private league detail
+
+### Ticket ID
+E19-T03
+
+### Title
+Agregar acciones rápidas para dueño de liga
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Replace the current hidden/accordion-heavy owner management experience with clear compact owner actions.
+
+### Scope
+- For the owner of a private league, expose compact actions near the league header:
+  - copy league code or invite link
+  - information button using only an "i" icon
+- Keep actions visible and easy to access on mobile.
+- The "i" button should summarize contextual league information that is currently buried in the accordion.
+- Do not move request approval into the info button.
+
+### Out of scope
+- No member removal rule changes.
+- No invitation business rule changes.
+- No automatic joining.
+
+### Acceptance criteria
+- League owners can quickly copy the league code or invite link from the league header area.
+- The information button is compact, icon-only, and easy to find on mobile.
+- Contextual league information is available without forcing users through a large management accordion.
+- Pending request approval remains outside the info button.
+
+### Suggested commit message
+feat: add private league owner quick actions
+
+### Ticket ID
+E19-T04
+
+### Title
+Gestionar solicitudes pendientes desde alerta en header
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+High
+
+### Objective
+Make pending join requests visible to the league owner from the app header, next to the hamburger menu.
+
+### Scope
+- If the authenticated user owns a private league and has pending join requests, show an alert/notification button near the hamburger menu.
+- The user can own only one private league, so the alert can safely refer to that league.
+- The alert shows a badge with pending count.
+- Tapping/clicking opens a modal/sheet with pending request profiles.
+- Each request row shows avatar, human display name, `@username`, approve and reject actions.
+- Preserve existing approval/rejection behavior and validations.
+- The requests panel should live at header/app-shell level, not inside the league card.
+
+### Out of scope
+- No email notifications.
+- No push notifications.
+- No database changes unless absolutely required.
+- No membership rule changes.
+
+### Acceptance criteria
+- League owners with pending join requests see a header-level alert.
+- The alert badge shows the pending request count.
+- The modal/sheet lists pending request profiles with avatar, human display name and `@username`.
+- Approve/reject actions reuse existing behavior and validations.
+- Users without owned pending requests do not see the alert.
+
+### Suggested commit message
+feat: surface league join requests in header
+
+### Ticket ID
+E19-T05
+
+### Title
+Reemplazar acordeón de gestión por información contextual
+
+### Status
+Todo
+
+### Sprint
+Next sprint
+
+### Priority
+Medium
+
+### Objective
+Reduce the current "Gestionar liga" accordion dependency by moving important owner actions into visible controls and keeping only contextual information behind an "i" button.
+
+### Scope
+- The "i" button should summarize how the league works:
+  - invite/copy code or link
+  - approval requirement
+  - member limits if already surfaced
+  - owner role basics
+- Remove duplicated or low-value management content from the main flow if it becomes redundant.
+- Keep removal/audit behavior intact if currently available.
+- Do not hide critical pending-request actions inside the info content.
+
+### Out of scope
+- No business rule changes.
+- No new notification system.
+- No admin features.
+
+### Acceptance criteria
+- The private league screen no longer depends on a large management accordion for basic contextual information.
+- Important owner actions are visible through compact controls.
+- The "i" button provides clear contextual information without hiding pending-request actions.
+- Removal/audit behavior remains available if currently supported.
+
+### Suggested commit message
+style: replace league management accordion
