@@ -1,50 +1,59 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Liga privada') }}
-                </h2>
-                <p class="mt-1 text-sm text-gray-500">
-                    {{ __('Tabla de posiciones y puntos de miembros activos.') }}
-                </p>
-            </div>
-
-            <a
-                href="{{ route('leagues.index') }}"
-                class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-                {{ __('Ver ligas') }}
-            </a>
+        <div>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Liga privada') }}
+            </h2>
         </div>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-5xl space-y-4 px-4 sm:px-6 lg:px-8">
+            <a href="{{ route('leagues.index') }}" class="inline-flex items-center text-sm font-black text-blue-700 hover:text-blue-600">
+                {{ __('← Volver a ligas') }}
+            </a>
+
             <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100 sm:p-5">
-                <div>
-                    <p class="text-xs font-black uppercase tracking-wide text-indigo-700">
-                        {{ __('Liga privada') }}
-                    </p>
-                    <h3 class="mt-1 text-2xl font-black text-blue-950 sm:text-3xl">
-                        {{ $privateLeague->name }}
-                    </h3>
-                    <div class="mt-1 text-sm font-medium text-slate-500">
-                        <p>{{ __('Dueño') }} {{ $privateLeague->owner->displayName() }}</p>
-                        @if ($privateLeague->owner->usernameHandle() && $privateLeague->owner->displayName() !== $privateLeague->owner->usernameHandle())
-                            <p class="text-xs">{{ $privateLeague->owner->usernameHandle() }}</p>
-                        @endif
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="min-w-0">
+                        <p class="text-xs font-black uppercase tracking-wide text-indigo-700">
+                            {{ __('Liga privada') }}
+                        </p>
+                        <h3 class="mt-1 text-2xl font-black leading-tight text-blue-950 sm:text-3xl">
+                            {{ $privateLeague->name }}
+                        </h3>
+                        <div class="mt-2 text-sm font-medium text-slate-500">
+                            <p>{{ __('Dueño') }} {{ $privateLeague->owner->displayName() }}</p>
+                            @if ($privateLeague->owner->usernameHandle() && $privateLeague->owner->displayName() !== $privateLeague->owner->usernameHandle())
+                                <p class="text-xs">{{ $privateLeague->owner->usernameHandle() }}</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-w-80">
+                        <div class="rounded-xl bg-indigo-50 px-3 py-2 ring-1 ring-indigo-100">
+                            <p class="text-[10px] font-black uppercase tracking-wide text-indigo-700">{{ __('Código') }}</p>
+                            <p class="mt-1 truncate text-sm font-black text-indigo-950">{{ $privateLeague->code }}</p>
+                        </div>
+                        <div class="rounded-xl bg-emerald-50 px-3 py-2 ring-1 ring-emerald-100">
+                            <p class="text-[10px] font-black uppercase tracking-wide text-emerald-700">{{ __('Miembros') }}</p>
+                            <p class="mt-1 text-sm font-black text-emerald-950">{{ $privateLeague->memberships->count() }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-100">
+                            <p class="text-[10px] font-black uppercase tracking-wide text-slate-600">{{ __('Estado') }}</p>
+                            <p class="mt-1 text-sm font-black capitalize text-slate-950">{{ $privateLeague->status }}</p>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section class="rounded-2xl bg-white p-5 shadow-lg shadow-blue-900/5 ring-1 ring-blue-100 sm:p-6">
+            <section class="space-y-3">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <p class="text-sm font-bold uppercase tracking-wide text-indigo-700">
                             {{ __('Ranking de la liga') }}
                         </p>
-                        <h3 class="text-2xl font-black text-blue-950 sm:text-3xl">
+                        <h3 class="text-2xl font-black text-blue-950">
                             {{ __('Tabla de posiciones') }}
                         </h3>
                     </div>
@@ -54,12 +63,10 @@
                     </p>
                 </div>
 
-                <div class="mt-5">
-                    <x-ranking-table
-                        :entries="$leaderboard"
-                        :context-label="__('Miembro activo')"
-                    />
-                </div>
+                <x-ranking-table
+                    :entries="$leaderboard"
+                    :context-label="__('Miembro activo')"
+                />
             </section>
 
             @if ($privateLeague->owner_id === auth()->id())
