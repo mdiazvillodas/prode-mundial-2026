@@ -16,8 +16,8 @@ class PrivateLeagueLeaderboardTest extends TestCase
     public function test_private_league_leaderboard_shows_active_members_and_orders_by_scored_points(): void
     {
         $owner = User::factory()->create(['username' => 'owner_user']);
-        $topMember = User::factory()->create(['username' => 'top_member']);
-        $lowerMember = User::factory()->create(['username' => 'lower_member']);
+        $topMember = User::factory()->create(['name' => 'Top Member', 'username' => 'top_member']);
+        $lowerMember = User::factory()->create(['name' => 'Lower Member', 'username' => 'lower_member']);
         $zeroMember = User::factory()->create(['username' => 'zero_member']);
         $league = $owner->ownedPrivateLeague()->create(['name' => 'Ranking Privado']);
 
@@ -37,14 +37,14 @@ class PrivateLeagueLeaderboardTest extends TestCase
         $this->actingAs($owner)
             ->get(route('private-leagues.show', $league))
             ->assertOk()
-            ->assertSeeInOrder(['@top_member', '9', '@lower_member', '6', '@owner_user', '0', '@zero_member', '0']);
+            ->assertSeeInOrder(['Top Member', '@top_member', '9', 'Lower Member', '@lower_member', '6', '@owner_user', '0', '@zero_member', '0']);
     }
 
     public function test_private_league_leaderboard_excludes_removed_members(): void
     {
         $owner = User::factory()->create(['username' => 'owner_user']);
-        $activeMember = User::factory()->create(['username' => 'active_member']);
-        $removedMember = User::factory()->create(['username' => 'removed_member']);
+        $activeMember = User::factory()->create(['name' => 'Active Member', 'username' => 'active_member']);
+        $removedMember = User::factory()->create(['name' => 'Removed Member', 'username' => 'removed_member']);
         $league = $owner->ownedPrivateLeague()->create(['name' => 'Sin Removidos']);
 
         $league->memberships()->create([
@@ -64,7 +64,9 @@ class PrivateLeagueLeaderboardTest extends TestCase
         $this->actingAs($owner)
             ->get(route('private-leagues.show', $league))
             ->assertOk()
+            ->assertSee('Active Member')
             ->assertSee('@active_member')
+            ->assertDontSee('Removed Member')
             ->assertDontSee('@removed_member');
     }
 

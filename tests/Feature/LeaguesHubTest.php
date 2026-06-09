@@ -34,8 +34,8 @@ class LeaguesHubTest extends TestCase
     public function test_leagues_hub_shows_global_ranking_and_up_to_three_active_private_leagues(): void
     {
         $user = User::factory()->create(['username' => 'hub_user']);
-        $topUser = User::factory()->create(['username' => 'top_global']);
-        $secondUser = User::factory()->create(['username' => 'second_global']);
+        $topUser = User::factory()->create(['name' => 'Top Global', 'username' => 'top_global']);
+        $secondUser = User::factory()->create(['name' => 'Second Global', 'username' => 'second_global']);
 
         $this->scoredPredictionFor($topUser, 6);
         $this->scoredPredictionFor($secondUser, 3);
@@ -50,7 +50,9 @@ class LeaguesHubTest extends TestCase
         $this->actingAs($user)
             ->get(route('leagues.index'))
             ->assertOk()
+            ->assertSee('Top Global')
             ->assertSee('@top_global')
+            ->assertSee('Second Global')
             ->assertSee('@second_global')
             ->assertSee('Amigos Norte')
             ->assertSee('Amigos Sur')

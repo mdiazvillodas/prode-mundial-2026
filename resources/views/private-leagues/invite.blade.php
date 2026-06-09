@@ -24,9 +24,12 @@
                     <h3 class="mt-2 text-2xl font-bold">
                         {{ $privateLeague->name }}
                     </h3>
-                    <p class="mt-2 text-sm text-gray-300">
-                        {{ __('Dueño') }}: {{ '@'.$privateLeague->owner->username }}
-                    </p>
+                    <div class="mt-2 text-sm text-gray-300">
+                        <p>{{ __('Dueño') }}: {{ $privateLeague->owner->displayName() }}</p>
+                        @if ($privateLeague->owner->usernameHandle() && $privateLeague->owner->displayName() !== $privateLeague->owner->usernameHandle())
+                            <p class="text-xs text-gray-400">{{ $privateLeague->owner->usernameHandle() }}</p>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="space-y-5 p-6">

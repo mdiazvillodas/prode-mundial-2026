@@ -81,7 +81,9 @@ class RecentRankingFormTest extends TestCase
             ->assertSee('Tendencia')
             ->assertSee('Incorrecto')
             ->assertSee('Sin pronóstico')
+            ->assertSee('Leader User')
             ->assertSee('@leader')
+            ->assertSee('Chaser User')
             ->assertSee('@chaser')
             ->assertDontSee('4-3');
 
@@ -89,8 +91,11 @@ class RecentRankingFormTest extends TestCase
             ->get(route('private-leagues.show', $league))
             ->assertOk()
             ->assertSee('Racha reciente')
+            ->assertSee('Leader User')
             ->assertSee('@leader')
+            ->assertSee('Chaser User')
             ->assertSee('@chaser')
+            ->assertDontSee('Removed User')
             ->assertDontSee('@removed')
             ->assertDontSee('4-3');
 
@@ -111,9 +116,9 @@ class RecentRankingFormTest extends TestCase
         $teamB = Team::factory()->create(['name' => 'Brazil', 'short_name' => 'BRA']);
 
         $users = [
-            'leader' => User::factory()->create(['username' => 'leader']),
-            'chaser' => User::factory()->create(['username' => 'chaser']),
-            'removed' => User::factory()->create(['username' => 'removed']),
+            'leader' => User::factory()->create(['name' => 'Leader User', 'username' => 'leader']),
+            'chaser' => User::factory()->create(['name' => 'Chaser User', 'username' => 'chaser']),
+            'removed' => User::factory()->create(['name' => 'Removed User', 'username' => 'removed']),
         ];
 
         $matches = collect(range(0, 5))->map(fn (int $index): TournamentMatch => $this->finishedMatch(

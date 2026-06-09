@@ -78,9 +78,12 @@
                                     </span>
                                 </div>
 
-                                <p class="mt-2 text-sm text-gray-600">
-                                    {{ __('Dueño') }}: {{ '@'.$privateLeague->owner->username }}
-                                </p>
+                                <div class="mt-2 text-sm text-gray-600">
+                                    <p>{{ __('Dueño') }}: {{ $privateLeague->owner->displayName() }}</p>
+                                    @if ($privateLeague->owner->usernameHandle() && $privateLeague->owner->displayName() !== $privateLeague->owner->usernameHandle())
+                                        <p class="text-xs text-gray-500">{{ $privateLeague->owner->usernameHandle() }}</p>
+                                    @endif
+                                </div>
                             </div>
 
                             <div class="flex flex-col gap-2 sm:items-end">

@@ -72,6 +72,10 @@
                 @php
                     $isFirstPlace = $loop->first;
                     $isCurrentUser = $currentUserId && (int) $entry->id === (int) $currentUserId;
+                    $displayName = trim((string) ($entry->name ?? '')) !== ''
+                        ? $entry->name
+                        : '@'.$entry->username;
+                    $showUsername = trim((string) ($entry->name ?? '')) !== '' && ! empty($entry->username);
                 @endphp
 
                 <div @class([
@@ -96,7 +100,7 @@
                     <div class="min-w-0">
                         <div class="flex min-w-0 items-center gap-2">
                             <p class="truncate font-black text-blue-950">
-                                {{ '@'.$entry->username }}
+                                {{ $displayName }}
                             </p>
                             @if ($isCurrentUser)
                                 <span class="hidden rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-800 sm:inline-flex">
@@ -104,9 +108,16 @@
                                 </span>
                             @endif
                         </div>
-                        <p class="mt-0.5 truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                            {{ $isFirstPlace ? __('Primer puesto') : $contextLabel }}
-                        </p>
+                        <div class="mt-0.5 min-w-0 space-y-0.5">
+                            @if ($showUsername)
+                                <p class="truncate text-xs font-bold text-slate-500">
+                                    {{ '@'.$entry->username }}
+                                </p>
+                            @endif
+                            <p class="truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                                {{ $isFirstPlace ? __('Primer puesto') : $contextLabel }}
+                            </p>
+                        </div>
                     </div>
 
                     <div class="text-right">

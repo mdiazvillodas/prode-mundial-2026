@@ -416,8 +416,10 @@
                                                     @endphp
                                                     <x-profile-avatar :user="$friendUser" size="sm" />
                                                     <div class="min-w-0">
-                                                        <p class="truncate text-sm font-black text-blue-950">{{ $friend['name'] }}</p>
-                                                        <p class="truncate text-xs font-bold text-slate-500">{{ '@'.$friend['username'] }}</p>
+                                                        <p class="truncate text-sm font-black text-blue-950">{{ $friend['display_name'] ?? $friend['name'] ?? '@'.$friend['username'] }}</p>
+                                                        @if (! empty($friend['username']) && trim((string) ($friend['name'] ?? '')) !== '')
+                                                            <p class="truncate text-xs font-bold text-slate-500">{{ '@'.$friend['username'] }}</p>
+                                                        @endif
                                                     </div>
                                                 </div>
                                                 <div
@@ -665,8 +667,10 @@
                                                     @endphp
                                                     <x-profile-avatar :user="$friendUser" size="sm" />
                                                     <div class="min-w-0">
-                                                        <p class="truncate text-sm font-black text-blue-950">{{ $friend['name'] }}</p>
-                                                        <p class="truncate text-xs font-bold text-slate-500">{{ '@'.$friend['username'] }}</p>
+                                                        <p class="truncate text-sm font-black text-blue-950">{{ $friend['display_name'] ?? $friend['name'] ?? '@'.$friend['username'] }}</p>
+                                                        @if (! empty($friend['username']) && trim((string) ($friend['name'] ?? '')) !== '')
+                                                            <p class="truncate text-xs font-bold text-slate-500">{{ '@'.$friend['username'] }}</p>
+                                                        @endif
                                                     </div>
                                                 </div>
                                                 <div

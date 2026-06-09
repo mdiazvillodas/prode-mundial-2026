@@ -29,9 +29,12 @@
                     <h3 class="mt-1 text-2xl font-black text-blue-950 sm:text-3xl">
                         {{ $privateLeague->name }}
                     </h3>
-                    <p class="mt-1 text-sm font-medium text-slate-500">
-                        {{ __('Dueño') }} {{ '@'.$privateLeague->owner->username }}
-                    </p>
+                    <div class="mt-1 text-sm font-medium text-slate-500">
+                        <p>{{ __('Dueño') }} {{ $privateLeague->owner->displayName() }}</p>
+                        @if ($privateLeague->owner->usernameHandle() && $privateLeague->owner->displayName() !== $privateLeague->owner->usernameHandle())
+                            <p class="text-xs">{{ $privateLeague->owner->usernameHandle() }}</p>
+                        @endif
+                    </div>
                 </div>
             </section>
 
@@ -163,8 +166,13 @@
                                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                 <div>
                                                     <p class="text-sm font-bold text-gray-950">
-                                                        {{ '@'.$joinRequest->user->username }}
+                                                        {{ $joinRequest->user->displayName() }}
                                                     </p>
+                                                    @if ($joinRequest->user->usernameHandle() && $joinRequest->user->displayName() !== $joinRequest->user->usernameHandle())
+                                                        <p class="text-xs font-medium text-gray-500">
+                                                            {{ $joinRequest->user->usernameHandle() }}
+                                                        </p>
+                                                    @endif
                                                     <p class="text-xs text-gray-500">
                                                         {{ __('Solicitud de ingreso enviada el') }} {{ $joinRequest->created_at->format('d/m/Y H:i') }}
                                                     </p>
@@ -208,8 +216,13 @@
                                     <div class="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                                         <div>
                                             <p class="text-sm font-bold text-gray-950">
-                                                {{ '@'.$membership->user->username }}
+                                                {{ $membership->user->displayName() }}
                                             </p>
+                                            @if ($membership->user->usernameHandle() && $membership->user->displayName() !== $membership->user->usernameHandle())
+                                                <p class="text-xs font-medium text-gray-500">
+                                                    {{ $membership->user->usernameHandle() }}
+                                                </p>
+                                            @endif
                                             <p class="text-xs text-gray-500">
                                                 {{ $membership->user_id === $privateLeague->owner_id ? __('Dueño') : __('Miembro') }}
                                             </p>
@@ -255,7 +268,7 @@
                                                 {{ __('Miembro removido') }}
                                             </p>
                                             <p class="mt-1 text-sm text-gray-600">
-                                                {{ '@'.$auditLog->actor->username }} {{ __('removio a') }} {{ '@'.$auditLog->target->username }}
+                                                {{ $auditLog->actor->displayName() }} {{ __('removio a') }} {{ $auditLog->target->displayName() }}
                                             </p>
                                             <p class="mt-2 text-xs text-gray-500">
                                                 {{ $auditLog->created_at->format('d/m/Y H:i') }}

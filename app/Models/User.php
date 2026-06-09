@@ -67,6 +67,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === self::ROLE_ADMIN;
     }
 
+    public function displayName(): string
+    {
+        return trim((string) $this->name) !== ''
+            ? $this->name
+            : '@'.$this->username;
+    }
+
+    public function usernameHandle(): ?string
+    {
+        return $this->username ? '@'.$this->username : null;
+    }
+
     public function hasChosenProfileAvatar(): bool
     {
         return ProfileAvatarCatalog::isValid($this->profile_avatar_key);

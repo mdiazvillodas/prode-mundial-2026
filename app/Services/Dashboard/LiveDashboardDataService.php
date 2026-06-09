@@ -226,6 +226,7 @@ class LiveDashboardDataService
             ->map(fn (User $friend): array => [
                 'id' => $friend->id,
                 'name' => $friend->name,
+                'display_name' => $friend->displayName(),
                 'username' => $friend->username,
                 'avatar' => $friend->profileAvatar(),
                 'completed_count' => (int) ($completionCounts[$friend->id] ?? 0),
