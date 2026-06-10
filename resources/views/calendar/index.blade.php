@@ -14,6 +14,8 @@
         <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
                 <form method="GET" action="{{ route('calendar.index') }}" class="space-y-4 sm:flex sm:items-end sm:gap-4 sm:space-y-0">
+                    <input type="hidden" name="tz" value="{{ $timezone }}">
+
                     <div class="flex-1">
                         <label for="team_id" class="text-sm font-bold uppercase tracking-wide text-indigo-700">
                             {{ __('Selección') }}
@@ -96,6 +98,7 @@
                 <section class="space-y-4">
                     @foreach ($matches as $match)
                         @php
+                            $displayTime = $matchDisplayTimes[$match->id] ?? [];
                             $statusLabels = [
                                 'scheduled' => 'Programado',
                                 'open' => 'Abierto',
@@ -135,13 +138,9 @@
                                     </div>
                                     <p class="mt-1 text-sm font-semibold text-gray-700">
                                         @if ($match->starts_at)
-                                            <span data-local-date="{{ $match->starts_at->toIso8601String() }}">
-                                                {{ $match->starts_at->format('d/m/Y') }}
-                                            </span>
+                                            <span>{{ ($displayTime['date'] ?? null) ? \Illuminate\Support\Carbon::parse($displayTime['date'], $timezone)->format('d/m/Y') : '' }}</span>
                                             <span class="text-gray-300">·</span>
-                                            <span data-local-time="{{ $match->starts_at->toIso8601String() }}">
-                                                {{ $match->starts_at->format('H:i') }}
-                                            </span>
+                                            <span>{{ $displayTime['time'] ?? '' }}</span>
                                         @else
                                             {{ __('Fecha por definir') }}
                                         @endif
@@ -206,7 +205,7 @@
                                             {{ __('Partido finalizado en empate.') }}
                                         @endif
                                     @elseif ($match->starts_at)
-                                        {{ __('Horario mostrado en tu zona local cuando el navegador lo permite.') }}
+                                        {{ __('Horario mostrado en tu zona local.') }}
                                     @else
                                         {{ __('El horario de este partido todavía no está definido.') }}
                                     @endif
@@ -227,6 +226,20 @@
             if (selector) {
                 const params = new URLSearchParams(window.location.search);
                 const currentTeamId = params.get('team_id');
+                const browserTimezone = (() => {
+                    try {
+                        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    } catch (error) {
+                        return null;
+                    }
+                })();
+
+                if (browserTimezone && params.get('tz') !== browserTimezone) {
+                    params.set('tz', browserTimezone);
+                    window.location.search = params.toString();
+
+                    return;
+                }
 
                 if (currentTeamId) {
                     window.localStorage.setItem(storageKey, currentTeamId);
@@ -246,30 +259,6 @@
                     }
                 });
             }
-
-            document.querySelectorAll('[data-local-date], [data-local-time]').forEach((element) => {
-                const isoDate = element.dataset.localDate || element.dataset.localTime;
-                const date = new Date(isoDate);
-
-                if (Number.isNaN(date.getTime())) {
-                    return;
-                }
-
-                if (element.dataset.localDate) {
-                    element.textContent = new Intl.DateTimeFormat(undefined, {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                    }).format(date);
-                }
-
-                if (element.dataset.localTime) {
-                    element.textContent = new Intl.DateTimeFormat(undefined, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    }).format(date);
-                }
-            });
         });
     </script>
 </x-app-layout>

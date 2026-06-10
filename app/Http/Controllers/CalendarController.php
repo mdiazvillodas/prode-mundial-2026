@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\TournamentMatch;
+use App\Support\MatchDisplayTime;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -11,6 +12,7 @@ class CalendarController extends Controller
 {
     public function index(Request $request): View
     {
+        $timezone = $this->viewerTimezone($request);
         $teams = Team::query()
             ->orderBy('name')
             ->get();
@@ -36,11 +38,33 @@ class CalendarController extends Controller
                 ->get();
         }
 
+        $matchDisplayTimes = $matches
+            ->mapWithKeys(fn (TournamentMatch $match): array => [
+                $match->id => [
+                    'date' => MatchDisplayTime::localDate($match->starts_at, $timezone),
+                    'time' => MatchDisplayTime::localTime($match->starts_at, $timezone),
+                ],
+            ])
+            ->all();
+
         return view('calendar.index', [
+            'matchDisplayTimes' => $matchDisplayTimes,
             'matches' => $matches,
             'requestedTeamId' => $requestedTeamId,
             'selectedTeam' => $selectedTeam,
             'teams' => $teams,
+            'timezone' => $timezone,
         ]);
+    }
+
+    private function viewerTimezone(Request $request): string
+    {
+        $requestedTimezone = (string) $request->query('tz', '');
+
+        if ($requestedTimezone !== '' && in_array($requestedTimezone, timezone_identifiers_list(), true)) {
+            return $requestedTimezone;
+        }
+
+        return (string) config('app.timezone');
     }
 }

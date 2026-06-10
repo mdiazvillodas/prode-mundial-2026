@@ -63,6 +63,7 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Confirm matches days away stay labeled as open/scheduled, not closing soon.
 - In Europe/Madrid, confirm Argentina vs Algeria on `17/06/2026 01:00 UTC` shows as `17/06/2026 03:00` on `/predictions`.
 - Confirm the same match shows `Editar hasta 02:55` on `/predictions`.
+- Cross-check a known UTC kickoff across dashboard, `/predictions`, and `/calendar`: for example `2026-06-11 14:00 UTC` must show `16:00` in Europe/Madrid, with prediction edit deadline `15:55` wherever the deadline is visible.
 
 ## B2. Dashboard
 
