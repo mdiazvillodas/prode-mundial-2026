@@ -355,6 +355,8 @@ class PrivateLeagueFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Información de la liga')
             ->assertSee('Info Compacta')
+            ->assertSee('Invitar amigos')
+            ->assertSee('data-copy-value="'.route('private-leagues.invite', $league->code).'"', false)
             ->assertSee('Copiar código de liga')
             ->assertSee('Copiar enlace de invitación')
             ->assertSee(route('private-leagues.invite', $league->code), false)

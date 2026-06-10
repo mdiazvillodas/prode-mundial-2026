@@ -25,15 +25,14 @@
                     @if ($privateLeague->owner_id === auth()->id())
                         <div class="flex max-w-full items-center gap-2 self-start sm:self-auto">
                             <div class="inline-flex min-w-0 items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-900 ring-1 ring-indigo-100">
-                                <span class="shrink-0 text-indigo-700">{{ __('Código:') }}</span>
-                                <span class="truncate font-black tracking-wide">{{ $privateLeague->code }}</span>
+                                <span class="shrink-0 text-indigo-700">{{ __('Invitar amigos') }}</span>
                                 <button
                                     type="button"
-                                    data-copy-value="{{ $privateLeague->code }}"
+                                    data-copy-value="{{ $invitationUrl }}"
                                     class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-indigo-700 transition hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                    aria-label="{{ __('Copiar código de liga') }}"
+                                    aria-label="{{ __('Copiar enlace de invitación') }}"
                                 >
-                                    <span class="sr-only">{{ __('Copiar código de liga') }}</span>
+                                    <span class="sr-only">{{ __('Copiar enlace de invitación') }}</span>
                                     <svg data-copy-icon class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8h10v10H8z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 16H5a1 1 0 01-1-1V5a1 1 0 011-1h10a1 1 0 011 1v1" />
