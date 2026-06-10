@@ -10,8 +10,8 @@ use App\Models\TournamentMatch;
 use App\Models\User;
 use App\Services\PredictionScoringService;
 use App\Support\MatchDisplayTime;
+use App\Support\ViewerTimezone;
 use Carbon\CarbonInterface;
-use DateTimeZone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -550,16 +550,6 @@ class LiveDashboardDataService
 
     private function resolveTimezone(?string $timezone): string
     {
-        if ($timezone) {
-            try {
-                new DateTimeZone($timezone);
-
-                return $timezone;
-            } catch (\Throwable) {
-                //
-            }
-        }
-
-        return config('app.timezone', 'UTC');
+        return ViewerTimezone::resolve($timezone);
     }
 }

@@ -126,6 +126,38 @@ class CalendarTeamScheduleTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_calendar_without_timezone_query_uses_product_default_timezone(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
+        $user = User::factory()->create();
+        $france = Team::factory()->create(['name' => 'France', 'country_code' => 'FRA']);
+        $uruguay = Team::factory()->create(['name' => 'Uruguay', 'country_code' => 'URU']);
+
+        TournamentMatch::factory()->create([
+            'team_a_id' => $france->id,
+            'team_b_id' => $uruguay->id,
+            'starts_at' => Carbon::parse('2026-06-11 14:00:00', 'UTC'),
+            'prediction_closes_at' => Carbon::parse('2026-06-11 13:55:00', 'UTC'),
+            'stage' => 'group',
+            'group' => 'A',
+            'status' => TournamentMatch::STATUS_OPEN,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('calendar.index', ['team_id' => $france->id]))
+            ->assertOk()
+            ->assertSee('France')
+            ->assertSee('Uruguay')
+            ->assertSee('11/06/2026')
+            ->assertSee('16:00')
+            ->assertSee('name="tz" value="Europe/Madrid"', false)
+            ->assertDontSee('18:00')
+            ->assertDontSee('data-local-time', false)
+            ->assertDontSee('data-local-date', false);
+
+        Carbon::setTestNow();
+    }
+
     public function test_calendar_uses_viewer_local_date_across_utc_midnight(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Support\MatchDisplayTime;
+use App\Support\ViewerTimezone;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -59,12 +60,6 @@ class CalendarController extends Controller
 
     private function viewerTimezone(Request $request): string
     {
-        $requestedTimezone = (string) $request->query('tz', '');
-
-        if ($requestedTimezone !== '' && in_array($requestedTimezone, timezone_identifiers_list(), true)) {
-            return $requestedTimezone;
-        }
-
-        return (string) config('app.timezone');
+        return ViewerTimezone::resolve((string) $request->query('tz', ''));
     }
 }

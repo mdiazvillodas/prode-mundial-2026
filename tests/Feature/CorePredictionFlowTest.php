@@ -100,7 +100,7 @@ class CorePredictionFlowTest extends TestCase
         $this->datedMatch('Middle Team A', 'Middle Team B', '2026-06-11 20:00:00');
 
         $this->actingAs($user)
-            ->get('/predictions?date=2026-06-11')
+            ->get('/predictions?date=2026-06-11&tz=UTC')
             ->assertOk()
             ->assertSeeInOrder([
                 'Early Team A',
