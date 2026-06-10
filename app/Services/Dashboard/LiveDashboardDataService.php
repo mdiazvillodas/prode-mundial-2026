@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Models\User;
 use App\Services\PredictionScoringService;
+use App\Support\MatchDisplayTime;
 use Carbon\CarbonInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
@@ -528,12 +529,12 @@ class LiveDashboardDataService
 
     private function localDate(?CarbonInterface $date, string $timezone): ?string
     {
-        return $date?->copy()->timezone($timezone)->toDateString();
+        return MatchDisplayTime::localDate($date, $timezone);
     }
 
     private function localTime(?CarbonInterface $date, string $timezone): ?string
     {
-        return $date?->copy()->timezone($timezone)->format('H:i');
+        return MatchDisplayTime::localTime($date, $timezone);
     }
 
     /**

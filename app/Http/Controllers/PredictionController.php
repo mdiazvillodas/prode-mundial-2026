@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Prediction;
 use App\Models\TournamentMatch;
+use App\Support\MatchDisplayTime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -45,8 +46,18 @@ class PredictionController extends Controller
                 ->get();
         }
 
+        $matchDisplayTimes = $matches
+            ->mapWithKeys(fn (TournamentMatch $match): array => [
+                $match->id => [
+                    'kickoff_time' => MatchDisplayTime::localTime($match->starts_at, $timezone),
+                    'prediction_closes_time' => MatchDisplayTime::localTime($match->predictionClosesAt(), $timezone),
+                ],
+            ])
+            ->all();
+
         return view('predictions.index', [
             'dateOptions' => $dateOptions,
+            'matchDisplayTimes' => $matchDisplayTimes,
             'matches' => $matches,
             'selectedDate' => $selectedDate,
             'timezone' => $timezone,
@@ -73,7 +84,7 @@ class PredictionController extends Controller
             ->whereNotNull('starts_at')
             ->orderBy('starts_at')
             ->get(['starts_at'])
-            ->groupBy(fn (TournamentMatch $match): string => $match->starts_at->copy()->timezone($timezone)->toDateString())
+            ->groupBy(fn (TournamentMatch $match): string => MatchDisplayTime::localDate($match->starts_at, $timezone))
             ->map(fn (Collection $matches, string $date): array => [
                 'date' => $date,
                 'count' => $matches->count(),

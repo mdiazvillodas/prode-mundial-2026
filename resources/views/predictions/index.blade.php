@@ -84,6 +84,7 @@
                             @foreach ($matches as $match)
                                 @php
                                     $prediction = $match->predictions->first();
+                                    $displayTimes = $matchDisplayTimes[$match->id] ?? [];
                                     $canPredict = $match->isPredictable();
                                     $isPlaceholder = $match->status === 'placeholder' || ! $match->teamA || ! $match->teamB;
                                     $teamAName = $match->teamA?->name ?? __('Equipo por definir');
@@ -145,10 +146,8 @@
 
                                         <div class="mt-4 text-center">
                                             <p class="text-sm font-black text-blue-950">
-                                                @if ($match->starts_at)
-                                                    <span data-local-time="{{ $match->starts_at->toIso8601String() }}">
-                                                        {{ $match->starts_at->timezone($timezone)->format('H:i') }}
-                                                    </span>
+                                                @if (! empty($displayTimes['kickoff_time']))
+                                                    <span>{{ $displayTimes['kickoff_time'] }}</span>
                                                 @else
                                                     {{ __('Hora por definir') }}
                                                 @endif
@@ -290,9 +289,7 @@
                                                 @if ($closesAt)
                                                     <span>
                                                         {{ __('Editar hasta') }}
-                                                        <span data-local-time="{{ $closesAt->toIso8601String() }}">
-                                                            {{ $closesAt->timezone($timezone)->format('H:i') }}
-                                                        </span>.
+                                                        <span>{{ $displayTimes['prediction_closes_time'] ?? '' }}</span>.
                                                     </span>
                                                 @endif
                                             @elseif ($isPlaceholder)
@@ -356,19 +353,6 @@
                     return;
                 }
             }
-
-            document.querySelectorAll('[data-local-time]').forEach((element) => {
-                const date = new Date(element.dataset.localTime);
-
-                if (Number.isNaN(date.getTime())) {
-                    return;
-                }
-
-                element.textContent = new Intl.DateTimeFormat(undefined, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                }).format(date);
-            });
 
             const dateNav = document.querySelector('[data-date-nav]');
             const activeDateChip = dateNav?.querySelector('[data-active-date-chip]');

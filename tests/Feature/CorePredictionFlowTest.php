@@ -188,6 +188,45 @@ class CorePredictionFlowTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_dashboard_and_predictions_render_same_madrid_summer_kickoff_and_deadline_times(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
+        $user = User::factory()->create();
+
+        $this->datedMatch('France', 'Uruguay', Carbon::parse('2026-06-11 14:00:00', 'UTC'));
+        $this->datedMatch('Mexico', 'South Africa', Carbon::parse('2026-06-11 17:00:00', 'UTC'));
+
+        $this->actingAs($user)
+            ->get('/dashboard?tz=Europe/Madrid')
+            ->assertOk()
+            ->assertSee('France')
+            ->assertSee('Uruguay')
+            ->assertSee('Mexico')
+            ->assertSee('South Africa')
+            ->assertSee('Juega 16:00')
+            ->assertSee('Editás hasta 15:55')
+            ->assertSee('Juega 19:00')
+            ->assertSee('Editás hasta 18:55');
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-06-11&tz=Europe/Madrid')
+            ->assertOk()
+            ->assertSee('France')
+            ->assertSee('Uruguay')
+            ->assertSee('Mexico')
+            ->assertSee('South Africa')
+            ->assertSee('16:00')
+            ->assertSee('Editar hasta')
+            ->assertSee('15:55')
+            ->assertSee('19:00')
+            ->assertSee('18:55')
+            ->assertDontSee('18:00')
+            ->assertDontSee('21:00')
+            ->assertDontSee('data-local-time', false);
+
+        Carbon::setTestNow();
+    }
+
     public function test_predictions_date_chips_use_viewer_local_dates(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
