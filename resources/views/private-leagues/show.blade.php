@@ -90,7 +90,7 @@
                             </button>
                         </div>
 
-                        <section class="space-y-3 rounded-xl bg-indigo-50/70 p-4 ring-1 ring-indigo-100">
+                        <section class="min-w-0 max-w-full space-y-3 overflow-hidden rounded-xl bg-indigo-50/70 p-4 ring-1 ring-indigo-100">
                             <div class="min-w-0">
                                 <p class="text-xs font-black uppercase tracking-wide text-indigo-700">
                                     {{ __('Invitación') }}
@@ -100,10 +100,10 @@
                                 </p>
                             </div>
 
-                            <div class="grid gap-2">
-                                <div class="flex items-center gap-2 rounded-lg bg-white px-3 py-2 ring-1 ring-indigo-100">
+                            <div class="grid min-w-0 max-w-full gap-2">
+                                <div class="flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-indigo-100">
                                     <span class="shrink-0 text-xs font-black uppercase tracking-wide text-indigo-700">{{ __('Código') }}</span>
-                                    <span class="min-w-0 flex-1 truncate text-sm font-black tracking-wide text-blue-950">{{ $privateLeague->code }}</span>
+                                    <span class="block min-w-0 flex-1 truncate text-sm font-black tracking-wide text-blue-950">{{ $privateLeague->code }}</span>
                                     <button
                                         type="button"
                                         data-copy-value="{{ $privateLeague->code }}"
@@ -121,8 +121,8 @@
                                     </button>
                                 </div>
 
-                                <div class="flex items-center gap-2 rounded-lg bg-white px-3 py-2 ring-1 ring-indigo-100">
-                                    <span class="min-w-0 flex-1 truncate text-sm font-semibold text-slate-600">{{ $invitationUrl }}</span>
+                                <div class="flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-indigo-100">
+                                    <span class="block min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap text-sm font-semibold text-slate-600">{{ $invitationUrl }}</span>
                                     <button
                                         type="button"
                                         data-copy-value="{{ $invitationUrl }}"
