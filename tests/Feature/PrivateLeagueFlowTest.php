@@ -31,6 +31,56 @@ class PrivateLeagueFlowTest extends TestCase
         ]);
     }
 
+    public function test_member_of_another_private_league_can_create_owned_private_league(): void
+    {
+        $user = User::factory()->create();
+        $joinedLeague = User::factory()->create()->ownedPrivateLeague()->create(['name' => 'Liga Invitada']);
+        $joinedLeague->memberships()->create([
+            'user_id' => $user->id,
+            'status' => LeagueMembership::STATUS_ACTIVE,
+            'joined_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('private-leagues.store'), [
+                'name' => 'Mi Liga Propia',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('private_leagues', [
+            'owner_id' => $user->id,
+            'name' => 'Mi Liga Propia',
+            'status' => PrivateLeague::STATUS_ACTIVE,
+        ]);
+    }
+
+    public function test_membership_limit_does_not_block_owned_private_league_creation(): void
+    {
+        $user = User::factory()->create();
+        $owners = User::factory()->count(3)->create();
+
+        foreach ($owners as $owner) {
+            $league = $owner->ownedPrivateLeague()->create(['name' => 'Liga Miembro']);
+            $league->memberships()->create([
+                'user_id' => $user->id,
+                'status' => LeagueMembership::STATUS_ACTIVE,
+                'joined_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->post(route('private-leagues.store'), [
+                'name' => 'Liga Propia Separada',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('private_leagues', [
+            'owner_id' => $user->id,
+            'name' => 'Liga Propia Separada',
+            'status' => PrivateLeague::STATUS_ACTIVE,
+        ]);
+    }
+
     public function test_second_owned_private_league_creation_attempt_is_blocked(): void
     {
         $user = User::factory()->create();

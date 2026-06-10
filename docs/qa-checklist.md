@@ -110,6 +110,11 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Log in as owner and reject a different request.
 - Confirm owner cannot remove themselves.
 - Confirm active membership and owned league limits are respected.
+- As a user who participates in at least one private league but owns none, open `/leagues` and confirm existing private league tabs/rankings are visible.
+- Confirm the same member-only user sees `+ Crear mi liga` near the league tabs on `/leagues`.
+- Create a new private league as that member-only user and confirm creation succeeds.
+- Return to `/leagues` and confirm the newly created league appears.
+- As a user who already owns a private league, confirm `/leagues` does not show `+ Crear mi liga`.
 - Confirm removed members can no longer view the private league detail page.
 
 ## E. Leaderboards

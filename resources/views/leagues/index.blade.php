@@ -22,26 +22,37 @@
     <div class="py-8">
         <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 sm:p-5">
-                <div class="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="{{ __('Ligas disponibles') }}">
-                    <button
-                        type="button"
-                        data-league-tab="general"
-                        class="league-tab-button whitespace-nowrap rounded-full bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition"
-                        aria-selected="true"
-                    >
-                        {{ __('Liga general') }}
-                    </button>
-
-                    @foreach ($privateLeagues as $privateLeague)
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="{{ __('Ligas disponibles') }}">
                         <button
                             type="button"
-                            data-league-tab="league-{{ $privateLeague->id }}"
-                            class="league-tab-button whitespace-nowrap rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-200"
-                            aria-selected="false"
+                            data-league-tab="general"
+                            class="league-tab-button whitespace-nowrap rounded-full bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition"
+                            aria-selected="true"
                         >
-                            {{ $privateLeague->name }}
+                            {{ __('Liga general') }}
                         </button>
-                    @endforeach
+
+                        @foreach ($privateLeagues as $privateLeague)
+                            <button
+                                type="button"
+                                data-league-tab="league-{{ $privateLeague->id }}"
+                                class="league-tab-button whitespace-nowrap rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-200"
+                                aria-selected="false"
+                            >
+                                {{ $privateLeague->name }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    @if ($canCreatePrivateLeague)
+                        <a
+                            href="{{ route('private-leagues.create') }}"
+                            class="inline-flex shrink-0 items-center justify-center self-start whitespace-nowrap rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-sm font-bold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:self-auto"
+                        >
+                            {{ __('+ Crear mi liga') }}
+                        </a>
+                    @endif
                 </div>
 
                 @if ($privateLeagues->isEmpty())
@@ -53,12 +64,6 @@
                             {{ __('La liga general ya esta activa. Tambien podes crear una liga para tu grupo o buscar una existente.') }}
                         </p>
                         <div class="mt-4 flex flex-col gap-3 sm:flex-row">
-                            <a
-                                href="{{ route('private-leagues.create') }}"
-                                class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                {{ __('Crear liga') }}
-                            </a>
                             <a
                                 href="{{ route('private-leagues.search') }}"
                                 class="inline-flex items-center justify-center rounded-md border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

@@ -27,8 +27,37 @@ class LeaguesHubTest extends TestCase
             ->get(route('leagues.index'))
             ->assertOk()
             ->assertSee('Liga general')
-            ->assertSee('Crear liga')
+            ->assertSee('+ Crear mi liga')
             ->assertSee('Buscar liga');
+    }
+
+    public function test_member_without_owned_private_league_sees_create_action_next_to_tabs(): void
+    {
+        $user = User::factory()->create(['username' => 'league_member']);
+        $league = $this->activeLeagueFor($user, 'Amigos Invitados', now()->subDay());
+
+        $this->actingAs($user)
+            ->get(route('leagues.index'))
+            ->assertOk()
+            ->assertSee('Liga general')
+            ->assertSee('Amigos Invitados')
+            ->assertSee(route('private-leagues.show', $league), false)
+            ->assertSee('+ Crear mi liga')
+            ->assertSee(route('private-leagues.create'), false);
+    }
+
+    public function test_user_who_already_owns_private_league_does_not_see_create_action(): void
+    {
+        $user = User::factory()->create();
+        $league = $user->ownedPrivateLeague()->create(['name' => 'Mi Liga Propia']);
+
+        $this->actingAs($user)
+            ->get(route('leagues.index'))
+            ->assertOk()
+            ->assertSee('Mi Liga Propia')
+            ->assertSee(route('private-leagues.show', $league), false)
+            ->assertDontSee('+ Crear mi liga')
+            ->assertDontSee(route('private-leagues.create'), false);
     }
 
     public function test_leagues_hub_shows_global_ranking_and_up_to_three_active_private_leagues(): void
@@ -59,6 +88,7 @@ class LeaguesHubTest extends TestCase
             ->assertSee('Oficina')
             ->assertDontSee('Cuarta Liga')
             ->assertSee(route('private-leagues.show', $firstLeague), false)
+            ->assertSee('+ Crear mi liga')
             ->assertSee('@hub_user');
     }
 

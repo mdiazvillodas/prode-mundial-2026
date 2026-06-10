@@ -29,6 +29,7 @@ class LeagueController extends Controller
         ]);
 
         return view('leagues.index', [
+            'canCreatePrivateLeague' => ! $request->user()->ownedPrivateLeague()->exists(),
             'globalLeaderboard' => $recentForm->attachToEntries($this->globalLeaderboard()),
             'privateLeaderboards' => $privateLeaderboards,
             'privateLeagues' => $privateLeagues,
