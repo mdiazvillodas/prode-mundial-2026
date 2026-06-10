@@ -4577,7 +4577,7 @@ E19-T01
 Refactor visual de tablas de posiciones general y privadas
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4618,6 +4618,21 @@ Replace the cramped conventional standings table with a more readable mobile-fir
 - Current user and first-place highlights remain intact.
 - Ranking order, scoring, aggregation and tie behavior are unchanged.
 
+### Implementation notes
+- Ranking tables were refactored into a cleaner mobile-first ranking/card-table hybrid layout.
+- Applies to general rankings and private league rankings.
+- Rows prioritize position, avatar, display name, `@username`, points, exacts, trends, scored predictions and recent form.
+- Identity block now shows at most human display name + `@username`.
+- Removed noisy third-line labels such as "MIEMBRO ACTIVO" and "PRIMER PUESTO".
+- First place/current user are handled through visual highlight/badge, not extra text under the username.
+- Ranking order, scoring, aggregation and tie behavior were preserved.
+
+### Validation
+- `php artisan view:cache`
+- `php artisan test tests/Feature/PrivateLeagueLeaderboardTest.php tests/Feature/RecentRankingFormTest.php tests/Feature/LeaguesHubTest.php`
+- `npm run build`
+- `git diff --check`
+
 ### Suggested commit message
 style: refactor ranking table layout
 
@@ -4628,7 +4643,7 @@ E19-T02
 Rediseñar detalle de liga privada y reducir preámbulo
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4658,6 +4673,25 @@ Simplify the private league detail screen so ranking appears sooner and the page
 - Navigation back to leagues remains available but visually subtle.
 - Owner/member permissions and league business rules are unchanged.
 
+### Implementation notes
+- Private league detail was cleaned so the ranking appears sooner and is the protagonist.
+- Removed low-value metadata from the top area:
+  - owner display name
+  - owner `@username`
+  - member count
+  - "Active" status
+  - large code/status/member cards
+- Header now keeps only a compact "Liga privada" label and league name.
+- Owner sees only a compact inline code/copy action, not a large card or CTA.
+- Existing owner management functionality was preserved while later tickets move requests to the header.
+- Ranking component and ranking logic were preserved.
+
+### Validation
+- `php artisan view:cache`
+- `php artisan test tests/Feature/PrivateLeagueLeaderboardTest.php tests/Feature/RecentRankingFormTest.php tests/Feature/LeaguesHubTest.php`
+- `npm run build`
+- `git diff --check`
+
 ### Suggested commit message
 style: simplify private league detail
 
@@ -4668,7 +4702,7 @@ E19-T03
 Agregar acciones rápidas para dueño de liga
 
 ### Status
-Todo
+In Progress
 
 ### Sprint
 Next sprint
@@ -4699,6 +4733,11 @@ Replace the current hidden/accordion-heavy owner management experience with clea
 - Contextual league information is available without forcing users through a large management accordion.
 - Pending request approval remains outside the info button.
 
+### Notes
+- Partially covered by E19-T02: the owner now has a compact code/copy action in the private league header.
+- Keep this ticket open because the current definition still expects additional owner quick actions/contextual info, including an information button and reducing reliance on the management accordion.
+- Do not mark fully Done until those remaining owner quick-action/contextual-info requirements are implemented.
+
 ### Suggested commit message
 feat: add private league owner quick actions
 
@@ -4709,7 +4748,7 @@ E19-T04
 Gestionar solicitudes pendientes desde alerta en header
 
 ### Status
-Todo
+Done
 
 ### Sprint
 Next sprint
@@ -4741,6 +4780,23 @@ Make pending join requests visible to the league owner from the app header, next
 - The modal/sheet lists pending request profiles with avatar, human display name and `@username`.
 - Approve/reject actions reuse existing behavior and validations.
 - Users without owned pending requests do not see the alert.
+
+### Implementation notes
+- Added a header-level pending join requests alert for private league owners.
+- Alert appears only when the authenticated user owns a private league with pending join requests.
+- Visual trigger was polished into a compact icon-only bell/notification button with count badge near the header controls/hamburger.
+- Clicking opens a modal/sheet using the existing modal pattern.
+- Modal lists pending requesters with avatar, display name, optional `@username`, and approve/reject actions.
+- Approval/rejection reuse existing routes and controller behavior.
+- Alert disappears after pending requests are handled and the page is refreshed.
+- No changes to league membership rules, scoring, predictions, API sync, database, migrations or production config.
+
+### Validation
+- `php artisan view:cache`
+- `php artisan test tests/Feature/LeagueHeaderPendingRequestsTest.php`
+- `php artisan test --filter=League`
+- `npm run build`
+- `git diff --check`
 
 ### Suggested commit message
 feat: surface league join requests in header
@@ -4784,6 +4840,13 @@ Reduce the current "Gestionar liga" accordion dependency by moving important own
 - Important owner actions are visible through compact controls.
 - The "i" button provides clear contextual information without hiding pending-request actions.
 - Removal/audit behavior remains available if currently supported.
+
+### Notes
+- Still pending as final cleanup.
+- Now that requests are surfaced in the header, this ticket should focus on removing/reducing duplicate accordion content.
+- Do not reintroduce heavy metadata.
+- Do not move pending request actions into an info button.
+- Keep critical owner functionality accessible.
 
 ### Suggested commit message
 style: replace league management accordion

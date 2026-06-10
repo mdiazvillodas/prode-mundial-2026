@@ -289,6 +289,34 @@ class PrivateLeagueFlowTest extends TestCase
         $this->actingAs($nonMember)->get(route('private-leagues.show', $league))->assertForbidden();
     }
 
+    public function test_owner_detail_uses_compact_info_modal_instead_of_management_accordion(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create(['name' => 'Miembro Activo', 'username' => 'miembro_activo']);
+        $league = $owner->ownedPrivateLeague()->create(['name' => 'Info Compacta']);
+        $league->memberships()->create([
+            'user_id' => $member->id,
+            'status' => LeagueMembership::STATUS_ACTIVE,
+            'joined_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('private-leagues.show', $league))
+            ->assertOk()
+            ->assertSee('Información de la liga')
+            ->assertSee('Info Compacta')
+            ->assertSee('Copiar código de liga')
+            ->assertSee('Copiar enlace de invitación')
+            ->assertSee(route('private-leagues.invite', $league->code), false)
+            ->assertSee('Miembro Activo')
+            ->assertSee('@miembro_activo')
+            ->assertSee(route('private-leagues.members.remove', [$league, $member]), false)
+            ->assertDontSee('Gestionar liga')
+            ->assertDontSee('Invitaciones, solicitudes de ingreso y miembros')
+            ->assertDontSee('Solicitudes de ingreso pendientes')
+            ->assertDontSee('Copiar link');
+    }
+
     public function test_invitation_link_page_handles_owner_member_pending_and_new_requester_states(): void
     {
         $owner = User::factory()->create();
