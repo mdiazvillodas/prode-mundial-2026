@@ -118,16 +118,11 @@
                                         </span>
                                     @endif
                                 </div>
-                                <div class="mt-0.5 min-w-0 space-y-0.5">
-                                    @if ($showUsername)
-                                        <p class="truncate text-xs font-bold text-slate-500">
-                                            {{ '@'.$entry->username }}
-                                        </p>
-                                    @endif
-                                    <p class="truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                                        {{ $isFirstPlace ? __('Primer puesto') : $contextLabel }}
+                                @if ($showUsername)
+                                    <p class="mt-0.5 truncate text-xs font-bold text-slate-500">
+                                        {{ '@'.$entry->username }}
                                     </p>
-                                </div>
+                                @endif
                             </div>
                         </div>
 

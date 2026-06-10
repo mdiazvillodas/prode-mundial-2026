@@ -14,60 +14,39 @@
             </a>
 
             <section class="rounded-2xl bg-white p-4 shadow-sm shadow-blue-900/5 ring-1 ring-blue-100 sm:p-5">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div class="min-w-0">
-                        <p class="text-xs font-black uppercase tracking-wide text-indigo-700">
-                            {{ __('Liga privada') }}
-                        </p>
-                        <h3 class="mt-1 text-2xl font-black leading-tight text-blue-950 sm:text-3xl">
-                            {{ $privateLeague->name }}
-                        </h3>
-                        <div class="mt-2 text-sm font-medium text-slate-500">
-                            <p>{{ __('Dueño') }} {{ $privateLeague->owner->displayName() }}</p>
-                            @if ($privateLeague->owner->usernameHandle() && $privateLeague->owner->displayName() !== $privateLeague->owner->usernameHandle())
-                                <p class="text-xs">{{ $privateLeague->owner->usernameHandle() }}</p>
-                            @endif
-                        </div>
-                    </div>
+                <p class="text-xs font-black uppercase tracking-wide text-indigo-700">
+                    {{ __('Liga privada') }}
+                </p>
+                <div class="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <h3 class="min-w-0 text-2xl font-black leading-tight text-blue-950 sm:text-3xl">
+                        {{ $privateLeague->name }}
+                    </h3>
 
-                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-w-80">
-                        <div class="rounded-xl bg-indigo-50 px-3 py-2 ring-1 ring-indigo-100">
-                            <p class="text-[10px] font-black uppercase tracking-wide text-indigo-700">{{ __('Código') }}</p>
-                            <p class="mt-1 truncate text-sm font-black text-indigo-950">{{ $privateLeague->code }}</p>
+                    @if ($privateLeague->owner_id === auth()->id())
+                        <div class="inline-flex max-w-full items-center gap-2 self-start rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-900 ring-1 ring-indigo-100 sm:self-auto">
+                            <span class="shrink-0 text-indigo-700">{{ __('Código:') }}</span>
+                            <span class="truncate font-black tracking-wide">{{ $privateLeague->code }}</span>
+                            <button
+                                type="button"
+                                data-copy-league-code="{{ $privateLeague->code }}"
+                                class="shrink-0 rounded-full px-2 py-0.5 font-black text-indigo-700 transition hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            >
+                                {{ __('Copiar') }}
+                            </button>
                         </div>
-                        <div class="rounded-xl bg-emerald-50 px-3 py-2 ring-1 ring-emerald-100">
-                            <p class="text-[10px] font-black uppercase tracking-wide text-emerald-700">{{ __('Miembros') }}</p>
-                            <p class="mt-1 text-sm font-black text-emerald-950">{{ $privateLeague->memberships->count() }}</p>
-                        </div>
-                        <div class="rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-100">
-                            <p class="text-[10px] font-black uppercase tracking-wide text-slate-600">{{ __('Estado') }}</p>
-                            <p class="mt-1 text-sm font-black capitalize text-slate-950">{{ $privateLeague->status }}</p>
-                        </div>
-                    </div>
+                    @endif
                 </div>
-            </section>
-
-            <section class="space-y-3">
-                <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <p class="text-sm font-bold uppercase tracking-wide text-indigo-700">
-                            {{ __('Ranking de la liga') }}
-                        </p>
-                        <h3 class="text-2xl font-black text-blue-950">
-                            {{ __('Tabla de posiciones') }}
-                        </h3>
-                    </div>
-
-                    <p class="text-sm text-slate-500">
-                        {{ __('Predicciones puntuadas') }}
+                @if ($privateLeague->owner_id === auth()->id())
+                    <p data-copy-code-status class="mt-2 hidden text-xs font-bold text-emerald-700">
+                        {{ __('Código copiado') }}
                     </p>
-                </div>
-
-                <x-ranking-table
-                    :entries="$leaderboard"
-                    :context-label="__('Miembro activo')"
-                />
+                @endif
             </section>
+
+            <x-ranking-table
+                :entries="$leaderboard"
+                :context-label="__('Miembro activo')"
+            />
 
             @if ($privateLeague->owner_id === auth()->id())
                 <details class="group rounded-2xl bg-white shadow-sm shadow-blue-900/5 ring-1 ring-blue-100">
@@ -297,18 +276,47 @@
                 const button = document.querySelector('[data-copy-invite]');
                 const input = document.getElementById('league-invitation-url');
                 const status = document.querySelector('[data-copy-invite-status]');
+                const codeButton = document.querySelector('[data-copy-league-code]');
+                const codeStatus = document.querySelector('[data-copy-code-status]');
+
+                const copyText = async (text, fallbackInput = null) => {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                    } catch (error) {
+                        const target = fallbackInput ?? document.createElement('textarea');
+                        const shouldRemoveTarget = ! fallbackInput;
+
+                        if (shouldRemoveTarget) {
+                            target.value = text;
+                            target.setAttribute('readonly', '');
+                            target.classList.add('sr-only');
+                            document.body.appendChild(target);
+                        }
+
+                        target.select();
+                        document.execCommand('copy');
+
+                        if (shouldRemoveTarget) {
+                            target.remove();
+                        }
+                    }
+                };
+
+                if (codeButton && codeStatus) {
+                    codeButton.addEventListener('click', async () => {
+                        await copyText(codeButton.dataset.copyLeagueCode);
+
+                        codeStatus.classList.remove('hidden');
+                        window.setTimeout(() => codeStatus.classList.add('hidden'), 2500);
+                    });
+                }
 
                 if (! button || ! input || ! status) {
                     return;
                 }
 
                 button.addEventListener('click', async () => {
-                    try {
-                        await navigator.clipboard.writeText(input.value);
-                    } catch (error) {
-                        input.select();
-                        document.execCommand('copy');
-                    }
+                    await copyText(input.value, input);
 
                     status.classList.remove('hidden');
                     window.setTimeout(() => status.classList.add('hidden'), 2500);

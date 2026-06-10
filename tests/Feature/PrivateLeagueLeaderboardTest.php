@@ -37,7 +37,9 @@ class PrivateLeagueLeaderboardTest extends TestCase
         $this->actingAs($owner)
             ->get(route('private-leagues.show', $league))
             ->assertOk()
-            ->assertSeeInOrder(['Top Member', '@top_member', '9', 'Lower Member', '@lower_member', '6', '@owner_user', '0', '@zero_member', '0']);
+            ->assertSeeInOrder(['Top Member', '@top_member', '9', 'Lower Member', '@lower_member', '6', '@owner_user', '0', '@zero_member', '0'])
+            ->assertDontSee('Primer puesto')
+            ->assertDontSee('Miembro activo');
     }
 
     public function test_private_league_leaderboard_excludes_removed_members(): void

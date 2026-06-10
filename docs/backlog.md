@@ -4533,6 +4533,34 @@ Improve the rankings, private leagues and social-management UX so league activit
 ### Context
 The app already has Liga general, private leagues, owner-approved join requests, invitation links, league rankings, `/leagues` as the primary ranking/leagues hub, and a mobile-first Blade/Tailwind UI. This epic tracks the next visual and interaction polish so implementation does not rely on chat memory.
 
+### Product direction correction
+The private league detail screen must prioritize the ranking. Users mainly enter this page to see who is winning, so the top area should be aggressively simplified.
+
+Do not give main visual priority to low-value league metadata such as:
+- owner display name
+- owner `@username`
+- member count
+- "Active" status
+- large cards for code/status/members
+
+The desired flow is:
+- enter league detail
+- see league name quickly
+- see ranking as soon as possible
+- if owner, copy invite code/link easily through a compact action
+- if owner, manage pending requests easily through a future header-level alert/modal
+
+For the league header:
+- keep only a compact "Liga privada" label and league name
+- optional subtle visual dressing is acceptable, such as a faint trophy/world-cup watermark
+- code/link copy must be compact, not a big card or dominant CTA
+- no repeated preamble before the ranking
+
+For owner management:
+- pending request management must not be hidden in an info button
+- future pending requests UI should live near the app header/hamburger menu as an alert with badge and modal/sheet
+- the info "i" button, if used, should only contain contextual explanation, not critical actions
+
 ### General constraints
 - Keep Blade + Tailwind + vanilla JS.
 - Mobile-first.
@@ -4564,6 +4592,11 @@ Replace the cramped conventional standings table with a more readable mobile-fir
 - Apply the same visual ranking style to Liga general and private league standings.
 - Use a ranking/card-table hybrid instead of a cramped horizontal table on mobile.
 - Show position, avatar, human display name, `@username`, points, exacts, trends, scored predictions and recent form.
+- In the identity block, show only human display name as primary text and `@username` as secondary text.
+- Do not add third-line status labels such as "MIEMBRO ACTIVO", "PRIMER PUESTO" or similar under the username; they add scanning noise.
+- Represent first place visually through the position badge/row highlight.
+- Represent the current user visually through the `VOS`/`TÚ` badge or subtle row highlight.
+- Active membership is already implied in private league rankings and does not need text.
 - Keep current user highlight.
 - Keep first-place highlight.
 - Preserve existing ranking order, scoring, aggregation and tie behavior.
@@ -4581,6 +4614,7 @@ Replace the cramped conventional standings table with a more readable mobile-fir
 - Liga general and private league standings use the same readable ranking layout.
 - Mobile no longer feels like a cramped horizontal stats table.
 - Human display names are primary and `@username` remains visible as secondary text.
+- Ranking identity blocks do not show extra status/role text below the username.
 - Current user and first-place highlights remain intact.
 - Ranking order, scoring, aggregation and tie behavior are unchanged.
 
@@ -4606,8 +4640,9 @@ High
 Simplify the private league detail screen so ranking appears sooner and the page has less repeated header/card preamble.
 
 ### Scope
-- Unify the top title area and league summary into a compact league header.
+- Unify the top title area into a compact league header that prioritizes only "Liga privada" and the league name.
 - Remove or replace the oversized "Ver ligas" CTA with a subtle navigation pattern.
+- Avoid prominent owner/name, member-count, status or large metadata cards before the ranking.
 - Make the ranking the main protagonist of the screen.
 - Keep owner/member permissions unchanged.
 - Keep mobile-first layout.
@@ -4651,6 +4686,7 @@ Replace the current hidden/accordion-heavy owner management experience with clea
 - Keep actions visible and easy to access on mobile.
 - The "i" button should summarize contextual league information that is currently buried in the accordion.
 - Do not move request approval into the info button.
+- Keep copy/link actions compact; do not turn code/status/member metadata into dominant cards.
 
 ### Out of scope
 - No member removal rule changes.
@@ -4736,6 +4772,7 @@ Reduce the current "Gestionar liga" accordion dependency by moving important own
 - Remove duplicated or low-value management content from the main flow if it becomes redundant.
 - Keep removal/audit behavior intact if currently available.
 - Do not hide critical pending-request actions inside the info content.
+- Pending request management must remain outside contextual info and should align with the future header-level alert/modal direction.
 
 ### Out of scope
 - No business rule changes.
