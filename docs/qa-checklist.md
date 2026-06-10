@@ -129,6 +129,17 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Confirm ranking order, points, exact counts, tendency counts, and scored prediction counts are unchanged by recent-form indicators.
 - After simulated results, confirm rankings update consistently.
 
+## E2. Critical Scoring And Ranking QA
+
+- Exact result: create or identify a finished group-stage match, submit a prediction with the exact final score, settle the result, and confirm the prediction receives 6 points.
+- Correct trend: submit a non-exact prediction with the correct winning team or correct draw trend, settle the result, and confirm the prediction receives 3 points.
+- Wrong prediction: submit a prediction with the wrong winner/draw trend, settle the result, and confirm the prediction receives 0 points.
+- Knockout with penalties: for a knockout match decided after penalties, confirm the regulation/official displayed score and qualified team are represented according to the current data model, then confirm exact score plus correct qualified team earns 6, correct qualified team without exact score earns 3, and wrong qualified team earns 0.
+- Leaderboard ordering: create users with different point totals, exact counts, trend counts, and a final username tie, then confirm `/leaderboard` orders by points, exacts, trends, and the existing final tie-breaker.
+- Private league ranking: confirm a private league ranking uses the same point/exact/trend ordering, includes active members with zero scored predictions, and excludes removed members.
+- API-Football finished match sync: using a fake/local snapshot only, sync a finished fixture and confirm local teams, API status, round/stage, venue, and finished score fields map as expected without calling the real API.
+- Settlement idempotency: run settlement for the same finished match twice and confirm prediction rows are not duplicated and point totals remain unchanged.
+
 ## F. Admin
 
 - Log in as an admin user.

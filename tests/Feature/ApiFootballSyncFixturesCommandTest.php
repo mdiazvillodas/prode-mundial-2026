@@ -278,6 +278,157 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         $this->assertNull($prediction->points_awarded);
     }
 
+    public function test_live_fixture_is_mapped_conservatively_without_finished_score_or_settlement(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(1002, 10, 20, status: '1H', homeGoals: 1, awayGoals: 0),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('matches', [
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1002,
+            'api_status' => '1H',
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'status' => TournamentMatch::STATUS_SCHEDULED,
+            'team_a_score' => null,
+            'team_b_score' => null,
+        ]);
+    }
+
+    public function test_penalty_finished_fixture_maps_existing_goal_fields_and_keeps_penalties_out_of_local_score_columns(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(
+                        1003,
+                        10,
+                        20,
+                        status: 'PEN',
+                        homeGoals: 1,
+                        awayGoals: 1,
+                        round: 'Final',
+                        score: [
+                            'fulltime' => ['home' => 1, 'away' => 1],
+                            'extratime' => ['home' => 1, 'away' => 1],
+                            'penalty' => ['home' => 4, 'away' => 3],
+                        ],
+                    ),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('matches', [
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1003,
+            'api_status' => 'PEN',
+            'round' => 'Final',
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'stage' => 'final',
+            'status' => TournamentMatch::STATUS_FINISHED,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'winner_team_id' => null,
+        ]);
+    }
+
+    public function test_finished_fixture_with_null_score_fields_does_not_score_predictions(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1004,
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+        ]);
+        $prediction = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(1004, 10, 20, status: 'FT', homeGoals: null, awayGoals: null),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->assertSuccessful();
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertNull($match->team_a_score);
+        $this->assertNull($match->team_b_score);
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $prediction->status);
+        $this->assertNull($prediction->points_awarded);
+    }
+
+    public function test_unknown_api_status_does_not_settle_or_store_scores_prematurely(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(1005, 10, 20, status: 'ABD', homeGoals: 2, awayGoals: 1),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('matches', [
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 1005,
+            'api_status' => 'ABD',
+            'status' => TournamentMatch::STATUS_SCHEDULED,
+            'team_a_score' => null,
+            'team_b_score' => null,
+        ]);
+    }
+
     public function test_command_makes_only_expected_api_request_with_overrides(): void
     {
         $this->createTournament();
@@ -358,6 +509,8 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         string $status = 'NS',
         ?int $homeGoals = null,
         ?int $awayGoals = null,
+        string $round = 'Group Stage - 1',
+        array $score = [],
     ): array {
         return [
             'fixture' => [
@@ -374,7 +527,7 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
             'league' => [
                 'id' => 1,
                 'season' => 2026,
-                'round' => 'Group Stage - 1',
+                'round' => $round,
             ],
             'teams' => [
                 'home' => [
@@ -390,6 +543,7 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
                 'home' => $homeGoals,
                 'away' => $awayGoals,
             ],
+            'score' => $score,
         ];
     }
 }
