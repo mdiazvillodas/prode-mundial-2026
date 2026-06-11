@@ -232,7 +232,7 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         $this->assertSame(0, TournamentMatch::query()->count());
     }
 
-    public function test_finished_fixture_stores_scores_without_settling_predictions(): void
+    public function test_finished_fixture_stores_scores_winner_and_settles_predictions(): void
     {
         $tournament = $this->createTournament();
         $this->configureApiFootball();
@@ -245,13 +245,18 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
             'team_b_id' => $away->id,
             'api_provider' => 'api-football',
             'api_fixture_id' => 1001,
+            'stage' => 'group',
             'status' => TournamentMatch::STATUS_OPEN,
             'team_a_score' => null,
             'team_b_score' => null,
+            'winner_team_id' => null,
         ]);
 
         $prediction = Prediction::factory()->create([
             'match_id' => $match->id,
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => null,
             'status' => Prediction::STATUS_SUBMITTED,
             'points_awarded' => null,
         ]);
@@ -272,13 +277,15 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         $prediction->refresh();
 
         $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame('group', $match->stage);
         $this->assertSame(2, $match->team_a_score);
         $this->assertSame(1, $match->team_b_score);
-        $this->assertSame(Prediction::STATUS_SUBMITTED, $prediction->status);
-        $this->assertNull($prediction->points_awarded);
+        $this->assertSame($home->id, $match->winner_team_id);
+        $this->assertSame(Prediction::STATUS_SCORED, $prediction->status);
+        $this->assertSame(6, $prediction->points_awarded);
     }
 
-    public function test_live_fixture_is_mapped_conservatively_without_finished_score_or_settlement(): void
+    public function test_live_fixture_stores_partial_score_without_finished_status_or_settlement(): void
     {
         $this->createTournament();
         $this->configureApiFootball();
@@ -304,8 +311,9 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
             'team_a_id' => $home->id,
             'team_b_id' => $away->id,
             'status' => TournamentMatch::STATUS_SCHEDULED,
-            'team_a_score' => null,
-            'team_b_score' => null,
+            'team_a_score' => 1,
+            'team_b_score' => 0,
+            'winner_team_id' => null,
         ]);
     }
 

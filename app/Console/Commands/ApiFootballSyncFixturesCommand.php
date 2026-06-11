@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\TournamentMatch;
+use App\Services\MatchPredictionSettlementService;
 use App\Support\ApiFootballProductionSyncGuard;
 use App\Support\ApiSyncLogWriter;
 use Illuminate\Console\Command;
@@ -398,6 +399,15 @@ class ApiFootballSyncFixturesCommand extends Command
         if ($isFinished || $isLive) {
             $values['team_a_score'] = $this->nullableInteger(Arr::get($item, 'goals.home'));
             $values['team_b_score'] = $this->nullableInteger(Arr::get($item, 'goals.away'));
+
+            if ($isFinished && $values['team_a_score'] !== null && $values['team_b_score'] !== null) {
+                $values['winner_team_id'] = $this->winnerTeamId(
+                    $values['team_a_score'],
+                    $values['team_b_score'],
+                    $homeTeam->id,
+                    $awayTeam->id,
+                );
+            }
         } else {
             $values['team_a_score'] = null;
             $values['team_b_score'] = null;
@@ -406,8 +416,13 @@ class ApiFootballSyncFixturesCommand extends Command
         if (! $dryRun) {
             if ($existing) {
                 $existing->forceFill($values)->save();
+                $match = $existing->fresh();
             } else {
-                TournamentMatch::query()->create($values);
+                $match = TournamentMatch::query()->create($values);
+            }
+
+            if ($isFinished && $match->team_a_score !== null && $match->team_b_score !== null) {
+                app(MatchPredictionSettlementService::class)->score($match);
             }
         }
 
@@ -454,6 +469,19 @@ class ApiFootballSyncFixturesCommand extends Command
     private function isLiveApiStatus(?string $status): bool
     {
         return in_array($status, self::LIVE_API_STATUSES, true);
+    }
+
+    private function winnerTeamId(int $teamAScore, int $teamBScore, int $teamAId, int $teamBId): ?int
+    {
+        if ($teamAScore > $teamBScore) {
+            return $teamAId;
+        }
+
+        if ($teamBScore > $teamAScore) {
+            return $teamBId;
+        }
+
+        return null;
     }
 
     private function stageFromRound(?string $round): ?string
