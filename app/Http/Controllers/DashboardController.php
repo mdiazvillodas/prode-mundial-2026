@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LeagueMembership;
 use App\Models\Prediction;
+use App\Models\PrivateLeague;
 use App\Models\TournamentMatch;
 use App\Services\Dashboard\LiveDashboardDataService;
 use App\Services\PredictionScoringService;
@@ -26,7 +27,7 @@ class DashboardController extends Controller
             ->where('status', LeagueMembership::STATUS_ACTIVE)
             ->with('privateLeague')
             ->orderBy('joined_at')
-            ->limit(3)
+            ->limit(PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER)
             ->get()
             ->pluck('privateLeague')
             ->filter()

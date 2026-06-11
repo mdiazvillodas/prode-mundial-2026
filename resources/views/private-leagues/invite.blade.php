@@ -79,9 +79,9 @@
                         <div class="rounded-md bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
                             {{ __('Ya tenes una solicitud de ingreso pendiente para esta liga. El dueño debe aprobarla.') }}
                         </div>
-                    @elseif ($activeMembershipsCount >= 3)
+                    @elseif ($activeMembershipsCount >= \App\Models\PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER)
                         <div class="rounded-md bg-gray-100 p-4 text-sm text-gray-700">
-                            {{ __('Ya alcanzaste el limite de 3 ligas privadas activas.') }}
+                            {{ __('Ya alcanzaste el limite de :max ligas privadas activas.', ['max' => \App\Models\PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER]) }}
                         </div>
                     @else
                         @if ($wasRemoved)

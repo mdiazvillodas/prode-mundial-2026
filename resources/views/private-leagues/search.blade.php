@@ -63,7 +63,7 @@
                         $isOwner = $privateLeague->owner_id === auth()->id();
                         $isActiveMember = $membership?->status === App\Models\LeagueMembership::STATUS_ACTIVE;
                         $hasPendingRequest = $latestRequest?->status === App\Models\LeagueJoinRequest::STATUS_PENDING;
-                        $canRequestAccess = ! $isOwner && ! $isActiveMember && ! $hasPendingRequest && $activeMembershipsCount < 3;
+                        $canRequestAccess = ! $isOwner && ! $isActiveMember && ! $hasPendingRequest && $activeMembershipsCount < $maxActiveMemberships;
                     @endphp
 
                     <article class="rounded-lg bg-white p-5 shadow-sm ring-1 ring-gray-100">
@@ -105,7 +105,7 @@
                                     <span class="inline-flex items-center justify-center rounded-md bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-200">
                                         {{ __('Solicitud de ingreso pendiente') }}
                                     </span>
-                                @elseif ($activeMembershipsCount >= 3)
+                                @elseif ($activeMembershipsCount >= $maxActiveMemberships)
                                     <span class="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
                                         {{ __('Limite de ligas alcanzado') }}
                                     </span>

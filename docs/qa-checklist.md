@@ -104,19 +104,23 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 
 ## D. Private Leagues
 
-- Create a private league.
+- As a user with 0 owned private leagues, confirm they can create a private league.
+- As a user with 1 owned private league, confirm they cannot create a second private league.
 - Search for a league by name and visible code.
 - Request membership from a non-owner account.
 - Confirm duplicate requests are blocked.
 - Log in as owner and accept a request.
 - Log in as owner and reject a different request.
 - Confirm owner cannot remove themselves.
-- Confirm active membership and owned league limits are respected.
+- Confirm a user can join/request up to 5 private leagues.
+- Confirm a user cannot exceed 5 active private league memberships.
+- Confirm active membership and owned league limits are respected independently: being a member of other leagues does not block creating the one owned league.
 - As a user who participates in at least one private league but owns none, open `/leagues` and confirm existing private league tabs/rankings are visible.
 - Confirm the same member-only user sees `+ Crear mi liga` near the league tabs on `/leagues`.
 - Create a new private league as that member-only user and confirm creation succeeds.
 - Return to `/leagues` and confirm the newly created league appears.
 - As a user who already owns a private league, confirm `/leagues` does not show `+ Crear mi liga`.
+- As an owner with pending requests in their owned league, confirm the header badge and modal still show pending requests and the approve/reject forms target the correct request.
 - Confirm removed members can no longer view the private league detail page.
 
 ## E. Leaderboards

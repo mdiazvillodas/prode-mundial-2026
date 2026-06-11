@@ -60,7 +60,7 @@ class LeaguesHubTest extends TestCase
             ->assertDontSee(route('private-leagues.create'), false);
     }
 
-    public function test_leagues_hub_shows_global_ranking_and_up_to_three_active_private_leagues(): void
+    public function test_leagues_hub_shows_global_ranking_and_up_to_five_active_private_leagues(): void
     {
         $user = User::factory()->create(['username' => 'hub_user']);
         $topUser = User::factory()->create(['name' => 'Top Global', 'username' => 'top_global']);
@@ -73,6 +73,8 @@ class LeaguesHubTest extends TestCase
         $this->activeLeagueFor($user, 'Amigos Sur', now()->subDays(3));
         $this->activeLeagueFor($user, 'Oficina', now()->subDays(2));
         $this->activeLeagueFor($user, 'Cuarta Liga', now()->subDay());
+        $this->activeLeagueFor($user, 'Quinta Liga', now());
+        $this->activeLeagueFor($user, 'Sexta Liga', now()->addMinute());
 
         $this->scoredPredictionFor($user, 6);
 
@@ -86,7 +88,9 @@ class LeaguesHubTest extends TestCase
             ->assertSee('Amigos Norte')
             ->assertSee('Amigos Sur')
             ->assertSee('Oficina')
-            ->assertDontSee('Cuarta Liga')
+            ->assertSee('Cuarta Liga')
+            ->assertSee('Quinta Liga')
+            ->assertDontSee('Sexta Liga')
             ->assertSee(route('private-leagues.show', $firstLeague), false)
             ->assertSee('+ Crear mi liga')
             ->assertSee('@hub_user');

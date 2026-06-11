@@ -15,6 +15,8 @@ class PrivateLeague extends Model
 
     public const STATUS_ACTIVE = 'active';
 
+    public const MAX_ACTIVE_MEMBERSHIPS_PER_USER = 5;
+
     protected $fillable = [
         'owner_id',
         'name',

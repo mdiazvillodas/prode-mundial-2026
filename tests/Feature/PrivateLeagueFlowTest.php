@@ -57,7 +57,7 @@ class PrivateLeagueFlowTest extends TestCase
     public function test_membership_limit_does_not_block_owned_private_league_creation(): void
     {
         $user = User::factory()->create();
-        $owners = User::factory()->count(3)->create();
+        $owners = User::factory()->count(5)->create();
 
         foreach ($owners as $owner) {
             $league = $owner->ownedPrivateLeague()->create(['name' => 'Liga Miembro']);
@@ -292,15 +292,15 @@ class PrivateLeagueFlowTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_exceed_three_active_private_league_memberships(): void
+    public function test_user_can_request_membership_until_fifth_active_private_league(): void
     {
         $user = User::factory()->create();
-        $owners = User::factory()->count(4)->create();
+        $owners = User::factory()->count(5)->create();
 
-        foreach ($owners as $owner) {
-            $league = $owner->ownedPrivateLeague()->create(['name' => 'Liga Limite']);
+        foreach ($owners as $index => $owner) {
+            $league = $owner->ownedPrivateLeague()->create(['name' => 'Liga Disponible']);
 
-            if ($owners->search($owner) < 3) {
+            if ($index < 4) {
                 $league->memberships()->create([
                     'user_id' => $user->id,
                     'status' => LeagueMembership::STATUS_ACTIVE,
@@ -309,7 +309,37 @@ class PrivateLeagueFlowTest extends TestCase
             }
         }
 
-        $targetLeague = $owners[3]->ownedPrivateLeague;
+        $targetLeague = $owners[4]->ownedPrivateLeague;
+
+        $this->actingAs($user)
+            ->post(route('private-leagues.join-requests.store', $targetLeague))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('league_join_requests', [
+            'private_league_id' => $targetLeague->id,
+            'user_id' => $user->id,
+            'status' => LeagueJoinRequest::STATUS_PENDING,
+        ]);
+    }
+
+    public function test_user_cannot_exceed_five_active_private_league_memberships(): void
+    {
+        $user = User::factory()->create();
+        $owners = User::factory()->count(6)->create();
+
+        foreach ($owners as $index => $owner) {
+            $league = $owner->ownedPrivateLeague()->create(['name' => 'Liga Limite']);
+
+            if ($index < 5) {
+                $league->memberships()->create([
+                    'user_id' => $user->id,
+                    'status' => LeagueMembership::STATUS_ACTIVE,
+                    'joined_at' => now(),
+                ]);
+            }
+        }
+
+        $targetLeague = $owners[5]->ownedPrivateLeague;
 
         $this->actingAs($user)
             ->post(route('private-leagues.join-requests.store', $targetLeague))
@@ -319,6 +349,38 @@ class PrivateLeagueFlowTest extends TestCase
             'private_league_id' => $targetLeague->id,
             'user_id' => $user->id,
             'status' => LeagueJoinRequest::STATUS_PENDING,
+        ]);
+    }
+
+    public function test_owner_cannot_accept_join_request_when_user_already_has_five_active_memberships(): void
+    {
+        $requester = User::factory()->create();
+        $owners = User::factory()->count(6)->create();
+
+        foreach ($owners->take(5) as $owner) {
+            $league = $owner->ownedPrivateLeague()->create(['name' => 'Liga Activa']);
+            $league->memberships()->create([
+                'user_id' => $requester->id,
+                'status' => LeagueMembership::STATUS_ACTIVE,
+                'joined_at' => now(),
+            ]);
+        }
+
+        $targetOwner = $owners[5];
+        $targetLeague = $targetOwner->ownedPrivateLeague()->create(['name' => 'Liga Bloqueada']);
+        $joinRequest = $targetLeague->joinRequests()->create([
+            'user_id' => $requester->id,
+            'status' => LeagueJoinRequest::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($targetOwner)
+            ->post(route('private-leagues.join-requests.accept', [$targetLeague, $joinRequest]))
+            ->assertSessionHasErrors(['league']);
+
+        $this->assertDatabaseMissing('league_memberships', [
+            'private_league_id' => $targetLeague->id,
+            'user_id' => $requester->id,
+            'status' => LeagueMembership::STATUS_ACTIVE,
         ]);
     }
 

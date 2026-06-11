@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeagueMembership;
+use App\Models\PrivateLeague;
 use App\Services\PredictionScoringService;
 use App\Services\Rankings\RecentFormService;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class LeagueController extends Controller
             ->where('status', LeagueMembership::STATUS_ACTIVE)
             ->with('privateLeague.owner')
             ->orderBy('joined_at')
-            ->limit(3)
+            ->limit(PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER)
             ->get()
             ->pluck('privateLeague')
             ->filter()

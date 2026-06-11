@@ -1343,7 +1343,7 @@ Search and request to join private leagues
 Done
 
 ### Note
-Implemented with LeagueMembership, LeagueJoinRequest, league search by name/code, join requests, owner approval/rejection, owner auto-membership, member-only league detail access, duplicate request blocking, own-league request blocking, active-member blocking, and max 3 active private league memberships.
+Implemented with LeagueMembership, LeagueJoinRequest, league search by name/code, join requests, owner approval/rejection, owner auto-membership, member-only league detail access, duplicate request blocking, own-league request blocking, active-member blocking, and max 5 active private league memberships.
 
 ### Sprint
 Sprint 5
@@ -1421,7 +1421,7 @@ Add private league invitation links
 Done
 
 ### Note
-Implemented with invite route using visible league code, owner share/copy section, invitation page, reuse of existing join request flow, authenticated access, states for owner, active member, pending request, removed user, max 3 leagues, and new requester. Invitation links do not bypass owner approval.
+Implemented with invite route using visible league code, owner share/copy section, invitation page, reuse of existing join request flow, authenticated access, states for owner, active member, pending request, removed user, max 5 leagues, and new requester. Invitation links do not bypass owner approval.
 
 ### Sprint
 Sprint 5
@@ -1447,7 +1447,7 @@ Allow private league owners to share a direct invitation link so other users can
   - no duplicate pending requests
   - no request to own league
   - no request if already active member
-  - max 3 active private league memberships
+  - max 5 active private league memberships
 
 ### Out of scope
 - No automatic joining without approval.
@@ -2131,11 +2131,11 @@ High
 Create a unified leagues hub where users can switch between the General League and their active private leagues, and simplify private league detail so ranking is primary while owner management is collapsed.
 
 ### Note
-Implementation was already present and verified. /leagues exists as leagues.index, Ligas is the primary navigation destination, General and up to 3 active private leagues are shown in a switcher, /leaderboard remains available, and private league detail prioritizes ranking with owner management collapsed under Gestionar liga.
+Implementation was already present and verified. /leagues exists as leagues.index, Ligas is the primary navigation destination, General and up to 5 active private leagues are shown in a switcher, /leaderboard remains available, and private league detail prioritizes ranking with owner management collapsed under Gestionar liga.
 
 ### Scope
 - Add a unified authenticated leagues hub at /leagues.
-- Show General and up to 3 active private leagues in a mobile-friendly switcher.
+- Show General and up to 5 active private leagues in a mobile-friendly switcher.
 - Keep /leaderboard available for compatibility.
 - Make Ligas the primary navigation destination for ranking and leagues.
 - Prioritize private league ranking and collapse owner-only management content.
@@ -2151,7 +2151,7 @@ Implementation was already present and verified. /leagues exists as leagues.inde
 - Authenticated user can access /leagues.
 - Guest is redirected from /leagues.
 - /leagues defaults to General ranking.
-- /leagues shows up to 3 active private league options for the user.
+- /leagues shows up to 5 active private league options for the user.
 - Private league switcher options show private league rankings.
 - User with no private leagues sees useful create/search actions.
 - Navigation exposes Ligas as the primary ranking/leagues destination.
@@ -2606,7 +2606,7 @@ High
 Add focused feature test coverage for private league and private league leaderboard workflows.
 
 ### Note
-Implemented with PrivateLeagueFlowTest and PrivateLeagueLeaderboardTest covering league creation, one-owned-league limit, duplicate names, unique codes, owner auto-membership, guest access, search by name/code, join requests, duplicate blocking, own-league blocking, active-member blocking, accept/reject, non-owner blocking, max 3 active leagues, owner/member/non-member access, invitation states, member removal, audit log and removed-member leaderboard exclusion. Full php artisan test passes with 89 tests and 223 assertions.
+Implemented with PrivateLeagueFlowTest and PrivateLeagueLeaderboardTest covering league creation, one-owned-league limit, duplicate names, unique codes, owner auto-membership, guest access, search by name/code, join requests, duplicate blocking, own-league blocking, active-member blocking, accept/reject, non-owner blocking, max 5 active leagues, owner/member/non-member access, invitation states, member removal, audit log and removed-member leaderboard exclusion.
 
 ### Scope
 - Cover private league creation and ownership limits.

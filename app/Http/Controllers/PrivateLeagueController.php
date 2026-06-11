@@ -17,8 +17,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PrivateLeagueController extends Controller
 {
-    private const MAX_ACTIVE_MEMBERSHIPS = 3;
-
     public function search(Request $request): View
     {
         $query = trim((string) $request->query('q', ''));
@@ -49,6 +47,7 @@ class PrivateLeagueController extends Controller
 
         return view('private-leagues.search', [
             'activeMembershipsCount' => $this->activeMembershipsCount($user->id),
+            'maxActiveMemberships' => PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER,
             'privateLeagues' => $privateLeagues,
             'query' => $query,
         ]);
@@ -145,7 +144,7 @@ class PrivateLeagueController extends Controller
             && ! $isActiveMember
             && ! $pendingJoinRequest
             && ! $wasRemoved
-            && $activeMembershipsCount < self::MAX_ACTIVE_MEMBERSHIPS;
+            && $activeMembershipsCount < PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER;
 
         return view('private-leagues.invite', [
             'activeMembershipsCount' => $activeMembershipsCount,
@@ -182,8 +181,10 @@ class PrivateLeagueController extends Controller
             return back()->withErrors(['league' => __('No podes solicitar acceso despues de haber sido removido de esta liga.')]);
         }
 
-        if ($this->activeMembershipsCount($user->id) >= self::MAX_ACTIVE_MEMBERSHIPS) {
-            return back()->withErrors(['league' => __('Ya alcanzaste el limite de 3 ligas privadas activas.')]);
+        if ($this->activeMembershipsCount($user->id) >= PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER) {
+            return back()->withErrors(['league' => __('Ya alcanzaste el limite de :max ligas privadas activas.', [
+                'max' => PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER,
+            ])]);
         }
 
         $pendingRequestExists = $privateLeague->joinRequests()
@@ -210,8 +211,10 @@ class PrivateLeagueController extends Controller
     ): RedirectResponse {
         $this->authorizeJoinRequestDecision($request, $privateLeague, $leagueJoinRequest);
 
-        if ($this->activeMembershipsCount($leagueJoinRequest->user_id) >= self::MAX_ACTIVE_MEMBERSHIPS) {
-            return back()->withErrors(['league' => __('El usuario ya pertenece a 3 ligas privadas activas.')]);
+        if ($this->activeMembershipsCount($leagueJoinRequest->user_id) >= PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER) {
+            return back()->withErrors(['league' => __('El usuario ya pertenece a :max ligas privadas activas.', [
+                'max' => PrivateLeague::MAX_ACTIVE_MEMBERSHIPS_PER_USER,
+            ])]);
         }
 
         DB::transaction(function () use ($request, $privateLeague, $leagueJoinRequest): void {
