@@ -31,6 +31,21 @@ class ApiFootballSyncFixturesCommand extends Command
     /**
      * @var array<int, string>
      */
+    private const LIVE_API_STATUSES = [
+        '1H',
+        '2H',
+        'HT',
+        'ET',
+        'BT',
+        'P',
+        'SUSP',
+        'INT',
+        'LIVE',
+    ];
+
+    /**
+     * @var array<int, string>
+     */
     private array $apiStatusSamples = [];
 
     /**
@@ -351,6 +366,7 @@ class ApiFootballSyncFixturesCommand extends Command
 
         $startsAt = $this->parseDateTime(Arr::get($fixtureData, 'date'));
         $isFinished = $this->isFinishedApiStatus($apiStatus);
+        $isLive = $this->isLiveApiStatus($apiStatus);
 
         $values = [
             'tournament_id' => $tournament->id,
@@ -379,10 +395,10 @@ class ApiFootballSyncFixturesCommand extends Command
                 : $existing->status;
         }
 
-        if ($isFinished) {
+        if ($isFinished || $isLive) {
             $values['team_a_score'] = $this->nullableInteger(Arr::get($item, 'goals.home'));
             $values['team_b_score'] = $this->nullableInteger(Arr::get($item, 'goals.away'));
-        } elseif (! $existing) {
+        } else {
             $values['team_a_score'] = null;
             $values['team_b_score'] = null;
         }
@@ -433,6 +449,11 @@ class ApiFootballSyncFixturesCommand extends Command
     private function isFinishedApiStatus(?string $status): bool
     {
         return in_array($status, ['FT', 'AET', 'PEN'], true);
+    }
+
+    private function isLiveApiStatus(?string $status): bool
+    {
+        return in_array($status, self::LIVE_API_STATUSES, true);
     }
 
     private function stageFromRound(?string $round): ?string

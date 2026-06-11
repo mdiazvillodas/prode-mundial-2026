@@ -86,6 +86,8 @@
                                     $prediction = $match->predictions->first();
                                     $displayTimes = $matchDisplayTimes[$match->id] ?? [];
                                     $canPredict = $match->isPredictable();
+                                    $liveApiStatuses = ['1H', '2H', 'HT', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE'];
+                                    $isLive = in_array($match->api_status, $liveApiStatuses, true);
                                     $isPlaceholder = $match->status === 'placeholder' || ! $match->teamA || ! $match->teamB;
                                     $teamAName = $match->teamA?->name ?? __('Equipo por definir');
                                     $teamBName = $match->teamB?->name ?? __('Equipo por definir');
@@ -101,11 +103,18 @@
                                         'finished' => __('Finalizado'),
                                         'placeholder' => __('Equipos por definir'),
                                     ];
-                                    $statusLabel = $isClosingSoon ? __('Cierra pronto') : ($statusLabels[$match->status] ?? ucfirst($match->status));
+                                    if ($isLive) {
+                                        $statusLabel = $match->api_status ? __('En vivo · :status', ['status' => $match->api_status]) : __('En vivo');
+                                    } else {
+                                        $statusLabel = $isClosingSoon ? __('Cierra pronto') : ($statusLabels[$match->status] ?? ucfirst($match->status));
+                                    }
 
                                     if ($isPlaceholder) {
                                         $statusClass = 'bg-sky-100 text-sky-800 ring-sky-200';
                                         $dotClass = 'bg-sky-500';
+                                    } elseif ($isLive) {
+                                        $statusClass = 'bg-red-100 text-red-800 ring-red-200';
+                                        $dotClass = 'bg-red-500';
                                     } elseif ($hasResult || $match->status === 'finished') {
                                         $statusClass = 'bg-slate-100 text-slate-700 ring-slate-200';
                                         $dotClass = 'bg-slate-400';
@@ -137,9 +146,9 @@
                                                 {{ $statusLabel }}
                                             </span>
 
-                                            @if ($prediction && $canPredict)
+                                            @if ($prediction)
                                                 <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
-                                                    {{ __('Guardada') }}
+                                                    {{ $canPredict ? __('Guardada') : __('Tu pronóstico') }}
                                                 </span>
                                             @endif
                                         </div>
@@ -225,6 +234,24 @@
                                                             @endif
                                                         </div>
                                                     @endif
+                                                @elseif ($prediction)
+                                                    <div class="rounded-2xl bg-blue-50 px-4 py-3 text-blue-950 ring-1 ring-blue-100">
+                                                        <p class="text-xs font-bold uppercase tracking-wide text-blue-500">
+                                                            {{ __('Tu pronóstico') }}
+                                                        </p>
+                                                        <p class="mt-1 text-3xl font-black">
+                                                            {{ $prediction->team_a_score }} - {{ $prediction->team_b_score }}
+                                                        </p>
+                                                        <p class="mt-1 text-[11px] font-bold text-blue-600">
+                                                            {{ __('Ya no se puede editar') }}
+                                                        </p>
+
+                                                        @if ($hasResult)
+                                                            <p class="mt-2 text-xs font-bold text-slate-500">
+                                                                {{ __('Resultado') }}: {{ $match->team_a_score }} - {{ $match->team_b_score }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
                                                 @elseif ($hasResult)
                                                     <div class="rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-lg shadow-slate-950/20">
                                                         <p class="text-xs font-bold uppercase tracking-wide text-slate-300">
@@ -292,6 +319,11 @@
                                                         <span>{{ $displayTimes['prediction_closes_time'] ?? '' }}</span>.
                                                     </span>
                                                 @endif
+                                            @elseif ($prediction)
+                                                <span class="text-blue-700">
+                                                    {{ __('Tu pronóstico') }}: {{ $prediction->team_a_score }} - {{ $prediction->team_b_score }}.
+                                                </span>
+                                                <span>{{ __('Predicciones cerradas. Ya no se puede editar.') }}</span>
                                             @elseif ($isPlaceholder)
                                                 <span class="text-sky-700">{{ __('Equipos por definir. Este partido se habilita cuando estén confirmados.') }}</span>
                                             @elseif ($match->status === 'finished')
