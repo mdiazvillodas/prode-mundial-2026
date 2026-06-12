@@ -280,12 +280,13 @@ php artisan demo:reset-staging --force
 php artisan demo:simulate-results --scenario=knockout-qa --force
 ```
 
-4. Verify post-simulation:
+4. Verify post-simulation (expected values are asserted by `tests/Feature/DemoKnockoutQaCommandTest.php`):
 
 - `/my-predictions` shows scored FT, AET, PEN team A, and PEN team B examples.
-- `/leaderboard` and `Liga Demo Palermo` include the updated totals.
+- Each finished QA match settles `winner_team_id` (FT/AET from the score, PEN from the penalty winner) and scores predictions on the 8/5/5/3/2/0 matrix. `E20 knockout QA PEN team A` exercises all six tiers (e.g. `mariano_demo` = 8, `juan_demo` = 5, `lucia_demo` = 3, `diego_demo` = 2, `sofia_demo` = 0); `E20 knockout QA PEN team B` confirms the inverse qualified-team case.
+- `/leaderboard` and `Liga Demo Palermo` include the updated totals (`mariano_demo` totals 47 points across the seeded QA predictions).
 - `php artisan prode:check-finished-matches` exits clean.
-- Re-running the same simulation does not change totals.
+- Re-running the same simulation is idempotent: totals, awarded points, and prediction counts do not change.
 
 ## Staging Reset And Seed Flow
 

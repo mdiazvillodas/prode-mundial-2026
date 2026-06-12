@@ -713,6 +713,123 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         $this->assertNull($match->winner_team_id);
     }
 
+    public function test_knockout_ft_finished_sync_resolves_winner_and_settles_with_expanded_matrix(): void
+    {
+        // A finished FT knockout result must resolve winner_team_id from the score
+        // AND trigger settlement, scoring knockout predictions with the expanded matrix.
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 3103,
+            'stage' => 'round_of_16',
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+            'winner_team_id' => null,
+        ]);
+
+        // Exact 2-1 + correct qualified home -> 8.
+        $exactAndQualified = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $home->id,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+        // Correct trend (home win) but wrong qualified (away) and not exact -> 2.
+        $trendOnly = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 0,
+            'predicted_qualified_team_id' => $away->id,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3103, 10, 20, status: 'FT', homeGoals: 2, awayGoals: 1, round: 'Round of 16', homeWinner: true, awayWinner: false,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match->refresh();
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame($home->id, $match->winner_team_id);
+
+        $this->assertSame(Prediction::STATUS_SCORED, $exactAndQualified->refresh()->status);
+        $this->assertSame(8, $exactAndQualified->points_awarded);
+        $this->assertSame(Prediction::STATUS_SCORED, $trendOnly->refresh()->status);
+        $this->assertSame(2, $trendOnly->points_awarded);
+    }
+
+    public function test_knockout_pen_tied_sync_resolves_winner_from_flags_and_settles_predictions(): void
+    {
+        // A PEN result keeps the tied played score but resolves winner_team_id from
+        // the API winner flags; settlement must credit the qualified-team bonus from it.
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 3106,
+            'stage' => 'final',
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+            'winner_team_id' => null,
+        ]);
+
+        // Exact tied 1-1 + correct qualified away (penalty winner) -> 8.
+        $exactAndQualified = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $away->id,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+        // Exact tied 1-1 + wrong qualified home -> 5.
+        $exactWrongQualified = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $home->id,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3106, 10, 20, status: 'PEN', homeGoals: 1, awayGoals: 1, round: 'Final',
+            score: ['penalty' => ['home' => 2, 'away' => 4]], homeWinner: false, awayWinner: true,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match->refresh();
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(1, $match->team_a_score);
+        $this->assertSame(1, $match->team_b_score);
+        $this->assertSame($away->id, $match->winner_team_id);
+
+        $this->assertSame(Prediction::STATUS_SCORED, $exactAndQualified->refresh()->status);
+        $this->assertSame(8, $exactAndQualified->points_awarded);
+        $this->assertSame(Prediction::STATUS_SCORED, $exactWrongQualified->refresh()->status);
+        $this->assertSame(5, $exactWrongQualified->points_awarded);
+    }
+
     public function test_live_match_stores_partial_score_without_finishing_or_settling(): void
     {
         $tournament = $this->createTournament();

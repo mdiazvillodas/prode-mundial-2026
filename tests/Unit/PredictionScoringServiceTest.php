@@ -58,6 +58,14 @@ class PredictionScoringServiceTest extends TestCase
         $this->assertSame(8, $points);
     }
 
+    public function test_knockout_ft_non_draw_exact_score_and_correct_qualified_team_returns_eight_points(): void
+    {
+        // FT (regular-time) non-draw: prediction 2-1 + team A qualifies, actual 2-1 + team A wins.
+        $points = $this->scoreKnockout(predA: 2, predB: 1, qualified: 1, actualA: 2, actualB: 1, winner: 1);
+
+        $this->assertSame(8, $points);
+    }
+
     public function test_knockout_exact_score_with_wrong_qualified_team_returns_five_points(): void
     {
         // Prediction 1-1 + team A qualifies, actual 1-1 + team B qualifies.

@@ -5294,3 +5294,49 @@ Execute the staging QA process and document whether knockout scoring/UX is safe 
 
 ### Suggested commit message
 Document knockout QA readiness
+
+### Ticket ID
+E20-T09
+
+### Title
+Harden knockout scoring point-delivery QA
+
+### Status
+Done
+
+### Note
+QA/hardening only — no business-rule changes. Reviewed the existing knockout scoring/settlement/sync/demo coverage and confirmed the documented 8/5/5/3/2/0 matrix is implemented correctly; all added tests pass against current behavior with no contradictions found. Strengthened explicit coverage: `tests/Unit/PredictionScoringServiceTest.php` now has a named FT non-draw exact+qualified=8 case (the matrix, null `winner_team_id`, null `predicted_qualified_team_id`, and group-stage 6/3/0 were already covered). `tests/Feature/MatchPredictionSettlementServiceTest.php` adds a knockout idempotency test settling all six buckets twice (sum 23 unchanged). `tests/Feature/ApiFootballSyncFixturesCommandTest.php` adds two settlement-on-sync tests that were the real gap: a finished FT knockout result resolves `winner_team_id` from the score and settles knockout predictions via the expanded matrix (8 and 2), and a PEN tied result resolves the winner from API winner flags and settles predictions (8 and 5) — using the existing HTTP fakes, no real API calls. Group-stage settlement-on-sync and admin-route knockout settlement/idempotency were already covered and remain unchanged. Documented the knockout scoring QA matrix as a table in `docs/qa-checklist.md` and tightened the demo `knockout-qa` scenario instructions in `docs/staging-qa.md`. No scoring, settlement, sync, winner-resolution, schema, UX, Railway/cron/deploy changes.
+
+### Sprint
+Post v1 hardening
+
+### Priority
+High
+
+### Objective
+Increase confidence that knockout scoring awards points exactly as defined when real knockout rounds arrive, by hardening tests and documentation without changing business rules.
+
+### Scope
+- Review existing knockout scoring, settlement, API-sync, and demo QA tests.
+- Add explicitly named coverage for the full 8/5/5/3/2/0 matrix, including FT non-draw and PEN tied (winner from `winner_team_id`) and null-winner / null-predicted-qualified edges.
+- Add knockout settlement idempotency coverage.
+- Add API-sync finalization tests proving FT/AET and PEN knockout results resolve `winner_team_id` and trigger settlement, plus group-stage settlement-on-sync (already present), using HTTP fakes only.
+- Assert demo `knockout-qa` settled counts/points and production refusal (already present).
+- Document the knockout scoring QA matrix and refine staging demo QA instructions.
+
+### Out of scope
+- No scoring rule changes (stop and report if a test reveals a contradiction).
+- No UX/CSS/layout changes.
+- No migrations/schema changes.
+- No production deploy, Railway, or cron changes.
+- No real API calls.
+
+### Acceptance criteria
+- All six knockout point outcomes are covered by clear, named tests.
+- Settlement remains idempotent for knockout matches across all buckets.
+- API sync resolves the winner and triggers settlement for FT/AET and PEN knockout results, and still uses group-stage scoring for group results.
+- Group-stage 6/3/0 scoring remains unchanged.
+- The knockout scoring QA matrix is documented; `php artisan test` passes.
+
+### Suggested commit message
+Harden knockout scoring QA coverage

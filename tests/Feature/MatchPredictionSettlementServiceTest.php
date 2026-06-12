@@ -119,6 +119,56 @@ class MatchPredictionSettlementServiceTest extends TestCase
         $this->assertSame(0, $this->pointsFor($incorrect, $match));
     }
 
+    public function test_knockout_settlement_is_idempotent_across_all_buckets(): void
+    {
+        $teamA = Team::factory()->create(['name' => 'Team A']);
+        $teamB = Team::factory()->create(['name' => 'Team B']);
+        // Final played score 1-1 (tied), resolved on penalties to team A.
+        $match = $this->finishedMatch(
+            stage: 'final',
+            teamAScore: 1,
+            teamBScore: 1,
+            teamA: $teamA,
+            teamB: $teamB,
+            winnerTeam: $teamA,
+        );
+
+        $exactAndQualified = User::factory()->create();   // 1-1 + team A -> 8
+        $exactWrongQualified = User::factory()->create(); // 1-1 + team B -> 5
+        $trendAndQualified = User::factory()->create();   // 2-2 (draw) + team A -> 5
+        $qualifiedOnly = User::factory()->create();       // 2-1 (wrong trend) + team A -> 3
+        $trendOnly = User::factory()->create();           // 0-0 (draw) + team B -> 2
+        $incorrect = User::factory()->create();           // 2-1 (wrong trend) + team B -> 0
+
+        $this->prediction($exactAndQualified, $match, 1, 1, $teamA);
+        $this->prediction($exactWrongQualified, $match, 1, 1, $teamB);
+        $this->prediction($trendAndQualified, $match, 2, 2, $teamA);
+        $this->prediction($qualifiedOnly, $match, 2, 1, $teamA);
+        $this->prediction($trendOnly, $match, 0, 0, $teamB);
+        $this->prediction($incorrect, $match, 2, 1, $teamB);
+
+        $settlement = $this->settlement();
+
+        $this->assertSame(6, $settlement->score($match));
+        $firstTotals = Prediction::query()
+            ->where('match_id', $match->id)
+            ->orderBy('user_id')
+            ->pluck('points_awarded', 'user_id')
+            ->all();
+
+        // Re-running settlement must not change any awarded points or duplicate rows.
+        $this->assertSame(6, $settlement->score($match->refresh()));
+        $secondTotals = Prediction::query()
+            ->where('match_id', $match->id)
+            ->orderBy('user_id')
+            ->pluck('points_awarded', 'user_id')
+            ->all();
+
+        $this->assertSame($firstTotals, $secondTotals);
+        $this->assertSame(6, Prediction::query()->where('match_id', $match->id)->count());
+        $this->assertSame(23, (int) Prediction::query()->where('match_id', $match->id)->sum('points_awarded'));
+    }
+
     public function test_knockout_settlement_without_resolved_winner_does_not_award_qualified_points(): void
     {
         $teamA = Team::factory()->create(['name' => 'Team A']);

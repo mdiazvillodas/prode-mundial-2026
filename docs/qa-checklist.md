@@ -151,6 +151,23 @@ The simulator must refuse `APP_ENV=production` or `APP_MODE=live`. Do not run de
 - Correct trend: submit a non-exact prediction with the correct winning team or correct draw trend, settle the result, and confirm the prediction receives 3 points.
 - Wrong prediction: submit a prediction with the wrong winner/draw trend, settle the result, and confirm the prediction receives 0 points.
 - Knockout scoring matrix (implemented, E20-T04): settle a finished knockout match (stage round of 32 through final) with predictions covering each tier and confirm `points_awarded`: exact score plus correct qualified team = 8, exact score plus wrong qualified team = 5, correct trend plus correct qualified team without exact score = 5, correct qualified team only (wrong trend) = 3, match trend only (wrong qualified team) = 2, fully incorrect = 0. Group-stage scoring stays 6/3/0.
+
+#### Knockout scoring QA matrix (E20-T09)
+
+Use this matrix to verify point delivery. "Exact" = predicted home/away goals equal the final stored score. "Trend" = predicted result tendency (home win / away win / draw) matches the final score's tendency. "Qualified correct" = `predicted_qualified_team_id` equals the match `winner_team_id`. For tied knockout scores decided on penalties, `winner_team_id` is the penalty winner; the played score stays tied. A null `winner_team_id` or null `predicted_qualified_team_id` never earns the qualified bonus (no guessing).
+
+| # | Prediction (example) | Final result (example) | Qualified team | Expected points |
+| - | -------------------- | ---------------------- | -------------- | --------------: |
+| 1 | 2-1, qualified = home | FT 2-1, winner home | correct | 8 |
+| 2 | 1-1, qualified = home | PEN 1-1, winner away (pens) | wrong | 5 |
+| 3 | 0-0 (draw), qualified = home | PEN 1-1, winner home (pens) | correct | 5 |
+| 4 | 2-1 (home win), qualified = home | PEN 1-1, winner home (pens) | correct | 3 |
+| 5 | 0-0 (draw), qualified = away | PEN 1-1, winner home (pens) | wrong | 2 |
+| 6 | 0-1 (away win), qualified = away | FT 2-0, winner home | wrong | 0 |
+| 7 | 1-1 (exact), qualified = null | PEN 1-1, winner home | not predicted | 5 (no bonus) |
+| 8 | 1-1 (exact), qualified = home | finished 1-1, `winner_team_id` null | unknown | 5 (no bonus) |
+
+Group-stage predictions remain on the 6/3/0 rules regardless of any qualified-team value. Settlement is idempotent: re-running it (admin result re-save or API re-sync) must not change awarded points or duplicate predictions.
 - Knockout qualified-team edge cases: confirm a knockout prediction with no `predicted_qualified_team_id` never earns the qualified-team bonus (exact still scores 5, correct trend scores 2), and a finished knockout match with null `winner_team_id` does not award qualified-team points (no guessing).
 - Knockout score meaning: confirm the predicted score represents the final played result before penalties, with no distinction between 90-minute and 120-minute results.
 - Knockout extra time: create or identify a knockout match that is 1-1 after 90 minutes and finishes 2-1 after extra time; a 2-1 prediction is treated as exact (8 with correct qualified team, 5 with wrong qualified team).
