@@ -5025,7 +5025,10 @@ E20-T04
 Implement expanded knockout scoring matrix
 
 ### Status
-Todo
+Done
+
+### Note
+Replaced the old knockout 6/3/0 logic in `PredictionScoringService::calculateKnockoutPrediction()` with the expanded matrix (8/5/5/3/2/0) using `predicted_qualified_team_id` vs `matches.winner_team_id`. Group-stage scoring (`calculate()`, 6/3/0) is untouched; routing still goes through `requiresQualifiedTeamPrediction()`. A null `predicted_qualified_team_id` or null `winner_team_id` earns no qualified-team bonus (no guessing) but still scores exact/trend tiers. Added the new point constants. Coverage: every matrix branch plus both null-edge cases in `tests/Unit/PredictionScoringServiceTest.php`; settlement persistence + idempotency in `tests/Feature/AdminResultSettlementTest.php` and `tests/Feature/MatchPredictionSettlementServiceTest.php` (existing knockout test updated to the new matrix). Leaderboards naturally sum the new points — no query changes. No schema, UX, API sync, or winner-resolution changes.
 
 ### Sprint
 Post v1 hardening

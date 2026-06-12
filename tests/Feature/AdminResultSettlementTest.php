@@ -169,6 +169,63 @@ class AdminResultSettlementTest extends TestCase
         ]);
     }
 
+    public function test_knockout_settlement_stores_matrix_points_and_is_idempotent(): void
+    {
+        $admin = $this->admin();
+        $match = $this->matchReadyForResult(['stage' => 'quarter_final']);
+        $teamA = $match->team_a_id;
+        $teamB = $match->team_b_id;
+
+        // Actual result: team A wins 2-1, so winner_team_id resolves to team A.
+        $perfect = $this->knockoutPrediction($match, 2, 1, $teamA);       // exact + qualified -> 8
+        $exactWrongQualified = $this->knockoutPrediction($match, 2, 1, $teamB); // exact + wrong qualified -> 5
+        $trendAndQualified = $this->knockoutPrediction($match, 1, 0, $teamA);   // trend + qualified, no exact -> 5
+        $qualifiedOnly = $this->knockoutPrediction($match, 0, 1, $teamA);       // wrong trend, qualified -> 3
+        $trendOnly = $this->knockoutPrediction($match, 3, 1, $teamB);           // trend only -> 2
+        $incorrect = $this->knockoutPrediction($match, 0, 2, $teamB);           // wrong trend + wrong qualified -> 0
+
+        $this->actingAs($admin)
+            ->post(route('admin.matches.result.update', $match), [
+                'team_a_score' => 2,
+                'team_b_score' => 1,
+            ])
+            ->assertRedirect(route('admin.matches.index'));
+
+        $match->refresh();
+        $this->assertSame($teamA, $match->winner_team_id);
+
+        $expected = [
+            $perfect->id => 8,
+            $exactWrongQualified->id => 5,
+            $trendAndQualified->id => 5,
+            $qualifiedOnly->id => 3,
+            $trendOnly->id => 2,
+            $incorrect->id => 0,
+        ];
+
+        foreach ($expected as $predictionId => $points) {
+            $this->assertDatabaseHas('predictions', [
+                'id' => $predictionId,
+                'status' => Prediction::STATUS_SCORED,
+                'points_awarded' => $points,
+            ]);
+        }
+
+        // Re-running settlement with the same result must be idempotent.
+        $this->actingAs($admin)
+            ->post(route('admin.matches.result.update', $match), [
+                'team_a_score' => 2,
+                'team_b_score' => 1,
+            ])
+            ->assertRedirect(route('admin.matches.index'));
+
+        foreach ($expected as $predictionId => $points) {
+            $this->assertSame($points, Prediction::query()->findOrFail($predictionId)->points_awarded);
+        }
+
+        $this->assertSame(count($expected), Prediction::query()->where('match_id', $match->id)->count());
+    }
+
     public function test_saving_result_with_no_predictions_still_works(): void
     {
         $admin = $this->admin();
@@ -356,6 +413,17 @@ class AdminResultSettlementTest extends TestCase
     private function admin(): User
     {
         return User::factory()->create(['role' => User::ROLE_ADMIN]);
+    }
+
+    private function knockoutPrediction(TournamentMatch $match, int $teamAScore, int $teamBScore, int $qualifiedTeamId): Prediction
+    {
+        return Prediction::factory()->create([
+            'user_id' => User::factory()->create()->id,
+            'match_id' => $match->id,
+            'team_a_score' => $teamAScore,
+            'team_b_score' => $teamBScore,
+            'predicted_qualified_team_id' => $qualifiedTeamId,
+        ]);
     }
 
     private function matchReadyForResult(array $overrides = []): TournamentMatch

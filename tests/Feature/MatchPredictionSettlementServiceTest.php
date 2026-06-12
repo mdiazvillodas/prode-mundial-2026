@@ -81,10 +81,11 @@ class MatchPredictionSettlementServiceTest extends TestCase
         $this->assertSame(9, (int) Prediction::query()->where('match_id', $match->id)->sum('points_awarded'));
     }
 
-    public function test_knockout_settlement_uses_existing_winner_team_for_penalty_classification_rules(): void
+    public function test_knockout_settlement_applies_expanded_matrix_using_winner_team(): void
     {
         $teamA = Team::factory()->create(['name' => 'Team A']);
         $teamB = Team::factory()->create(['name' => 'Team B']);
+        // Final played score 1-1 (tied), resolved on penalties to team A.
         $match = $this->finishedMatch(
             stage: 'final',
             teamAScore: 1,
@@ -93,19 +94,56 @@ class MatchPredictionSettlementServiceTest extends TestCase
             teamB: $teamB,
             winnerTeam: $teamA,
         );
-        $exactAndQualified = User::factory()->create();
-        $qualifiedOnly = User::factory()->create();
-        $wrongQualified = User::factory()->create();
+
+        $exactAndQualified = User::factory()->create();   // 1-1 + team A -> 8
+        $exactWrongQualified = User::factory()->create(); // 1-1 + team B -> 5
+        $trendAndQualified = User::factory()->create();   // 2-2 (draw) + team A -> 5
+        $qualifiedOnly = User::factory()->create();       // 2-1 (wrong trend) + team A -> 3
+        $trendOnly = User::factory()->create();           // 0-0 (draw) + team B -> 2
+        $incorrect = User::factory()->create();           // 2-1 (wrong trend) + team B -> 0
 
         $this->prediction($exactAndQualified, $match, 1, 1, $teamA);
-        $this->prediction($qualifiedOnly, $match, 2, 2, $teamA);
-        $this->prediction($wrongQualified, $match, 1, 1, $teamB);
+        $this->prediction($exactWrongQualified, $match, 1, 1, $teamB);
+        $this->prediction($trendAndQualified, $match, 2, 2, $teamA);
+        $this->prediction($qualifiedOnly, $match, 2, 1, $teamA);
+        $this->prediction($trendOnly, $match, 0, 0, $teamB);
+        $this->prediction($incorrect, $match, 2, 1, $teamB);
 
         $this->settlement()->score($match);
 
-        $this->assertSame(6, $this->pointsFor($exactAndQualified, $match));
+        $this->assertSame(8, $this->pointsFor($exactAndQualified, $match));
+        $this->assertSame(5, $this->pointsFor($exactWrongQualified, $match));
+        $this->assertSame(5, $this->pointsFor($trendAndQualified, $match));
         $this->assertSame(3, $this->pointsFor($qualifiedOnly, $match));
-        $this->assertSame(0, $this->pointsFor($wrongQualified, $match));
+        $this->assertSame(2, $this->pointsFor($trendOnly, $match));
+        $this->assertSame(0, $this->pointsFor($incorrect, $match));
+    }
+
+    public function test_knockout_settlement_without_resolved_winner_does_not_award_qualified_points(): void
+    {
+        $teamA = Team::factory()->create(['name' => 'Team A']);
+        $teamB = Team::factory()->create(['name' => 'Team B']);
+        // Tied knockout with no resolvable winner (API winner flags absent).
+        $match = $this->finishedMatch(
+            stage: 'semi_final',
+            teamAScore: 1,
+            teamBScore: 1,
+            teamA: $teamA,
+            teamB: $teamB,
+            winnerTeam: null,
+        );
+        $this->assertNull($match->winner_team_id);
+
+        $exact = User::factory()->create();
+        $trend = User::factory()->create();
+
+        $this->prediction($exact, $match, 1, 1, $teamA); // exact, qualified not credited -> 5
+        $this->prediction($trend, $match, 0, 0, $teamA); // draw trend, qualified not credited -> 2
+
+        $this->settlement()->score($match);
+
+        $this->assertSame(5, $this->pointsFor($exact, $match));
+        $this->assertSame(2, $this->pointsFor($trend, $match));
     }
 
     private function settlement(): MatchPredictionSettlementService
