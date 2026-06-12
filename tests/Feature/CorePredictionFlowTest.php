@@ -538,6 +538,241 @@ class CorePredictionFlowTest extends TestCase
         ]);
     }
 
+    public function test_knockout_non_draw_prediction_infers_qualified_team_a_from_score(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'round_of_16']);
+
+        $this->actingAs($user)
+            ->post(route('predictions.store', $match), [
+                'team_a_score' => 2,
+                'team_b_score' => 1,
+            ])
+            ->assertRedirect(route('predictions.show', $match));
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => 2,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $match->team_a_id,
+        ]);
+    }
+
+    public function test_knockout_non_draw_prediction_infers_qualified_team_b_from_score(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'semi_final']);
+
+        $this->actingAs($user)
+            ->post(route('predictions.store', $match), [
+                'team_a_score' => 1,
+                'team_b_score' => 2,
+            ])
+            ->assertRedirect(route('predictions.show', $match));
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_qualified_team_id' => $match->team_b_id,
+        ]);
+    }
+
+    public function test_knockout_draw_prediction_without_qualified_team_shows_user_facing_error(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'quarter_final']);
+
+        $this->actingAs($user)
+            ->post(route('predictions.store', $match), [
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+            ])
+            ->assertSessionHasErrors([
+                'predicted_qualified_team_id' => 'Si pronosticás empate, elegí qué equipo clasifica.',
+            ]);
+
+        $this->assertDatabaseMissing('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+        ]);
+    }
+
+    public function test_knockout_draw_prediction_with_team_a_selected_persists_team_a(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'final']);
+
+        $this->actingAs($user)
+            ->post(route('predictions.store', $match), [
+                'team_a_score' => 0,
+                'team_b_score' => 0,
+                'predicted_qualified_team_id' => $match->team_a_id,
+            ])
+            ->assertRedirect(route('predictions.show', $match));
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_qualified_team_id' => $match->team_a_id,
+        ]);
+    }
+
+    public function test_inline_bulk_knockout_non_draw_infers_qualified_team_without_explicit_selection(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'round_of_16']);
+
+        $this->actingAs($user)
+            ->from('/predictions')
+            ->post('/predictions/bulk', [
+                'predictions' => [
+                    $match->id => [
+                        'changed' => '1',
+                        'team_a_score' => 3,
+                        'team_b_score' => 1,
+                    ],
+                ],
+            ])
+            ->assertRedirect('/predictions');
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_qualified_team_id' => $match->team_a_id,
+        ]);
+    }
+
+    public function test_inline_bulk_knockout_draw_requires_qualified_team(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'final']);
+
+        $this->actingAs($user)
+            ->from('/predictions')
+            ->post('/predictions/bulk', [
+                'predictions' => [
+                    $match->id => [
+                        'changed' => '1',
+                        'team_a_score' => 2,
+                        'team_b_score' => 2,
+                    ],
+                ],
+            ])
+            ->assertSessionHasErrors(["predictions.{$match->id}.predicted_qualified_team_id"]);
+
+        $this->assertDatabaseMissing('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+        ]);
+    }
+
+    public function test_inline_bulk_knockout_draw_persists_selected_qualified_team(): void
+    {
+        $user = User::factory()->create();
+        $match = $this->predictableMatch(['stage' => 'semi_final']);
+
+        $this->actingAs($user)
+            ->from('/predictions')
+            ->post('/predictions/bulk', [
+                'predictions' => [
+                    $match->id => [
+                        'changed' => '1',
+                        'team_a_score' => 1,
+                        'team_b_score' => 1,
+                        'predicted_qualified_team_id' => $match->team_b_id,
+                    ],
+                ],
+            ])
+            ->assertRedirect('/predictions');
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_qualified_team_id' => $match->team_b_id,
+        ]);
+    }
+
+    public function test_knockout_card_shows_flag_selector_and_helper_copy(): void
+    {
+        $user = User::factory()->create();
+        $startsAt = Carbon::parse('2026-07-01 18:00:00');
+        $match = $this->predictableMatch([
+            'stage' => 'quarter_final',
+            'starts_at' => $startsAt,
+            'prediction_closes_at' => $startsAt->copy()->subMinutes(5),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-07-01&tz=UTC')
+            ->assertOk()
+            ->assertSee('data-qualified-selector', false)
+            ->assertSee('data-qualified-radio', false)
+            ->assertSee('¿Quién clasifica?')
+            ->assertSee("Si hay alargue, cuenta el resultado al final de los 120'");
+    }
+
+    public function test_saved_knockout_prediction_preloads_score_and_selected_qualified_team(): void
+    {
+        $user = User::factory()->create();
+        $startsAt = Carbon::parse('2026-07-01 18:00:00');
+        $match = $this->predictableMatch([
+            'stage' => 'quarter_final',
+            'starts_at' => $startsAt,
+            'prediction_closes_at' => $startsAt->copy()->subMinutes(5),
+        ]);
+
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $match->team_b_id,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-07-01&tz=UTC')
+            ->assertOk()
+            ->assertSee('value="1"', false)
+            ->assertSeeInOrder([
+                'qualified-'.$match->team_b_id.'"',
+                'checked',
+            ], false);
+    }
+
+    public function test_my_predictions_shows_score_and_qualified_team_for_knockout(): void
+    {
+        $user = User::factory()->create();
+        $teamA = Team::factory()->create(['name' => 'Argentina']);
+        $teamB = Team::factory()->create(['name' => 'Croatia']);
+        $match = TournamentMatch::factory()->create([
+            'team_a_id' => $teamA->id,
+            'team_b_id' => $teamB->id,
+            'starts_at' => now()->subDay(),
+            'prediction_closes_at' => now()->subDay()->subMinutes(5),
+            'stage' => 'semi_final',
+            'status' => TournamentMatch::STATUS_FINISHED,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'winner_team_id' => $teamB->id,
+        ]);
+
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $teamB->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/my-predictions')
+            ->assertOk()
+            ->assertSee('1 - 1')
+            ->assertSee('Clasificado pronosticado')
+            ->assertSee('Croatia');
+    }
+
     private function predictableMatch(array $overrides = []): TournamentMatch
     {
         $teamA = Team::factory()->create();

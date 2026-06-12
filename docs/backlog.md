@@ -5073,7 +5073,10 @@ E20-T05
 Polish knockout prediction UX with flag-based qualified selector
 
 ### Status
-Todo
+Done
+
+### Note
+Added a reusable `<x-knockout-qualified-selector>` (flag/label radio buttons, mobile-first) used by both the inline `/predictions` bulk flow and the single-match form, replacing the old `<select>`. Knockout matches now show helper copy about the final played result, 120' extra time, and penalty qualification (no gambling language). `PredictionController` resolves the qualified team server-side via `resolveKnockoutQualifiedTeam()`: non-draw scores infer the winner (no manual selection needed, works without JS), draws still require an explicit valid selection or fail with a Spanish error. Progressive-enhancement script (`predictions/partials/knockout-inference.blade.php`) auto-selects the inferred team and toggles auto/draw hints; qualified-team radios participate in unsaved-change tracking so the floating save still works. Closed/read-only views (inline card and `/my-predictions`) show the predicted qualified team. Group-stage UX/behavior and bulk-save unchanged. Tests in `tests/Feature/CorePredictionFlowTest.php` and `tests/Feature/KnockoutPredictionFlowTest.php` cover non-draw inference (single + bulk), draw validation/persistence, preload, and read-only display; two pre-existing `KnockoutPredictionFlowTest` cases were updated to the new non-draw-inference rule (and their latent factory-time flakiness fixed). UX rules documented in `docs/ui-guidelines.md`; QA steps refined in `docs/qa-checklist.md`. No scoring, winner-resolution, API sync, schema, or leaderboard changes.
 
 ### Sprint
 Post v1 hardening

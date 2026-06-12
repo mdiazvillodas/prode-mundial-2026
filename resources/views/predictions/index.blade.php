@@ -134,7 +134,9 @@
                                     $qualifiedTeamError = $errors->first("predictions.{$match->id}.predicted_qualified_team_id");
                                 @endphp
 
-                                <article @class([
+                                <article
+                                    @if ($match->requiresQualifiedTeamPrediction()) data-knockout-card @endif
+                                    @class([
                                     'overflow-hidden rounded-[1.75rem] border bg-white shadow-xl shadow-blue-900/5 ring-1 transition',
                                     'border-blue-100 ring-blue-100/80' => $canPredict,
                                     'border-slate-200 opacity-90 ring-slate-100' => ! $canPredict,
@@ -201,6 +203,7 @@
                                                                 value="{{ old("predictions.{$match->id}.team_a_score", $prediction?->team_a_score) }}"
                                                                 class="h-16 w-14 rounded-2xl border-2 border-blue-100 bg-blue-50/70 text-center text-2xl font-black text-blue-950 shadow-inner transition focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                                                                 data-prediction-input
+                                                                data-score-a
                                                             >
                                                         </div>
 
@@ -220,6 +223,7 @@
                                                                 value="{{ old("predictions.{$match->id}.team_b_score", $prediction?->team_b_score) }}"
                                                                 class="h-16 w-14 rounded-2xl border-2 border-blue-100 bg-blue-50/70 text-center text-2xl font-black text-blue-950 shadow-inner transition focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                                                                 data-prediction-input
+                                                                data-score-b
                                                             >
                                                         </div>
                                                     </div>
@@ -242,6 +246,16 @@
                                                         <p class="mt-1 text-3xl font-black">
                                                             {{ $prediction->team_a_score }} - {{ $prediction->team_b_score }}
                                                         </p>
+                                                        @php
+                                                            $predictedQualifiedName = $prediction->predicted_qualified_team_id == $match->team_a_id
+                                                                ? $teamAName
+                                                                : ($prediction->predicted_qualified_team_id == $match->team_b_id ? $teamBName : null);
+                                                        @endphp
+                                                        @if ($predictedQualifiedName)
+                                                            <p class="mt-1 text-[11px] font-bold text-blue-600">
+                                                                {{ __('Pasa') }}: {{ $predictedQualifiedName }}
+                                                            </p>
+                                                        @endif
                                                         <p class="mt-1 text-[11px] font-bold text-blue-600">
                                                             {{ __('Ya no se puede editar') }}
                                                         </p>
@@ -278,31 +292,13 @@
                                         </div>
 
                                         @if ($canPredict && $match->requiresQualifiedTeamPrediction())
-                                            <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-                                                <label for="prediction-{{ $match->id }}-qualified-team" class="block text-sm font-black text-blue-950">
-                                                    {{ __('Equipo clasificado') }}
-                                                </label>
-                                                <p class="mt-1 text-xs font-medium text-blue-700">
-                                                    {{ __('En eliminatorias también tenés que elegir quién avanza.') }}
-                                                </p>
-                                                <select
-                                                    id="prediction-{{ $match->id }}-qualified-team"
-                                                    name="predictions[{{ $match->id }}][predicted_qualified_team_id]"
-                                                    class="mt-3 block w-full rounded-2xl border-2 border-blue-100 bg-white px-4 py-3 text-sm font-bold text-blue-950 shadow-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                                                    data-prediction-input
-                                                >
-                                                    <option value="">{{ __('Seleccioná el equipo clasificado') }}</option>
-                                                    <option value="{{ $match->team_a_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_a_id ? 'selected' : '' }}>
-                                                        {{ $teamAName }}
-                                                    </option>
-                                                    <option value="{{ $match->team_b_id }}" {{ old("predictions.{$match->id}.predicted_qualified_team_id", $prediction?->predicted_qualified_team_id) == $match->team_b_id ? 'selected' : '' }}>
-                                                        {{ $teamBName }}
-                                                    </option>
-                                                </select>
-                                                @if ($qualifiedTeamError)
-                                                    <p class="mt-2 text-xs font-semibold text-red-600">{{ $qualifiedTeamError }}</p>
-                                                @endif
-                                            </div>
+                                            <x-knockout-qualified-selector
+                                                :match="$match"
+                                                name="predictions[{{ $match->id }}][predicted_qualified_team_id]"
+                                                id-prefix="prediction-{{ $match->id }}"
+                                                :selected-id="old('predictions.'.$match->id.'.predicted_qualified_team_id', $prediction?->predicted_qualified_team_id)"
+                                                :error="$qualifiedTeamError"
+                                            />
                                         @endif
 
                                         <div class="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
@@ -429,4 +425,6 @@
             });
         });
     </script>
+
+    @include('predictions.partials.knockout-inference')
 </x-app-layout>

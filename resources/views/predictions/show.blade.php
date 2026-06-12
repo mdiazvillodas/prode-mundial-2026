@@ -61,7 +61,7 @@
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route('predictions.store', $tournamentMatch) }}" class="mt-6 space-y-5">
+                    <form method="POST" action="{{ route('predictions.store', $tournamentMatch) }}" class="mt-6 space-y-5" data-knockout-card>
                         @csrf
 
                         <div class="grid grid-cols-2 gap-4">
@@ -76,6 +76,7 @@
                                     inputmode="numeric"
                                     class="mt-1 block w-full"
                                     :value="old('team_a_score', $prediction?->team_a_score)"
+                                    data-score-a
                                     required
                                 />
                                 <x-input-error :messages="$errors->get('team_a_score')" class="mt-2" />
@@ -92,6 +93,7 @@
                                     inputmode="numeric"
                                     class="mt-1 block w-full"
                                     :value="old('team_b_score', $prediction?->team_b_score)"
+                                    data-score-b
                                     required
                                 />
                                 <x-input-error :messages="$errors->get('team_b_score')" class="mt-2" />
@@ -99,24 +101,13 @@
                         </div>
 
                         @if ($tournamentMatch->requiresQualifiedTeamPrediction())
-                            <div>
-                                <x-input-label for="predicted_qualified_team_id" :value="__('Equipo clasificado')" />
-                                <select
-                                    id="predicted_qualified_team_id"
-                                    name="predicted_qualified_team_id"
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                >
-                                    <option value="">{{ __('Selecciona el equipo clasificado') }}</option>
-                                    <option value="{{ $tournamentMatch->team_a_id }}" {{ old('predicted_qualified_team_id', $prediction?->predicted_qualified_team_id) == $tournamentMatch->team_a_id ? 'selected' : '' }}>
-                                        {{ $tournamentMatch->teamA->name }}
-                                    </option>
-                                    <option value="{{ $tournamentMatch->team_b_id }}" {{ old('predicted_qualified_team_id', $prediction?->predicted_qualified_team_id) == $tournamentMatch->team_b_id ? 'selected' : '' }}>
-                                        {{ $tournamentMatch->teamB->name }}
-                                    </option>
-                                </select>
-                                <x-input-error :messages="$errors->get('predicted_qualified_team_id')" class="mt-2" />
-                            </div>
+                            <x-knockout-qualified-selector
+                                :match="$tournamentMatch"
+                                name="predicted_qualified_team_id"
+                                id-prefix="single"
+                                :selected-id="old('predicted_qualified_team_id', $prediction?->predicted_qualified_team_id)"
+                                :error="$errors->first('predicted_qualified_team_id')"
+                            />
                         @endif
 
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -133,4 +124,6 @@
             </div>
         </div>
     </div>
+
+    @include('predictions.partials.knockout-inference')
 </x-app-layout>

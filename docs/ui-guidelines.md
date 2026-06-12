@@ -96,6 +96,16 @@ Match cards should make the core state obvious at a glance:
 - Status should be shown with consistent labels and visual treatment.
 - Primary actions should be obvious and touch-friendly.
 
+## Knockout Qualified-Team Selector
+
+Knockout matches reuse the normal score inputs plus a qualified-team selector (`<x-knockout-qualified-selector>`):
+
+- The predicted score is always the final played result before penalties (no 90' vs 120' distinction). Show the standard knockout helper copy explaining extra time and that a predicted draw is decided by who passes on penalties.
+- A non-draw predicted score infers the qualified team from the score winner; the user does not need to choose manually, and the selector reflects the inferred team automatically. Server-side resolution is authoritative, so the inference works even without JavaScript.
+- A predicted draw requires an explicit qualified-team choice. Present the two teams as flag/label radio buttons (not a `<select>`), mobile-first, with a clear selected state.
+- The qualified-team radios participate in the inline "unsaved changes" tracking so the floating save action behaves consistently.
+- Closed/read-only knockout predictions must show both the predicted score and the predicted qualified team.
+
 ## Visual States
 
 Use distinct visual treatments for:

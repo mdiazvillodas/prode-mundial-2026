@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -160,27 +159,30 @@ class PredictionController extends Controller
     {
         abort_unless($tournamentMatch->isPredictable(), 403);
 
-        $rules = [
+        $validated = $request->validate([
             'team_a_score' => ['required', 'integer', 'min:0', 'max:99'],
             'team_b_score' => ['required', 'integer', 'min:0', 'max:99'],
-        ];
+        ]);
 
-        if ($tournamentMatch->requiresQualifiedTeamPrediction()) {
-            $rules['predicted_qualified_team_id'] = [
-                'required',
-                'integer',
-                Rule::in([$tournamentMatch->team_a_id, $tournamentMatch->team_b_id]),
-            ];
+        $qualifiedTeam = $this->resolveKnockoutQualifiedTeam(
+            $tournamentMatch,
+            (int) $validated['team_a_score'],
+            (int) $validated['team_b_score'],
+            $request->input('predicted_qualified_team_id'),
+        );
+
+        if ($qualifiedTeam['error'] !== null) {
+            throw ValidationException::withMessages([
+                'predicted_qualified_team_id' => [$qualifiedTeam['error']],
+            ]);
         }
-
-        $validated = $request->validate($rules);
 
         $request->user()->predictions()->updateOrCreate(
             ['match_id' => $tournamentMatch->id],
             [
                 'team_a_score' => $validated['team_a_score'],
                 'team_b_score' => $validated['team_b_score'],
-                'predicted_qualified_team_id' => $validated['predicted_qualified_team_id'] ?? null,
+                'predicted_qualified_team_id' => $qualifiedTeam['team_id'],
                 'status' => Prediction::STATUS_SUBMITTED,
                 'points_awarded' => null,
             ],
@@ -233,14 +235,6 @@ class PredictionController extends Controller
                 'team_b_score' => ['required', 'integer', 'min:0', 'max:99'],
             ];
 
-            if ($match->requiresQualifiedTeamPrediction()) {
-                $rules['predicted_qualified_team_id'] = [
-                    'required',
-                    'integer',
-                    Rule::in([$match->team_a_id, $match->team_b_id]),
-                ];
-            }
-
             $validator = Validator::make($prediction, $rules);
 
             if ($validator->fails()) {
@@ -251,7 +245,24 @@ class PredictionController extends Controller
                 continue;
             }
 
-            $validPredictions[(int) $matchId] = $validator->validated();
+            $validated = $validator->validated();
+
+            $qualifiedTeam = $this->resolveKnockoutQualifiedTeam(
+                $match,
+                (int) $validated['team_a_score'],
+                (int) $validated['team_b_score'],
+                $prediction['predicted_qualified_team_id'] ?? null,
+            );
+
+            if ($qualifiedTeam['error'] !== null) {
+                $errors["predictions.{$matchId}.predicted_qualified_team_id"] = [$qualifiedTeam['error']];
+
+                continue;
+            }
+
+            $validPredictions[(int) $matchId] = $validated + [
+                'predicted_qualified_team_id' => $qualifiedTeam['team_id'],
+            ];
         }
 
         if ($errors !== []) {
@@ -274,6 +285,46 @@ class PredictionController extends Controller
         return redirect()
             ->route('predictions.index', $this->predictionIndexQuery($request))
             ->with('status', __('Predicciones guardadas.'));
+    }
+
+    /**
+     * Resolve the predicted qualified team for a match.
+     *
+     * Group-stage matches never carry a qualified team. For knockout matches the
+     * qualified team is inferred from a non-draw predicted score (the score
+     * winner advances). A predicted draw requires an explicit, valid selection,
+     * otherwise an error message is returned for the caller to surface.
+     *
+     * @return array{team_id: int|null, error: string|null}
+     */
+    private function resolveKnockoutQualifiedTeam(
+        TournamentMatch $match,
+        int $teamAScore,
+        int $teamBScore,
+        mixed $submittedTeamId,
+    ): array {
+        if (! $match->requiresQualifiedTeamPrediction()) {
+            return ['team_id' => null, 'error' => null];
+        }
+
+        if ($teamAScore > $teamBScore) {
+            return ['team_id' => $match->team_a_id, 'error' => null];
+        }
+
+        if ($teamBScore > $teamAScore) {
+            return ['team_id' => $match->team_b_id, 'error' => null];
+        }
+
+        $submittedTeamId = is_numeric($submittedTeamId) ? (int) $submittedTeamId : null;
+
+        if (in_array($submittedTeamId, [$match->team_a_id, $match->team_b_id], true)) {
+            return ['team_id' => $submittedTeamId, 'error' => null];
+        }
+
+        return [
+            'team_id' => null,
+            'error' => __('Si pronosticás empate, elegí qué equipo clasifica.'),
+        ];
     }
 
     /**
