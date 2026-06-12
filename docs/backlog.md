@@ -5122,7 +5122,10 @@ E20-T06
 Add finished-match consistency checks
 
 ### Status
-Todo
+Done
+
+### Note
+Added a read-only `prode:check-finished-matches` Artisan command backed by `App\Services\Operations\FinishedMatchConsistencyChecker`. The checker never mutates data (verified by a no-mutation test) and is safe in production/live; it does not call API-Football and prints no user emails or secrets. It detects: API finished but local not finished, finished match missing a score, knockout finished without `winner_team_id`, finished match with unscored predictions, finished match with predictions but zero scored, plus optional `non_draw_winner_mismatch`, `group_draw_has_winner`, `knockout_winner_not_in_teams` (all critical) and a non-critical `api_live_local_finished` warning. Prints a compact summary plus per-issue detail rows (match id, api_fixture_id, teams, api_status, local status, score, winner, issue code) and exits non-zero only on critical issues. Covered by `tests/Feature/FinishedMatchConsistencyTest.php` (clean pass, each inconsistency, no-mutation). Documented run/interpretation in `docs/qa-checklist.md` and a short operational note in `docs/api-football.md`. No scoring, settlement, winner-resolution, API sync, UX, schema, or cron changes.
 
 ### Sprint
 Post v1 hardening

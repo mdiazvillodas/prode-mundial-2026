@@ -347,6 +347,16 @@ A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_fixt
 4. **Sync visibility** (E16-T05, complete): Store compact sync logs and expose an admin health screen.
 5. **Result settlement** (E16-T04, planned): Use synced data to update scores and settle predictions.
 
+## Finished-Match Consistency Check
+
+A read-only Artisan command reconciles API-Football-driven results with local match and prediction state:
+
+```bash
+php artisan prode:check-finished-matches
+```
+
+It never modifies data and is safe to run in production/live (it does not call API-Football and prints no user emails or secrets). It reports, among others, when API reports a finished status (`FT`/`AET`/`PEN`) but the local match is not finished, when a finished match is missing a score, when a knockout finished match has no `winner_team_id`, when a finished match has unscored predictions, and when a finished match has predictions but none are scored. It exits `0` when no critical inconsistencies are found and non-zero otherwise. See `docs/qa-checklist.md` for the full issue-code list and interpretation. This command does not auto-repair anything; it only surfaces issues for an operator to act on.
+
 ## Sync Logs And Admin Health
 
 API-Football discovery and sync commands write compact operational records to `api_sync_logs`.
