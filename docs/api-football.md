@@ -170,8 +170,8 @@ The command:
 - Upserts local `TournamentMatch` rows using `api_provider` and `api_fixture_id`.
 - Maps API home team to `team_a_id` and API away team to `team_b_id`.
 - Stores `fixture.date`, `fixture.status.short`, `league.round`, venue name/city, and `last_synced_at`.
-- Stores scores only for finished API statuses (`FT`, `AET`, `PEN`).
-- Does not settle predictions and does not call `MatchPredictionSettlementService`.
+- Stores scores for finished (`FT`, `AET`, `PEN`) and live API statuses; live partial scores are stored without marking the match finished or settling predictions.
+- Resolves `winner_team_id` for finished matches and settles predictions via `MatchPredictionSettlementService` only when both final scores are present (see Winner Resolution below). Settlement is idempotent.
 - Does not create teams, sync rankings, sync leagues, change admin flows, or delete local matches.
 
 Group letters are not inferred from `league.round`. The raw API round is stored in `round`; `stage` is mapped only when the round label is clear, and `group` remains unchanged/null.
@@ -195,6 +195,27 @@ Notes:
 - `third_place` is matched **before** the generic `final` check, because API-Football labels third place as `3rd Place Final`, which also contains the word "final".
 - `TournamentMatch::isKnockout()` and `TournamentMatch::requiresQualifiedTeamPrediction()` return `true` for all stages in `TournamentMatch::KNOCKOUT_STAGES` (round of 32 through final, including third place). Group stage does not require a qualified-team prediction.
 - Unknown or new round labels are handled conservatively: `stage` is left `null` (so the match is treated as non-knockout and does **not** silently require/skip qualified-team logic for the wrong reason), the raw `round` value is preserved, and the labels are surfaced. The sync command prints an `Unmapped API round labels:` warning, writes a `Log::warning`, and records the labels under `metadata.unknown_rounds` in the sync log so admins can review and extend the mapping.
+
+#### Winner resolution (E20-T03)
+
+`winner_team_id` is resolved during fixture sync only for finished statuses (`FT`, `AET`, `PEN`) when both `team_a_score` and `team_b_score` are present. The local scores hold the final **played** result before penalties (API `goals.home` → `team_a_score`, `goals.away` → `team_b_score`). Penalty shootout scores are not stored in the local score columns.
+
+Resolution rules (`ApiFootballSyncFixturesCommand::resolveWinnerTeamId()`):
+
+| Case | Played score | Stage | `winner_team_id` |
+| --- | --- | --- | --- |
+| FT/AET non-draw | higher side wins | any | higher-scoring team |
+| FT/AET draw | tied | group | null |
+| PEN (or tied knockout) | tied | knockout | from API winner flags |
+| Tied knockout, flags absent | tied | knockout | null (no guess) |
+
+Notes:
+
+- A tied played score only has a decisive winner in knockout matches. The winner is taken from the API-Football `teams.home.winner` / `teams.away.winner` flags (`true` on the advancing side). API home maps to team A, API away maps to team B.
+- When a knockout match is tied and the winner flags are absent, `winner_team_id` stays `null` rather than guessing; admins can re-sync once the API exposes the flags.
+- Group-stage draws always keep `winner_team_id` null even if winner flags were present.
+- Live/in-progress statuses may store a partial score but never set a final winner, never mark the match finished, and never trigger settlement.
+- This ticket does not implement the expanded knockout scoring matrix; settlement still uses the current `PredictionScoringService`.
 - An existing match keeps its current `stage` on re-sync; the round-to-stage mapping only fills `stage` when it is currently null.
 
 ## Snapshots
@@ -316,7 +337,7 @@ response[]
 
 A unique constraint prevents duplicate syncs: `unique(['api_provider', 'api_fixture_id'])`.
 
-**Note**: `starts_at`, `team_a_score`, and `team_b_score` are already in the app database and are updated during fixture sync when safe. `winner_team_id` is not set by fixture sync; prediction settlement remains a separate future command.
+**Note**: `starts_at`, `team_a_score`, and `team_b_score` are already in the app database and are updated during fixture sync when safe. `winner_team_id` is resolved during fixture sync for finished matches and predictions are settled when both final scores are present — see the Winner resolution (E20-T03) section above.
 
 ### Data Flow
 

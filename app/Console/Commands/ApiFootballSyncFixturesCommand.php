@@ -421,9 +421,12 @@ class ApiFootballSyncFixturesCommand extends Command
             $values['team_b_score'] = $this->nullableInteger(Arr::get($item, 'goals.away'));
 
             if ($isFinished && $values['team_a_score'] !== null && $values['team_b_score'] !== null) {
-                $values['winner_team_id'] = $this->winnerTeamId(
+                $values['winner_team_id'] = $this->resolveWinnerTeamId(
                     $values['team_a_score'],
                     $values['team_b_score'],
+                    in_array($values['stage'], TournamentMatch::KNOCKOUT_STAGES, true),
+                    Arr::get($item, 'teams.home.winner'),
+                    Arr::get($item, 'teams.away.winner'),
                     $homeTeam->id,
                     $awayTeam->id,
                 );
@@ -491,13 +494,48 @@ class ApiFootballSyncFixturesCommand extends Command
         return in_array($status, self::LIVE_API_STATUSES, true);
     }
 
-    private function winnerTeamId(int $teamAScore, int $teamBScore, int $teamAId, int $teamBId): ?int
-    {
+    /**
+     * Resolve the winning team for a finished fixture.
+     *
+     * The local `team_a_score` / `team_b_score` hold the final played result
+     * before penalties (API home maps to team A, API away maps to team B):
+     *
+     * - A non-draw played score (FT or AET) yields the higher-scoring team.
+     * - A tied played score has no winner in the group stage, so it stays null.
+     * - A tied played score in a knockout match (decided on penalties, status
+     *   PEN) is resolved from the API-Football `teams.home.winner` /
+     *   `teams.away.winner` flags. When those flags are absent the winner stays
+     *   null rather than guessing.
+     *
+     * @param  mixed  $homeWinnerFlag  API `teams.home.winner` (true/false/null)
+     * @param  mixed  $awayWinnerFlag  API `teams.away.winner` (true/false/null)
+     */
+    private function resolveWinnerTeamId(
+        int $teamAScore,
+        int $teamBScore,
+        bool $isKnockout,
+        mixed $homeWinnerFlag,
+        mixed $awayWinnerFlag,
+        int $teamAId,
+        int $teamBId,
+    ): ?int {
         if ($teamAScore > $teamBScore) {
             return $teamAId;
         }
 
         if ($teamBScore > $teamAScore) {
+            return $teamBId;
+        }
+
+        if (! $isKnockout) {
+            return null;
+        }
+
+        if ($homeWinnerFlag === true) {
+            return $teamAId;
+        }
+
+        if ($awayWinnerFlag === true) {
             return $teamBId;
         }
 

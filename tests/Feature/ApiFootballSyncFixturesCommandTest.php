@@ -517,6 +517,265 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         $this->assertContains('Mystery Round', $log->metadata['unknown_rounds'] ?? []);
     }
 
+    public function test_group_ft_non_draw_sets_home_winner_and_settles_predictions(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 3001,
+            'stage' => 'group',
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+            'winner_team_id' => null,
+        ]);
+        $prediction = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 2,
+            'team_b_score' => 0,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3001, 10, 20, status: 'FT', homeGoals: 2, awayGoals: 0, round: 'Group Stage - 1', homeWinner: true, awayWinner: false,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(2, $match->team_a_score);
+        $this->assertSame(0, $match->team_b_score);
+        $this->assertSame($home->id, $match->winner_team_id);
+        $this->assertSame(Prediction::STATUS_SCORED, $prediction->status);
+        $this->assertSame(6, $prediction->points_awarded);
+    }
+
+    public function test_group_ft_draw_keeps_null_winner_and_still_settles_predictions(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 3002,
+            'stage' => 'group',
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+            'winner_team_id' => null,
+        ]);
+        $prediction = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3002, 10, 20, status: 'FT', homeGoals: 1, awayGoals: 1, round: 'Group Stage - 1',
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(1, $match->team_a_score);
+        $this->assertSame(1, $match->team_b_score);
+        $this->assertNull($match->winner_team_id);
+        $this->assertSame(Prediction::STATUS_SCORED, $prediction->status);
+        $this->assertSame(6, $prediction->points_awarded);
+    }
+
+    public function test_knockout_ft_non_draw_sets_home_winner_from_score(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3003, 10, 20, status: 'FT', homeGoals: 2, awayGoals: 1, round: 'Round of 16', homeWinner: true, awayWinner: false,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match = TournamentMatch::query()->where('api_fixture_id', 3003)->firstOrFail();
+
+        $this->assertSame('round_of_16', $match->stage);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame($home->id, $match->winner_team_id);
+    }
+
+    public function test_knockout_aet_non_draw_sets_home_winner_from_score(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3004, 10, 20, status: 'AET', homeGoals: 2, awayGoals: 1, round: 'Quarter-finals', homeWinner: true, awayWinner: false,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match = TournamentMatch::query()->where('api_fixture_id', 3004)->firstOrFail();
+
+        $this->assertSame('quarter_final', $match->stage);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame($home->id, $match->winner_team_id);
+    }
+
+    public function test_knockout_pen_tied_score_resolves_home_winner_from_api_flag(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3005, 10, 20, status: 'PEN', homeGoals: 1, awayGoals: 1, round: 'Semi-finals',
+            score: ['penalty' => ['home' => 4, 'away' => 2]], homeWinner: true, awayWinner: false,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match = TournamentMatch::query()->where('api_fixture_id', 3005)->firstOrFail();
+
+        $this->assertSame('semi_final', $match->stage);
+        $this->assertSame('PEN', $match->api_status);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(1, $match->team_a_score);
+        $this->assertSame(1, $match->team_b_score);
+        $this->assertSame($home->id, $match->winner_team_id);
+    }
+
+    public function test_knockout_pen_tied_score_resolves_away_winner_from_api_flag(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3006, 10, 20, status: 'PEN', homeGoals: 1, awayGoals: 1, round: 'Final',
+            score: ['penalty' => ['home' => 2, 'away' => 4]], homeWinner: false, awayWinner: true,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match = TournamentMatch::query()->where('api_fixture_id', 3006)->firstOrFail();
+
+        $this->assertSame('final', $match->stage);
+        $this->assertSame('PEN', $match->api_status);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(1, $match->team_a_score);
+        $this->assertSame(1, $match->team_b_score);
+        $this->assertSame($away->id, $match->winner_team_id);
+    }
+
+    public function test_knockout_pen_tied_score_without_winner_flags_keeps_null_winner(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3007, 10, 20, status: 'PEN', homeGoals: 1, awayGoals: 1, round: 'Final',
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match = TournamentMatch::query()->where('api_fixture_id', 3007)->firstOrFail();
+
+        $this->assertSame('final', $match->stage);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertNull($match->winner_team_id);
+    }
+
+    public function test_live_match_stores_partial_score_without_finishing_or_settling(): void
+    {
+        $tournament = $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $away = $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $match = TournamentMatch::factory()->create([
+            'tournament_id' => $tournament->id,
+            'team_a_id' => $home->id,
+            'team_b_id' => $away->id,
+            'api_provider' => 'api-football',
+            'api_fixture_id' => 3008,
+            'stage' => 'group',
+            'status' => TournamentMatch::STATUS_OPEN,
+            'team_a_score' => null,
+            'team_b_score' => null,
+            'winner_team_id' => null,
+        ]);
+        $prediction = Prediction::factory()->create([
+            'match_id' => $match->id,
+            'team_a_score' => 2,
+            'team_b_score' => 0,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
+        ]);
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3008, 10, 20, status: '2H', homeGoals: 1, awayGoals: 0, round: 'Group Stage - 1',
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertNotSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(1, $match->team_a_score);
+        $this->assertSame(0, $match->team_b_score);
+        $this->assertNull($match->winner_team_id);
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $prediction->status);
+        $this->assertNull($prediction->points_awarded);
+    }
+
+    public function test_re_syncing_finished_knockout_winner_is_idempotent(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $home = $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $this->fakeFixtureResponse($this->fixturePayload(
+            3009, 10, 20, status: 'PEN', homeGoals: 1, awayGoals: 1, round: 'Final', homeWinner: true, awayWinner: false,
+        ));
+
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+        $this->artisan('api-football:sync-fixtures --force')->assertSuccessful();
+
+        $this->assertSame(1, TournamentMatch::query()->where('api_fixture_id', 3009)->count());
+        $match = TournamentMatch::query()->where('api_fixture_id', 3009)->firstOrFail();
+        $this->assertSame($home->id, $match->winner_team_id);
+    }
+
     public function test_command_makes_only_expected_api_request_with_overrides(): void
     {
         $this->createTournament();
@@ -587,6 +846,19 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
     }
 
     /**
+     * @param  array<string, mixed>  $fixture
+     */
+    private function fakeFixtureResponse(array $fixture): void
+    {
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [$fixture],
+            ]),
+        ]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function fixturePayload(
@@ -599,6 +871,8 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         ?int $awayGoals = null,
         string $round = 'Group Stage - 1',
         array $score = [],
+        ?bool $homeWinner = null,
+        ?bool $awayWinner = null,
     ): array {
         return [
             'fixture' => [
@@ -621,10 +895,12 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
                 'home' => [
                     'id' => $homeTeamId,
                     'name' => 'Argentina',
+                    'winner' => $homeWinner,
                 ],
                 'away' => [
                     'id' => $awayTeamId,
                     'name' => 'Brazil',
+                    'winner' => $awayWinner,
                 ],
             ],
             'goals' => [

@@ -4980,7 +4980,10 @@ E20-T03
 Harden winner resolution for FT, AET and PEN
 
 ### Status
-Todo
+Done
+
+### Note
+Replaced the score-only `winnerTeamId()` with `ApiFootballSyncFixturesCommand::resolveWinnerTeamId()`: FT/AET non-draw infers the winner from the played score; group-stage draws keep `winner_team_id` null; tied knockout scores (PEN) resolve the winner from API-Football `teams.home.winner` / `teams.away.winner` flags (home → team A, away → team B), staying null when flags are absent rather than guessing. Live/in-progress statuses still store partial scores without finishing or settling. Settlement remains idempotent (verified by a re-sync test). Covered by feature tests in `tests/Feature/ApiFootballSyncFixturesCommandTest.php` (group FT non-draw + draw, knockout FT/AET non-draw, knockout PEN home/away winner, knockout PEN without flags, live no-settle, idempotent re-sync). No scoring matrix (E20-T04), schema, migration, or UX changes. Documented in `docs/api-football.md`.
 
 ### Sprint
 Post v1 hardening
