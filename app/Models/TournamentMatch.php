@@ -23,6 +23,34 @@ class TournamentMatch extends Model
 
     public const STATUS_PLACEHOLDER = 'placeholder';
 
+    public const STAGE_GROUP = 'group';
+
+    public const STAGE_ROUND_OF_32 = 'round_of_32';
+
+    public const STAGE_ROUND_OF_16 = 'round_of_16';
+
+    public const STAGE_QUARTER_FINAL = 'quarter_final';
+
+    public const STAGE_SEMI_FINAL = 'semi_final';
+
+    public const STAGE_THIRD_PLACE = 'third_place';
+
+    public const STAGE_FINAL = 'final';
+
+    /**
+     * Stages where users must predict which team advances to the next round.
+     *
+     * @var array<int, string>
+     */
+    public const KNOCKOUT_STAGES = [
+        self::STAGE_ROUND_OF_32,
+        self::STAGE_ROUND_OF_16,
+        self::STAGE_QUARTER_FINAL,
+        self::STAGE_SEMI_FINAL,
+        self::STAGE_THIRD_PLACE,
+        self::STAGE_FINAL,
+    ];
+
     protected $table = 'matches';
 
     protected $fillable = [
@@ -88,19 +116,50 @@ class TournamentMatch extends Model
             return false;
         }
 
-        return in_array($this->stage, [
-            'round_of_32',
-            'round_of_16',
-            'quarter_final',
-            'semi_final',
-            'third_place',
-            'final',
-        ], true);
+        return in_array($this->stage, self::KNOCKOUT_STAGES, true);
     }
 
     public function requiresQualifiedTeamPrediction(): bool
     {
         return $this->isKnockout();
+    }
+
+    /**
+     * Map an API-Football `league.round` label to a local match stage.
+     *
+     * Returns null when the round label is empty or cannot be confidently
+     * mapped. Callers should preserve the raw round value and surface unknown
+     * labels rather than silently treating them as group-stage matches.
+     */
+    public static function stageFromApiRound(?string $round): ?string
+    {
+        if ($round === null) {
+            return null;
+        }
+
+        $normalized = strtolower(trim($round));
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        return match (true) {
+            str_contains($normalized, 'group') => self::STAGE_GROUP,
+            str_contains($normalized, 'round of 32'),
+            str_contains($normalized, '1/16') => self::STAGE_ROUND_OF_32,
+            str_contains($normalized, 'round of 16'),
+            str_contains($normalized, '1/8') => self::STAGE_ROUND_OF_16,
+            str_contains($normalized, 'quarter'),
+            str_contains($normalized, '1/4') => self::STAGE_QUARTER_FINAL,
+            str_contains($normalized, 'semi'),
+            str_contains($normalized, '1/2') => self::STAGE_SEMI_FINAL,
+            // "3rd Place Final" / "Third place" must be matched before the
+            // generic "final" check below, since both contain "final".
+            str_contains($normalized, 'third'),
+            str_contains($normalized, '3rd') => self::STAGE_THIRD_PLACE,
+            str_contains($normalized, 'final') => self::STAGE_FINAL,
+            default => null,
+        };
     }
 
     public function predictionClosesAt(): ?CarbonInterface

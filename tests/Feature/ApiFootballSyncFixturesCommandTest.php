@@ -437,6 +437,86 @@ class ApiFootballSyncFixturesCommandTest extends TestCase
         ]);
     }
 
+    public function test_representative_round_labels_map_to_stage_and_knockout_requirement(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        $cases = [
+            ['fixture' => 2001, 'round' => 'Group Stage - 1', 'stage' => 'group', 'knockout' => false],
+            ['fixture' => 2002, 'round' => 'Round of 32', 'stage' => 'round_of_32', 'knockout' => true],
+            ['fixture' => 2003, 'round' => 'Round of 16', 'stage' => 'round_of_16', 'knockout' => true],
+            ['fixture' => 2004, 'round' => 'Quarter-finals', 'stage' => 'quarter_final', 'knockout' => true],
+            ['fixture' => 2005, 'round' => 'Semi-finals', 'stage' => 'semi_final', 'knockout' => true],
+            ['fixture' => 2006, 'round' => '3rd Place Final', 'stage' => 'third_place', 'knockout' => true],
+            ['fixture' => 2007, 'round' => 'Final', 'stage' => 'final', 'knockout' => true],
+        ];
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => count($cases),
+                'response' => array_map(
+                    fn (array $case): array => $this->fixturePayload(
+                        $case['fixture'],
+                        10,
+                        20,
+                        round: $case['round'],
+                    ),
+                    $cases,
+                ),
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->assertSuccessful();
+
+        foreach ($cases as $case) {
+            $match = TournamentMatch::query()
+                ->where('api_fixture_id', $case['fixture'])
+                ->firstOrFail();
+
+            $this->assertSame($case['round'], $match->round, "Raw round preserved for {$case['round']}");
+            $this->assertSame($case['stage'], $match->stage, "Stage mapping for {$case['round']}");
+            $this->assertSame(
+                $case['knockout'],
+                $match->requiresQualifiedTeamPrediction(),
+                "Qualified-team requirement for {$case['round']}",
+            );
+        }
+    }
+
+    public function test_unknown_round_label_is_preserved_and_surfaced_without_becoming_knockout(): void
+    {
+        $this->createTournament();
+        $this->configureApiFootball();
+        $this->createApiTeam(10, 'Argentina', 'ARG');
+        $this->createApiTeam(20, 'Brazil', 'BRA');
+
+        Http::fake([
+            'https://example.test/fixtures*' => Http::response([
+                'results' => 1,
+                'response' => [
+                    $this->fixturePayload(2099, 10, 20, round: 'Mystery Round'),
+                ],
+            ]),
+        ]);
+
+        $this->artisan('api-football:sync-fixtures --force')
+            ->expectsOutputToContain('Unmapped API round labels: Mystery Round')
+            ->assertSuccessful();
+
+        $match = TournamentMatch::query()->where('api_fixture_id', 2099)->firstOrFail();
+
+        $this->assertSame('Mystery Round', $match->round);
+        $this->assertNull($match->stage);
+        $this->assertFalse($match->requiresQualifiedTeamPrediction());
+
+        $log = ApiSyncLog::query()->latest()->firstOrFail();
+        $this->assertContains('Mystery Round', $log->metadata['unknown_rounds'] ?? []);
+    }
+
     public function test_command_makes_only_expected_api_request_with_overrides(): void
     {
         $this->createTournament();

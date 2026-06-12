@@ -14,6 +14,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ApiFootballSyncFixturesCommand extends Command
@@ -48,6 +49,13 @@ class ApiFootballSyncFixturesCommand extends Command
      * @var array<int, string>
      */
     private array $apiStatusSamples = [];
+
+    /**
+     * Non-empty API round labels that could not be mapped to a known stage.
+     *
+     * @var array<int, string>
+     */
+    private array $unknownRounds = [];
 
     /**
      * @var array<string, int|null>
@@ -195,6 +203,15 @@ class ApiFootballSyncFixturesCommand extends Command
             $this->line('API status samples: '.implode(', ', array_unique($this->apiStatusSamples)));
         }
 
+        if ($this->unknownRounds !== []) {
+            $this->warn('Unmapped API round labels: '.implode(', ', $this->unknownRounds));
+            $this->line('Stage left null and raw round preserved. Review these labels for knockout mapping.');
+            Log::warning('API-Football fixture sync found unmapped round labels.', [
+                'provider' => self::PROVIDER,
+                'unknown_rounds' => $this->unknownRounds,
+            ]);
+        }
+
         $this->line(sprintf(
             'Summary: created=%d, updated=%d, skipped=%d, missing_teams=%d',
             $counts['created'],
@@ -222,6 +239,7 @@ class ApiFootballSyncFixturesCommand extends Command
                 'dry_run' => (bool) $this->option('dry-run'),
                 'missing_teams' => $counts['missing_teams'],
                 'api_status_samples' => array_values(array_unique($this->apiStatusSamples)),
+                'unknown_rounds' => $this->unknownRounds,
             ],
         ]);
     }
@@ -384,13 +402,15 @@ class ApiFootballSyncFixturesCommand extends Command
             'last_synced_at' => now(),
         ];
 
+        $stage = $this->stageFromRound($round);
+
         if (! $existing) {
-            $values['stage'] = $this->stageFromRound($round);
+            $values['stage'] = $stage;
             $values['status'] = $isFinished
                 ? TournamentMatch::STATUS_FINISHED
                 : TournamentMatch::STATUS_SCHEDULED;
         } else {
-            $values['stage'] = $existing->stage ?? $this->stageFromRound($round);
+            $values['stage'] = $existing->stage ?? $stage;
             $values['status'] = $isFinished
                 ? TournamentMatch::STATUS_FINISHED
                 : $existing->status;
@@ -484,24 +504,19 @@ class ApiFootballSyncFixturesCommand extends Command
         return null;
     }
 
+    /**
+     * Map the API round label to a local stage, recording any non-empty label
+     * that could not be mapped so it can be surfaced for admin review.
+     */
     private function stageFromRound(?string $round): ?string
     {
-        if ($round === null) {
-            return null;
+        $stage = TournamentMatch::stageFromApiRound($round);
+
+        if ($stage === null && $round !== null && ! in_array($round, $this->unknownRounds, true)) {
+            $this->unknownRounds[] = $round;
         }
 
-        $normalized = strtolower($round);
-
-        return match (true) {
-            str_contains($normalized, 'group') => 'group',
-            str_contains($normalized, 'round of 32') => 'round_of_32',
-            str_contains($normalized, 'round of 16') => 'round_of_16',
-            str_contains($normalized, 'quarter') => 'quarter_final',
-            str_contains($normalized, 'semi') => 'semi_final',
-            str_contains($normalized, 'third') => 'third_place',
-            str_contains($normalized, 'final') => 'final',
-            default => null,
-        };
+        return $stage;
     }
 
     private function summarizeResponse(Response $response): void

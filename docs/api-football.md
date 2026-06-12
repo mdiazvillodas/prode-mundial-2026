@@ -176,6 +176,27 @@ The command:
 
 Group letters are not inferred from `league.round`. The raw API round is stored in `round`; `stage` is mapped only when the round label is clear, and `group` remains unchanged/null.
 
+#### Round-to-stage mapping (E20-T02)
+
+`league.round` is normalized into a local `matches.stage` value by `TournamentMatch::stageFromApiRound()`. This is the single source of truth for stage detection and is used by the fixture sync command. Matching is case-insensitive and trimmed.
+
+| API round label (examples) | Local `stage` | Knockout? |
+| --- | --- | --- |
+| `Group Stage - 1`, `Group A` | `group` | no |
+| `Round of 32`, `1/16-finals` | `round_of_32` | yes |
+| `Round of 16`, `1/8-finals` | `round_of_16` | yes |
+| `Quarter-finals`, `1/4-finals` | `quarter_final` | yes |
+| `Semi-finals`, `1/2-finals` | `semi_final` | yes |
+| `3rd Place Final`, `Third Place` | `third_place` | yes |
+| `Final` | `final` | yes |
+
+Notes:
+
+- `third_place` is matched **before** the generic `final` check, because API-Football labels third place as `3rd Place Final`, which also contains the word "final".
+- `TournamentMatch::isKnockout()` and `TournamentMatch::requiresQualifiedTeamPrediction()` return `true` for all stages in `TournamentMatch::KNOCKOUT_STAGES` (round of 32 through final, including third place). Group stage does not require a qualified-team prediction.
+- Unknown or new round labels are handled conservatively: `stage` is left `null` (so the match is treated as non-knockout and does **not** silently require/skip qualified-team logic for the wrong reason), the raw `round` value is preserved, and the labels are surfaced. The sync command prints an `Unmapped API round labels:` warning, writes a `Log::warning`, and records the labels under `metadata.unknown_rounds` in the sync log so admins can review and extend the mapping.
+- An existing match keeps its current `stage` on re-sync; the round-to-stage mapping only fills `stage` when it is currently null.
+
 ## Snapshots
 
 When `--save` is passed, raw JSON snapshots are stored on the local disk under:

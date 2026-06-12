@@ -4937,7 +4937,10 @@ E20-T02
 Harden API-Football knockout stage detection
 
 ### Status
-Todo
+Done
+
+### Note
+Centralized round-to-stage normalization in `TournamentMatch::stageFromApiRound()` (single source of truth, used by `api-football:sync-fixtures`). Added stage constants and `TournamentMatch::KNOCKOUT_STAGES`. Fixed `3rd Place Final` mapping (it must be matched before the generic `final` check). Added fraction round labels (`1/16`, `1/8`, `1/4`, `1/2`). Unknown round labels now leave `stage` null, preserve the raw `round`, print a warning, write a `Log::warning`, and are recorded under `metadata.unknown_rounds` in the sync log. Covered by `tests/Unit/TournamentMatchKnockoutTest.php` (round-label → stage → qualified-team requirement for all representative labels) and feature tests in `tests/Feature/ApiFootballSyncFixturesCommandTest.php`. Documented in `docs/api-football.md`. No scoring, schema, UX, or winner-resolution changes (E20-T03 remains separate).
 
 ### Sprint
 Post v1 hardening
