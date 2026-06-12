@@ -157,7 +157,7 @@ class LiveDashboardDataService
                     ],
                     'status' => $match->status,
                     'api_status' => $match->api_status,
-                    'status_label' => $match->api_status ?? $match->status,
+                    'status_label' => 'En vivo',
                     'user_prediction' => $prediction ? [
                         'team_a_score' => $prediction->team_a_score,
                         'team_b_score' => $prediction->team_b_score,
@@ -420,7 +420,8 @@ class LiveDashboardDataService
     private function dailyStatusLabel(TournamentMatch $match): string
     {
         if (in_array($match->api_status, self::LIVE_API_STATUSES, true)) {
-            return $match->api_status ?? 'En juego';
+            // Users never see technical states like 1H/2H/HT — only a simple live label.
+            return 'En vivo';
         }
 
         if ($match->status === TournamentMatch::STATUS_FINISHED) {

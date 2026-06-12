@@ -106,6 +106,8 @@
                                 name="predicted_qualified_team_id"
                                 id-prefix="single"
                                 :selected-id="old('predicted_qualified_team_id', $prediction?->predicted_qualified_team_id)"
+                                :team-a-score="old('team_a_score', $prediction?->team_a_score)"
+                                :team-b-score="old('team_b_score', $prediction?->team_b_score)"
                                 :error="$errors->first('predicted_qualified_team_id')"
                             />
                         @endif

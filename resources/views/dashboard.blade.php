@@ -289,7 +289,7 @@
                                                     ? __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']])
                                                     : __('Sin predicción');
                                                 if ($displayState === 'live') {
-                                                    $statusLabel = $match['status_label'] ?? __('En juego');
+                                                    $statusLabel = $match['status_label'] ?? __('En vivo');
                                                 } elseif ($displayState === 'finished') {
                                                     $statusLabel = __('Finalizado');
                                                 } else {
@@ -565,7 +565,7 @@
                                                     ? __('Tu :a-:b', ['a' => $match['user_prediction']['team_a_score'], 'b' => $match['user_prediction']['team_b_score']])
                                                     : __('Sin predicción');
                                                 if ($displayState === 'live') {
-                                                    $statusLabel = $match['status_label'] ?? __('En juego');
+                                                    $statusLabel = $match['status_label'] ?? __('En vivo');
                                                 } elseif ($displayState === 'finished') {
                                                     $statusLabel = __('Finalizado');
                                                 } else {

@@ -115,6 +115,24 @@ class LiveDashboardDataServiceTest extends TestCase
         $this->assertFalse(collect($data['matches'])->pluck('id')->contains($future->id));
     }
 
+    public function test_live_matches_expose_user_friendly_label_instead_of_technical_api_status(): void
+    {
+        [$tournament, $teams] = $this->seedTournamentAndTeams();
+        $user = User::factory()->create();
+
+        $live = $this->liveMatch($tournament, $teams['BRA'], $teams['ESP'], 1, 0, '2H');
+
+        $data = app(LiveDashboardDataService::class)->forUser($user, 'UTC');
+
+        $liveLabel = collect($data['live_matches'])->firstWhere('id', $live->id)['status_label'];
+        $dailyLabel = collect($data['daily_matches']['matches'])->firstWhere('id', $live->id)['status_label'];
+
+        $this->assertSame('En vivo', $liveLabel);
+        $this->assertSame('En vivo', $dailyLabel);
+        $this->assertNotSame('2H', $liveLabel);
+        $this->assertNotSame('2H', $dailyLabel);
+    }
+
     public function test_daily_matches_do_not_disappear_when_there_are_no_live_matches(): void
     {
         [$tournament, $teams] = $this->seedTournamentAndTeams();

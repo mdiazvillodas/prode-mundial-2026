@@ -104,7 +104,7 @@
                                         'placeholder' => __('Equipos por definir'),
                                     ];
                                     if ($isLive) {
-                                        $statusLabel = $match->api_status ? __('En vivo · :status', ['status' => $match->api_status]) : __('En vivo');
+                                        $statusLabel = __('En vivo');
                                     } else {
                                         $statusLabel = $isClosingSoon ? __('Cierra pronto') : ($statusLabels[$match->status] ?? ucfirst($match->status));
                                     }
@@ -297,6 +297,8 @@
                                                 name="predictions[{{ $match->id }}][predicted_qualified_team_id]"
                                                 id-prefix="prediction-{{ $match->id }}"
                                                 :selected-id="old('predictions.'.$match->id.'.predicted_qualified_team_id', $prediction?->predicted_qualified_team_id)"
+                                                :team-a-score="old('predictions.'.$match->id.'.team_a_score', $prediction?->team_a_score)"
+                                                :team-b-score="old('predictions.'.$match->id.'.team_b_score', $prediction?->team_b_score)"
                                                 :error="$qualifiedTeamError"
                                             />
                                         @endif

@@ -100,11 +100,19 @@ Match cards should make the core state obvious at a glance:
 
 Knockout matches reuse the normal score inputs plus a qualified-team selector (`<x-knockout-qualified-selector>`):
 
-- The predicted score is always the final played result before penalties (no 90' vs 120' distinction). Show the standard knockout helper copy explaining extra time and that a predicted draw is decided by who passes on penalties.
-- A non-draw predicted score infers the qualified team from the score winner; the user does not need to choose manually, and the selector reflects the inferred team automatically. Server-side resolution is authoritative, so the inference works even without JavaScript.
-- A predicted draw requires an explicit qualified-team choice. Present the two teams as flag/label radio buttons (not a `<select>`), mobile-first, with a clear selected state.
+- Keep copy compact and mobile-friendly so the card stays short. The selector is driven by the predicted score and exposes three states via `data-qualified-state` (`empty` / `auto` / `draw`); the progressive-enhancement script (`predictions/partials/knockout-inference.blade.php`) keeps it in sync, and the same state is rendered server-side from the saved/old score so it is correct without JavaScript.
+- Lead with one short line: "En eliminatorias, si pronosticás empate, elegí quién clasifica." Avoid long paragraphs and gambling language.
+- Empty score (`empty`): do not allow choosing a qualified team. Hide the flag buttons and show a compact neutral helper ("Cargá el resultado para definir quién clasifica.").
+- Non-draw score (`auto`): the qualified team is inferred from the score winner — never let the user pick the opposite team. Hide the flag buttons and show a compact "Clasifica automáticamente: <equipo>" line. The inferred team is still submitted so the saved data stays consistent; server-side resolution remains authoritative.
+- Draw score (`draw`): only then reveal the flag/label radio buttons (not a `<select>`), mobile-first, with a clear selected state. A draw requires an explicit qualified-team choice; if the 120' clarification is kept, keep it secondary and short ("Cuenta el resultado final jugado, incluido alargue.").
 - The qualified-team radios participate in the inline "unsaved changes" tracking so the floating save action behaves consistently.
 - Closed/read-only knockout predictions must show both the predicted score and the predicted qualified team.
+
+## Live Status Labels
+
+- Never show technical live states (`1H`, `2H`, `HT`, `ET`, `LIVE`, `1T`, `2T`, …) to users. For any live-ish state, show the simple Spanish label "En vivo".
+- This is presentation only — stored `api_status` values and API sync logic are unchanged. The user-facing label is centralized in `LiveDashboardDataService` (`status_label` / `dailyStatusLabel()` return "En vivo" for live statuses); views consuming it must not re-expose the raw `api_status`.
+- Admin/debug/API-health views may still display the raw `api_status` for operational clarity.
 
 ## Visual States
 

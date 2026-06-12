@@ -709,7 +709,83 @@ class CorePredictionFlowTest extends TestCase
             ->assertSee('data-qualified-selector', false)
             ->assertSee('data-qualified-radio', false)
             ->assertSee('¿Quién clasifica?')
-            ->assertSee("Si hay alargue, cuenta el resultado al final de los 120'");
+            ->assertSee('En eliminatorias, si pronosticás empate, elegí quién clasifica.')
+            ->assertDontSee("Si hay alargue, cuenta el resultado al final de los 120'");
+    }
+
+    public function test_knockout_card_with_empty_score_does_not_allow_qualified_choice(): void
+    {
+        $user = User::factory()->create();
+        $startsAt = Carbon::parse('2026-07-01 18:00:00');
+        $match = $this->predictableMatch([
+            'stage' => 'quarter_final',
+            'starts_at' => $startsAt,
+            'prediction_closes_at' => $startsAt->copy()->subMinutes(5),
+        ]);
+
+        // No saved prediction => empty score => the selector offers no active choice.
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-07-01&tz=UTC')
+            ->assertOk()
+            ->assertSee('data-qualified-state="empty"', false)
+            ->assertSee('data-qualified-draw hidden', false)
+            ->assertSee('Cargá el resultado para definir quién clasifica.');
+    }
+
+    public function test_knockout_card_with_non_draw_score_hides_selector_and_shows_inferred_team(): void
+    {
+        $user = User::factory()->create();
+        $startsAt = Carbon::parse('2026-07-01 18:00:00');
+        $match = $this->datedMatch('Spain', 'United States', $startsAt, [
+            'stage' => 'quarter_final',
+        ]);
+
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 0,
+        ]);
+
+        // Non-draw score: qualified team is inferred and the buttons are not selectable.
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-07-01&tz=UTC')
+            ->assertOk()
+            ->assertSee('data-qualified-state="auto"', false)
+            ->assertSee('Clasifica automáticamente:')
+            ->assertSee('Spain')
+            ->assertSee('data-qualified-draw hidden', false)
+            ->assertDontSee('data-qualified-state="draw"', false);
+    }
+
+    public function test_knockout_card_with_draw_score_shows_selectable_buttons(): void
+    {
+        $user = User::factory()->create();
+        $startsAt = Carbon::parse('2026-07-01 18:00:00');
+        $match = $this->datedMatch('Spain', 'United States', $startsAt, [
+            'stage' => 'quarter_final',
+        ]);
+
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'predicted_qualified_team_id' => $match->team_b_id,
+        ]);
+
+        // Draw score: the flag selector is visible (not hidden) and the choice persists.
+        $this->actingAs($user)
+            ->get('/predictions?date=2026-07-01&tz=UTC')
+            ->assertOk()
+            ->assertSee('data-qualified-state="draw"', false)
+            ->assertSee('¿Quién clasifica?')
+            ->assertSee('data-qualified-radio', false)
+            ->assertDontSee('data-qualified-draw hidden', false)
+            ->assertSeeInOrder([
+                'qualified-'.$match->team_b_id.'"',
+                'checked',
+            ], false);
     }
 
     public function test_saved_knockout_prediction_preloads_score_and_selected_qualified_team(): void
