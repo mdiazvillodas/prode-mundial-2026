@@ -140,11 +140,20 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Exact result: create or identify a finished group-stage match, submit a prediction with the exact final score, settle the result, and confirm the prediction receives 6 points.
 - Correct trend: submit a non-exact prediction with the correct winning team or correct draw trend, settle the result, and confirm the prediction receives 3 points.
 - Wrong prediction: submit a prediction with the wrong winner/draw trend, settle the result, and confirm the prediction receives 0 points.
-- Knockout with penalties: for a knockout match decided after penalties, confirm the regulation/official displayed score and qualified team are represented according to the current data model, then confirm exact score plus correct qualified team earns 6, correct qualified team without exact score earns 3, and wrong qualified team earns 0.
+- Knockout scoring decision: confirm the documented knockout matrix is the target behavior before implementation: exact score plus correct qualified team = 8, exact score plus wrong qualified team = 5, correct trend plus correct qualified team without exact score = 5, qualified team only = 3, match trend only = 2, fully incorrect = 0.
+- Knockout score meaning: confirm the predicted score represents the final played result before penalties, with no distinction between 90-minute and 120-minute results.
+- Knockout extra time: create or identify a knockout match that is 1-1 after 90 minutes and finishes 2-1 after extra time; a 2-1 prediction should be treated as exact once the expanded scoring matrix is implemented.
+- Knockout penalties: create or identify a knockout match tied after extra time and decided on penalties; confirm penalties only decide the qualified team and do not change the predicted/final played score.
+- Knockout non-draw prediction UX: submit a non-draw knockout prediction and confirm the qualified team is inferred from the predicted score winner.
+- Knockout draw prediction UX: submit a draw knockout prediction and confirm the UI requires selecting the qualified team with clear team/flag blocks.
+- Knockout closed visibility: after prediction close, confirm the read-only prediction summary shows score and qualified team clearly.
+- Finished-match winner resolution: using fake/local data only, confirm group FT 2-0 sets the home winner, group FT 1-1 keeps `winner_team_id` null, knockout FT/AET 2-1 sets the winner, and knockout PEN tied scores resolve the qualified team from API winner flags.
 - Leaderboard ordering: create users with different point totals, exact counts, trend counts, and a final username tie, then confirm `/leaderboard` orders by points, exacts, trends, and the existing final tie-breaker.
 - Private league ranking: confirm a private league ranking uses the same point/exact/trend ordering, includes active members with zero scored predictions, and excludes removed members.
 - API-Football finished match sync: using a fake/local snapshot only, sync a finished fixture and confirm local teams, API status, round/stage, venue, and finished score fields map as expected without calling the real API.
 - Settlement idempotency: run settlement for the same finished match twice and confirm prediction rows are not duplicated and point totals remain unchanged.
+- Finished-match consistency: after fake/local settlement, run the read-only consistency checker when available and confirm it reports no finished matches with null scores, missing knockout winners, or submitted/unscored predictions.
+- Staging knockout QA: before production knockout usage, repeat login, group prediction, knockout non-draw prediction, knockout draw + qualified-team prediction, closed prediction visibility, FT/AET/PEN settlement, leaderboard update, and consistency checks in staging only.
 
 ## F. Admin
 

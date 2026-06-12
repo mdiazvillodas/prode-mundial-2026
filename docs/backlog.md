@@ -4850,3 +4850,376 @@ Reduce the current "Gestionar liga" accordion dependency by moving important own
 
 ### Suggested commit message
 style: replace league management accordion
+
+## EPIC 20 - Knockout scoring, UX and settlement hardening
+
+### Context
+A production incident showed that finished API-Football fixtures can update match status and score without correctly setting `winner_team_id` or settling predictions. This was fixed for group-stage finished matches with the production tag `prod-2026-06-11-api-final-settlement-hotfix`, but knockout matches require additional hardening before elimination rounds begin.
+
+Knockout matches introduce unresolved edge cases around final score, extra time, penalties, qualified team selection, API winner mapping and partial scoring. These rules must be explicitly documented, tested locally and validated in staging before production.
+
+### Product decision
+For knockout matches, users still predict the match score using the normal score inputs.
+
+The predicted score represents the final played result before penalties. There is no distinction between a score reached after 90 minutes and a score reached after 120 minutes.
+
+Examples:
+- If the user predicts 2-1 and the match is 1-1 after 90 minutes but ends 2-1 after extra time, the predicted score is exact.
+- If the match remains tied after extra time, penalties only determine the qualified team.
+
+If the user predicts a draw, the UI must require selecting which team qualifies. The preferred UX is to use the same team/flag blocks as the qualified-team selector.
+
+If the user predicts a non-draw, the qualified team can be inferred from the predicted score winner.
+
+### Proposed knockout scoring matrix
+
+| Case | Exact score | Match trend | Qualified team | Points |
+| --- | ---: | ---: | ---: | ---: |
+| Perfect prediction | yes | yes | yes | 8 |
+| Exact score, wrong qualified team | yes | yes | no | 5 |
+| Correct trend and qualified team, not exact | no | yes | yes | 5 |
+| Qualified team only | no | no | yes | 3 |
+| Match trend only | no | yes | no | 2 |
+| Incorrect | no | no | no | 0 |
+
+Definitions:
+- Exact score: predicted team A and team B goals match the final played score before penalties.
+- Match trend: predicted outcome is team A win, draw, or team B win.
+- Qualified team: predicted team that advances to the next round.
+
+### Ticket ID
+E20-T01
+
+### Title
+Document knockout scoring matrix and UX rules
+
+### Status
+Done
+
+### Note
+Covered by the documentation commit that added the knockout scoring plan, UX rules, and QA checklist updates.
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Document the complete knockout prediction rules before changing scoring or UI.
+
+### Scope
+- Add the knockout scoring matrix to `docs/backlog.md`.
+- Update `docs/qa-checklist.md` with knockout QA scenarios.
+- Update product/decision documentation if applicable.
+- Clarify that 90-minute and 120-minute results are treated the same.
+- Clarify that penalties only determine the qualified team when the final played score is tied.
+- Clarify UX behavior for draw predictions and flag-based qualified-team selection.
+
+### Out of scope
+- No code changes.
+- No scoring changes.
+- No UI changes.
+- No production or Railway changes.
+
+### Acceptance criteria
+- Knockout scoring and UX rules are documented clearly.
+- Future implementation tickets can reference this decision.
+- No ambiguity remains around extra time, penalties, exact score, trend, and qualified team.
+
+### Suggested commit message
+Document knockout scoring and UX rules
+
+### Ticket ID
+E20-T02
+
+### Title
+Harden API-Football knockout stage detection
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Ensure API-Football fixtures are correctly mapped as group-stage or knockout matches.
+
+### Scope
+- Inspect current `league.round` / API-Football round mapping.
+- Ensure local `matches.stage` is correctly set for group stage, round of 32, round of 16, quarter-final, semi-final, third place, and final.
+- Add tests proving group-stage fixtures do not require qualified-team prediction.
+- Add tests proving knockout fixtures do require qualified-team prediction.
+- Ensure unknown/new round labels are handled conservatively and logged or surfaced for admin review.
+
+### Out of scope
+- No scoring matrix changes.
+- No UI changes.
+- No production or Railway changes.
+- No bracket propagation.
+
+### Acceptance criteria
+- Group-stage API fixtures map to a non-knockout stage.
+- Knockout API fixtures map to knockout stages.
+- `TournamentMatch::requiresQualifiedTeamPrediction()` is correct for all supported stages.
+- Tests cover representative API-Football round labels.
+
+### Suggested commit message
+Harden API knockout stage detection
+
+### Ticket ID
+E20-T03
+
+### Title
+Harden winner resolution for FT, AET and PEN
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Ensure finished matches always resolve `winner_team_id` correctly when applicable.
+
+### Scope
+- For FT/AET matches with non-draw score, infer winner from final score.
+- For group-stage FT/AET draws, keep `winner_team_id` null.
+- For knockout PEN matches, resolve `winner_team_id` from API-Football winner flags such as `teams.home.winner` / `teams.away.winner` or equivalent available payload fields.
+- Add tests for group FT 2-0 home winner, group FT 1-1 draw with null winner, knockout FT 2-1 home winner, knockout AET 2-1 home winner, knockout PEN tied score with home winner, and knockout PEN tied score with away winner.
+- Keep settlement idempotent.
+- Do not settle live/in-progress matches.
+
+### Out of scope
+- No UI changes.
+- No scoring matrix changes beyond preserving current settlement behavior.
+- No production or Railway changes.
+- No external API calls in tests.
+
+### Acceptance criteria
+- Finished matches have correct `winner_team_id`.
+- Knockout penalty winners are resolved correctly.
+- Group-stage draws keep `winner_team_id` null.
+- Live statuses store partial scores if supported but do not settle predictions.
+- Tests pass.
+
+### Suggested commit message
+Harden finished match winner resolution
+
+### Ticket ID
+E20-T04
+
+### Title
+Implement expanded knockout scoring matrix
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Replace the simple knockout 6/3/0 scoring with the expanded matrix that rewards exact score, match trend and qualified team separately.
+
+### Scope
+- Update `PredictionScoringService` knockout logic.
+- Award 8 for exact score + correct qualified team.
+- Award 5 for exact score + wrong qualified team.
+- Award 5 for correct trend + correct qualified team without exact score.
+- Award 3 for only correct qualified team.
+- Award 2 for only correct trend.
+- Award 0 for fully incorrect predictions.
+- Add unit tests for every scoring branch.
+- Add feature tests proving settlement stores the expected points.
+- Ensure group-stage scoring remains unchanged at 6/3/0.
+
+### Out of scope
+- No UI changes.
+- No API sync changes except using existing fields.
+- No leaderboard query changes beyond naturally summing points.
+- No production or Railway changes.
+
+### Acceptance criteria
+- Knockout scoring matrix is fully covered by tests.
+- Group-stage scoring remains unchanged.
+- Settlement remains idempotent.
+- Leaderboards reflect updated points after settlement.
+
+### Suggested commit message
+Implement expanded knockout scoring
+
+### Ticket ID
+E20-T05
+
+### Title
+Polish knockout prediction UX with flag-based qualified selector
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+High
+
+### Objective
+Make knockout prediction UX clear and simple while supporting draw + qualified-team selection.
+
+### Scope
+- Keep normal score inputs for all matches.
+- If predicted score is not a draw, infer the predicted qualified team from the predicted winner.
+- If predicted score is a draw, require the user to select which team qualifies.
+- Use team/flag blocks as the preferred selector UI.
+- Preload existing predictions including qualified team.
+- Show clear read-only summary after prediction close.
+- Add Spanish helper copy explaining that 90-minute and 120-minute final played score are treated the same, and penalties only decide who qualifies.
+- Validate that draw knockout predictions cannot be saved without qualified team.
+- Add focused feature/UI tests where feasible.
+
+### Out of scope
+- No scoring changes.
+- No API sync changes.
+- No bracket visualization.
+- No external frontend framework.
+- No production or Railway changes.
+
+### Acceptance criteria
+- Users can predict knockout matches without understanding internal scoring complexity.
+- Draw predictions require qualified-team selection.
+- Non-draw predictions infer qualified team safely.
+- Closed predictions display score and qualified team clearly.
+- Existing group-stage prediction UX is not broken.
+
+### Suggested commit message
+Polish knockout prediction UX
+
+### Ticket ID
+E20-T06
+
+### Title
+Add finished-match consistency checks
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Detect settlement and finished-match inconsistencies before users notice ranking errors.
+
+### Scope
+- Add a read-only Artisan command such as `prode:check-finished-matches`.
+- Detect finished matches with null scores.
+- Detect API FT/AET/PEN matches not locally marked finished.
+- Detect finished knockout matches without `winner_team_id`.
+- Detect finished matches with submitted/unscored predictions.
+- Detect finished matches with predictions but zero scored predictions.
+- Return non-zero exit code when inconsistencies are found.
+- Add admin/API health visibility or compact log output if feasible.
+- Add tests for the consistency checker.
+
+### Out of scope
+- No automatic destructive repair.
+- No production data mutation.
+- No UI dashboard redesign.
+- No scoring rule changes.
+
+### Acceptance criteria
+- Command reports actionable inconsistencies.
+- Command is safe to run in production.
+- Tests cover each inconsistency.
+- Admin/operator can use this after cron runs.
+
+### Suggested commit message
+Add finished match consistency checks
+
+### Ticket ID
+E20-T07
+
+### Title
+Add local and staging QA scenarios for knockout prediction and settlement
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Ensure login, prediction, API sync, settlement and leaderboard flows are covered before knockout production usage.
+
+### Scope
+- Update `docs/qa-checklist.md`.
+- Define local QA scenarios for login, group prediction, knockout non-draw prediction, knockout draw + qualified-team prediction, closed prediction visibility, FT settlement, AET settlement, PEN settlement, and leaderboard update.
+- Define staging QA procedure using controlled data or API snapshots.
+- Ensure current Playwright suite is not run against production.
+- Add focused tests where safe.
+
+### Out of scope
+- No production Playwright suite.
+- No destructive production commands.
+- No production data reset.
+
+### Acceptance criteria
+- QA checklist covers all critical flows.
+- Staging validation can prove knockout scoring before real knockout matches.
+- Login, prediction and settlement flows are explicitly tested.
+
+### Suggested commit message
+Add knockout settlement QA checklist
+
+### Ticket ID
+E20-T08
+
+### Title
+Run staging knockout QA and document release readiness
+
+### Status
+Todo
+
+### Sprint
+Post v1 hardening
+
+### Priority
+High
+
+### Objective
+Execute the staging QA process and document whether knockout scoring/UX is safe for production.
+
+### Scope
+- Deploy completed knockout changes to staging.
+- Run Laravel tests and build locally.
+- Run staging manual QA.
+- Run relevant Playwright smoke tests if applicable.
+- Run consistency checker after simulated or real finished fixtures.
+- Document findings in `docs/qa-checklist.md` or release notes.
+
+### Out of scope
+- No new implementation unless QA finds a blocker.
+- No production deploy until staging passes.
+
+### Acceptance criteria
+- Staging confirms knockout prediction UX works.
+- Staging confirms FT/AET/PEN settlement works.
+- Consistency checker reports no critical issues.
+- Release readiness is documented before production deploy.
+
+### Suggested commit message
+Document knockout QA readiness
