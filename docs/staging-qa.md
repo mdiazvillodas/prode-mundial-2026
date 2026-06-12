@@ -58,6 +58,7 @@ The staging demo dataset includes enough data to exercise the whole v1 product:
 - some matches close to the prediction deadline
 - some placeholder matches
 - some finished matches with scored predictions
+- controlled E20 knockout QA matches for open UX, closed/read-only display, FT, AET, PEN team A, and PEN team B settlement checks
 
 The dataset should be deterministic so QA can rely on stable accounts, stable leagues, stable match states, and predictable expected rankings.
 
@@ -71,6 +72,9 @@ The staging demo seeder creates stable demo accounts:
 - `mariano@prode.test`
 - `ana@prode.test`
 - `juan@prode.test`
+- `lucia@prode.test`
+- `diego@prode.test`
+- `sofia@prode.test`
 
 Passwords should be safe demo-only values. They must never be reused from real accounts and should be documented only in staging/local setup notes, not in production-facing UI.
 
@@ -129,10 +133,17 @@ Never run this command in production or live mode.
 - two finished group-stage matches with scored predictions
 - one knockout placeholder
 - one assigned knockout match with a qualified-team prediction path
+- E20 knockout QA fixtures:
+  - `E20 knockout QA open UX`
+  - `E20 knockout QA closed read-only`
+  - `E20 knockout QA FT 2-1`
+  - `E20 knockout QA AET 2-1`
+  - `E20 knockout QA PEN team A`
+  - `E20 knockout QA PEN team B`
 - demo users listed above
 - `Liga Demo Palermo`, owned by `mariano@prode.test`
-- active memberships for Mariano and Ana
-- a pending join request for Juan
+- active memberships for Mariano, Ana, Juan, Lucía, and Diego
+- a pending join request for Sofía
 - pending predictions for open/future matches
 - scored predictions for finished matches
 
@@ -183,6 +194,12 @@ Current command:
 php artisan demo:simulate-results --scenario=group-day-1 --force
 ```
 
+Knockout QA command:
+
+```bash
+php artisan demo:simulate-results --scenario=knockout-qa --force
+```
+
 The command should behave like the future API integration:
 
 - apply result data to selected matches
@@ -199,13 +216,26 @@ For local manual use, `--force` may be omitted to get an interactive confirmatio
 php artisan demo:simulate-results --scenario=group-day-1
 ```
 
-For Railway staging, run it in the Railway staging environment using the Railway shell or command runner:
+For Railway staging, run the selected scenario in the Railway staging environment using the Railway shell or command runner:
 
 ```bash
 php artisan demo:simulate-results --scenario=group-day-1 --force
 ```
 
+```bash
+php artisan demo:simulate-results --scenario=knockout-qa --force
+```
+
 The current `group-day-1` scenario applies deterministic QA results to known demo matches created by `StagingDemoSeeder`, including group-stage matches and the assigned knockout demo match. It is not an official result feed and does not connect to external APIs.
+
+The `knockout-qa` scenario applies deterministic finished results to the E20 knockout QA fixtures:
+
+- FT non-draw: Argentina 2-1 Brazil, Argentina qualifies.
+- AET non-draw: France 2-1 Uruguay, France qualifies.
+- PEN team A: Germany 1-1 Mexico, Germany qualifies.
+- PEN team B: England 1-1 Japan, Japan qualifies.
+
+The scenario marks those matches finished, stores the local `api_status` label, sets `winner_team_id`, and calls the existing `MatchPredictionSettlementService`. It is safe to repeat after `demo:reset-staging`; reruns recalculate the same prediction rows and should not duplicate points.
 
 Scenarios should be named and documented so QA knows what state each scenario creates.
 
@@ -230,6 +260,32 @@ php artisan demo:simulate-results --scenario=group-day-1 --force
 4. Run manual or Playwright post-results QA.
 
 This validates both the pre-results prediction experience and the post-results history/ranking experience.
+
+For knockout-specific QA, use this local/staging-only flow:
+
+1. Reset deterministic demo data:
+
+```bash
+php artisan demo:reset-staging --force
+```
+
+2. Before simulation, manually verify:
+
+- `E20 knockout QA open UX` allows non-draw qualified-team inference and draw + qualified-team selection.
+- `E20 knockout QA closed read-only` shows the saved score and qualified team but cannot be edited.
+
+3. Simulate knockout results:
+
+```bash
+php artisan demo:simulate-results --scenario=knockout-qa --force
+```
+
+4. Verify post-simulation:
+
+- `/my-predictions` shows scored FT, AET, PEN team A, and PEN team B examples.
+- `/leaderboard` and `Liga Demo Palermo` include the updated totals.
+- `php artisan prode:check-finished-matches` exits clean.
+- Re-running the same simulation does not change totals.
 
 ## Staging Reset And Seed Flow
 

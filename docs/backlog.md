@@ -5159,6 +5159,60 @@ Detect settlement and finished-match inconsistencies before users notice ranking
 - Tests cover each inconsistency.
 - Admin/operator can use this after cron runs.
 
+### Ticket ID
+E20-T07
+
+### Title
+Add local/staging QA scenarios for knockout prediction and settlement
+
+### Status
+Done
+
+### Note
+Extended the existing staging demo infrastructure with deterministic knockout QA scenarios and a safe `php artisan demo:simulate-results --scenario=knockout-qa --force` flow. `Database\Seeders\StagingDemoSeeder` now plants recognizable E20 knockout fixtures for open UX, closed/read-only display, FT, AET, PEN team A, and PEN team B cases using existing demo users and `Liga Demo Palermo`. The simulator applies only the finished FT/AET/PEN results, marks matches finished, sets `winner_team_id`, records `api_status` (`FT`, `AET`, `PEN`), and reuses `MatchPredictionSettlementService` so reruns are idempotent. The QA predictions cover the expanded 8/5/5/3/2/0 matrix and leaderboard/private league totals. Production/live execution remains blocked by the existing demo simulation guard and is covered by tests. No scoring rules, winner-resolution logic, prediction UX, API-Football calls, migrations, Railway config, cron config, or production config changed.
+
+### Sprint
+Post v1 hardening
+
+### Priority
+Critical
+
+### Objective
+Provide a safe, visible, repeatable local/staging flow to validate knockout prediction UX, settlement, rankings, history, and finished-match consistency before real knockout fixtures exist.
+
+### Scope
+- Reuse `StagingDemoSeeder` and `demo:simulate-results`.
+- Add open and closed/read-only knockout QA fixtures.
+- Add controlled FT, AET, PEN team A, and PEN team B knockout settlement fixtures.
+- Use existing demo users and private league membership.
+- Settle simulated finished matches through `MatchPredictionSettlementService`.
+- Block the simulator in production/live environments.
+- Document the local/staging QA flow.
+- Add focused tests for scenario creation, refusal, matrix scoring, idempotency, consistency checker cleanliness, and ranking totals.
+
+### Out of scope
+- No production deploy.
+- No production data changes.
+- No API-Football calls.
+- No scoring rule changes.
+- No winner-resolution logic changes.
+- No prediction UX redesign.
+- No migrations/schema changes.
+- No Railway config or cron changes.
+
+### Acceptance criteria
+- Local/staging reset creates recognizable knockout QA fixtures.
+- `demo:simulate-results --scenario=knockout-qa` applies deterministic FT/AET/PEN results and settlement.
+- Open knockout UX and closed/read-only scenarios are available for manual QA.
+- The 8/5/5/3/2/0 matrix is visible in scored demo predictions.
+- General and private league rankings include the expected scored points.
+- `php artisan prode:check-finished-matches` reports clean after simulation.
+- Re-running the scenario is idempotent.
+- Production/live refusal is tested.
+
+### Suggested commit message
+Add knockout QA demo scenarios
+
 ### Suggested commit message
 Add finished match consistency checks
 

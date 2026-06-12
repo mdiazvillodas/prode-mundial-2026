@@ -28,6 +28,16 @@ If `/predictions` has no editable matches during smoke testing, run `php artisan
 
 The staging demo reset also includes dashboard engagement scenarios: avatar choice states, a multi-member private league, a four-match next engagement day with varied friend prediction completion, live-ish partial-score matches, and finished scored matches for future form/GF/GC checks.
 
+For knockout QA in local or staging only:
+
+```bash
+php artisan demo:reset-staging --force
+php artisan demo:simulate-results --scenario=knockout-qa --force
+php artisan prode:check-finished-matches
+```
+
+The simulator must refuse `APP_ENV=production` or `APP_MODE=live`. Do not run demo reset or demo simulation commands in production.
+
 ## A. Auth
 
 - Register with email and password.
@@ -150,6 +160,10 @@ The staging demo reset also includes dashboard engagement scenarios: avatar choi
 - Knockout draw prediction UX: enter a draw knockout score and confirm the UI requires choosing the qualified team via flag/label radio buttons (not a dropdown); confirm saving without a selection fails with a clear Spanish error and that the chosen team persists once selected.
 - Knockout prediction preload: reopen a saved knockout prediction and confirm the score and the previously selected qualified team are preloaded and visibly selected.
 - Knockout closed visibility: after prediction close, confirm the read-only prediction summary (inline card and `/my-predictions`) shows both the predicted score and the predicted qualified team clearly.
+- Controlled knockout QA flow: after `php artisan demo:reset-staging --force`, open `/predictions` with demo users and locate `E20 knockout QA open UX` to verify non-draw qualified-team inference and draw + qualified-team selection. Locate `E20 knockout QA closed read-only` in prediction history/read-only views and confirm the saved score plus qualified team are visible but not editable.
+- Controlled knockout settlement: run `php artisan demo:simulate-results --scenario=knockout-qa --force` in local/staging only. Confirm the output lists FT, AET, PEN team A, and PEN team B matches; then verify `/my-predictions`, `/leaderboard`, and `Liga Demo Palermo` reflect the scored knockout predictions.
+- Controlled knockout scoring matrix: for `E20 knockout QA FT 2-1`, confirm 8/5/2/0 examples exist; for `E20 knockout QA PEN team A`, confirm 8/5/5/3/2/0 examples exist; for `E20 knockout QA PEN team B`, confirm the inverse qualified-team case is scored.
+- Controlled knockout consistency: after the knockout simulation, run `php artisan prode:check-finished-matches` and confirm it exits clean with no issue rows. Re-run the knockout simulation and confirm ranking totals do not change.
 - Finished-match winner resolution: using fake/local data only, confirm group FT 2-0 sets the home winner, group FT 1-1 keeps `winner_team_id` null, knockout FT/AET 2-1 sets the winner, and knockout PEN tied scores resolve the qualified team from API winner flags.
 - Leaderboard ordering: create users with different point totals, exact counts, trend counts, and a final username tie, then confirm `/leaderboard` orders by points, exacts, trends, and the existing final tie-breaker.
 - Private league ranking: confirm a private league ranking uses the same point/exact/trend ordering, includes active members with zero scored predictions, and excludes removed members.

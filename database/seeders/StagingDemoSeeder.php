@@ -226,7 +226,27 @@ class StagingDemoSeeder extends Seeder
             ],
             'esp_usa_knockout' => [
                 'lookup' => ['stage' => 'round_of_16', 'group' => null, 'team_a_id' => $teams['ESP']->id, 'team_b_id' => $teams['USA']->id],
-                'values' => ['starts_at' => $now->addDays(18)->setTime(21, 0), 'status' => TournamentMatch::STATUS_OPEN],
+                'values' => ['starts_at' => $now->addDays(18)->setTime(21, 0), 'status' => TournamentMatch::STATUS_OPEN, 'round' => 'E20 knockout QA open UX'],
+            ],
+            'eng_jpn_knockout_closed' => [
+                'lookup' => ['stage' => 'round_of_16', 'group' => null, 'team_a_id' => $teams['ENG']->id, 'team_b_id' => $teams['JPN']->id],
+                'values' => ['starts_at' => $now->addDay()->setTime(20, 0), 'prediction_closes_at' => $now->subMinutes(10), 'status' => TournamentMatch::STATUS_LOCKED, 'round' => 'E20 knockout QA closed read-only'],
+            ],
+            'arg_bra_knockout_ft' => [
+                'lookup' => ['stage' => 'quarter_final', 'group' => null, 'team_a_id' => $teams['ARG']->id, 'team_b_id' => $teams['BRA']->id],
+                'values' => ['starts_at' => $now->subDay()->setTime(20, 0), 'status' => TournamentMatch::STATUS_LOCKED, 'round' => 'E20 knockout QA FT 2-1'],
+            ],
+            'fra_uru_knockout_aet' => [
+                'lookup' => ['stage' => 'quarter_final', 'group' => null, 'team_a_id' => $teams['FRA']->id, 'team_b_id' => $teams['URU']->id],
+                'values' => ['starts_at' => $now->subDay()->setTime(23, 0), 'status' => TournamentMatch::STATUS_LOCKED, 'round' => 'E20 knockout QA AET 2-1'],
+            ],
+            'ger_mex_knockout_pen_a' => [
+                'lookup' => ['stage' => 'semi_final', 'group' => null, 'team_a_id' => $teams['GER']->id, 'team_b_id' => $teams['MEX']->id],
+                'values' => ['starts_at' => $now->subDays(2)->setTime(20, 0), 'status' => TournamentMatch::STATUS_LOCKED, 'round' => 'E20 knockout QA PEN team A'],
+            ],
+            'eng_jpn_knockout_pen_b' => [
+                'lookup' => ['stage' => 'semi_final', 'group' => null, 'team_a_id' => $teams['ENG']->id, 'team_b_id' => $teams['JPN']->id],
+                'values' => ['starts_at' => $now->subDays(2)->setTime(23, 0), 'status' => TournamentMatch::STATUS_LOCKED, 'round' => 'E20 knockout QA PEN team B'],
             ],
         ];
 
@@ -331,6 +351,22 @@ class StagingDemoSeeder extends Seeder
             ['user' => 'mariano', 'match' => 'usa_mex_live_incorrect', 'a' => 1, 'b' => 0],
             ['user' => 'ana', 'match' => 'esp_usa_knockout', 'a' => 1, 'b' => 0, 'qualified' => 'ESP'],
             ['user' => 'juan', 'match' => 'esp_usa_knockout', 'a' => 2, 'b' => 1, 'qualified' => 'ESP'],
+            ['user' => 'mariano', 'match' => 'eng_jpn_knockout_closed', 'a' => 1, 'b' => 1, 'qualified' => 'ENG'],
+            ['user' => 'mariano', 'match' => 'arg_bra_knockout_ft', 'a' => 2, 'b' => 1, 'qualified' => 'ARG'],
+            ['user' => 'ana', 'match' => 'arg_bra_knockout_ft', 'a' => 1, 'b' => 0, 'qualified' => 'ARG'],
+            ['user' => 'juan', 'match' => 'arg_bra_knockout_ft', 'a' => 1, 'b' => 0, 'qualified' => 'BRA'],
+            ['user' => 'lucia', 'match' => 'arg_bra_knockout_ft', 'a' => 0, 'b' => 2, 'qualified' => 'BRA'],
+            ['user' => 'mariano', 'match' => 'fra_uru_knockout_aet', 'a' => 2, 'b' => 1, 'qualified' => 'FRA'],
+            ['user' => 'ana', 'match' => 'fra_uru_knockout_aet', 'a' => 3, 'b' => 2, 'qualified' => 'FRA'],
+            ['user' => 'mariano', 'match' => 'ger_mex_knockout_pen_a', 'a' => 1, 'b' => 1, 'qualified' => 'GER'],
+            ['user' => 'ana', 'match' => 'ger_mex_knockout_pen_a', 'a' => 1, 'b' => 1, 'qualified' => 'MEX'],
+            ['user' => 'juan', 'match' => 'ger_mex_knockout_pen_a', 'a' => 2, 'b' => 2, 'qualified' => 'GER'],
+            ['user' => 'lucia', 'match' => 'ger_mex_knockout_pen_a', 'a' => 0, 'b' => 1, 'qualified' => 'GER'],
+            ['user' => 'diego', 'match' => 'ger_mex_knockout_pen_a', 'a' => 2, 'b' => 2, 'qualified' => 'MEX'],
+            ['user' => 'sofia', 'match' => 'ger_mex_knockout_pen_a', 'a' => 0, 'b' => 1, 'qualified' => 'MEX'],
+            ['user' => 'mariano', 'match' => 'eng_jpn_knockout_pen_b', 'a' => 1, 'b' => 1, 'qualified' => 'JPN'],
+            ['user' => 'ana', 'match' => 'eng_jpn_knockout_pen_b', 'a' => 2, 'b' => 2, 'qualified' => 'JPN'],
+            ['user' => 'juan', 'match' => 'eng_jpn_knockout_pen_b', 'a' => 1, 'b' => 1, 'qualified' => 'ENG'],
         ];
 
         foreach ($submittedPredictions as $prediction) {

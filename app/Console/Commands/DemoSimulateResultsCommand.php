@@ -28,9 +28,9 @@ class DemoSimulateResultsCommand extends Command
 
         $scenario = (string) $this->option('scenario');
 
-        if ($scenario !== 'group-day-1') {
+        if (! in_array($scenario, ['group-day-1', 'knockout-qa'], true)) {
             $this->error("Unknown demo result scenario [{$scenario}].");
-            $this->line('Available scenarios: group-day-1');
+            $this->line('Available scenarios: group-day-1, knockout-qa');
 
             return self::FAILURE;
         }
@@ -54,7 +54,9 @@ class DemoSimulateResultsCommand extends Command
             return self::FAILURE;
         }
 
-        $results = $this->groupDayOneScenario();
+        $results = $scenario === 'knockout-qa'
+            ? $this->knockoutQaScenario()
+            : $this->groupDayOneScenario();
         $missing = [];
         $updated = [];
         $settledPredictions = 0;
@@ -87,6 +89,7 @@ class DemoSimulateResultsCommand extends Command
                 'team_b_score' => $result['team_b_score'],
                 'winner_team_id' => $winnerTeamId,
                 'status' => TournamentMatch::STATUS_FINISHED,
+                'api_status' => $result['api_status'] ?? $match->api_status,
             ]);
 
             $settled = $settlement->score($match->refresh());
@@ -118,6 +121,12 @@ class DemoSimulateResultsCommand extends Command
         $this->line('Matches updated: '.count($updated));
         $this->line('Predictions settled: '.$settledPredictions);
         $this->line('Missing/skipped records: '.count($missing));
+
+        if ($scenario === 'knockout-qa') {
+            $this->line('QA users: mariano@prode.test, ana@prode.test, juan@prode.test, lucia@prode.test, diego@prode.test, sofia@prode.test');
+            $this->line('QA private league: Liga Demo Palermo');
+            $this->line('Run `php artisan prode:check-finished-matches` after simulation; it should report clean.');
+        }
 
         if ($missing !== []) {
             return self::FAILURE;
@@ -163,6 +172,59 @@ class DemoSimulateResultsCommand extends Command
                 'team_a_score' => 1,
                 'team_b_score' => 1,
                 'winner' => 'ESP',
+            ],
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function knockoutQaScenario(): array
+    {
+        return [
+            [
+                'label' => 'E20 FT: Argentina vs Brazil',
+                'stage' => 'quarter_final',
+                'group' => null,
+                'team_a' => 'ARG',
+                'team_b' => 'BRA',
+                'team_a_score' => 2,
+                'team_b_score' => 1,
+                'winner' => 'ARG',
+                'api_status' => 'FT',
+            ],
+            [
+                'label' => 'E20 AET: France vs Uruguay',
+                'stage' => 'quarter_final',
+                'group' => null,
+                'team_a' => 'FRA',
+                'team_b' => 'URU',
+                'team_a_score' => 2,
+                'team_b_score' => 1,
+                'winner' => 'FRA',
+                'api_status' => 'AET',
+            ],
+            [
+                'label' => 'E20 PEN team A: Germany vs Mexico',
+                'stage' => 'semi_final',
+                'group' => null,
+                'team_a' => 'GER',
+                'team_b' => 'MEX',
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+                'winner' => 'GER',
+                'api_status' => 'PEN',
+            ],
+            [
+                'label' => 'E20 PEN team B: England vs Japan',
+                'stage' => 'semi_final',
+                'group' => null,
+                'team_a' => 'ENG',
+                'team_b' => 'JPN',
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+                'winner' => 'JPN',
+                'api_status' => 'PEN',
             ],
         ];
     }
