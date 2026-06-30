@@ -70,6 +70,110 @@ class AdminResultSettlementTest extends TestCase
         $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
     }
 
+    public function test_knockout_tied_result_without_winner_is_rejected_and_does_not_settle(): void
+    {
+        $admin = $this->admin();
+        $match = $this->matchReadyForResult(['stage' => 'final']);
+        $prediction = $this->knockoutPrediction($match, 1, 1, $match->team_a_id);
+
+        $this->actingAs($admin)
+            ->from(route('admin.matches.result.edit', $match))
+            ->post(route('admin.matches.result.update', $match), [
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+            ])
+            ->assertRedirect(route('admin.matches.result.edit', $match))
+            ->assertSessionHasErrors(['winner_team_id']);
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertNull($match->team_a_score);
+        $this->assertNull($match->team_b_score);
+        $this->assertNull($match->winner_team_id);
+        $this->assertSame(TournamentMatch::STATUS_OPEN, $match->status);
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $prediction->status);
+        $this->assertNull($prediction->points_awarded);
+    }
+
+    public function test_knockout_tied_result_with_team_a_winner_saves_and_settles(): void
+    {
+        $admin = $this->admin();
+        $match = $this->matchReadyForResult(['stage' => 'final']);
+        $teamA = $match->team_a_id;
+        $teamB = $match->team_b_id;
+        $exactAndQualified = $this->knockoutPrediction($match, 1, 1, $teamA);
+        $exactWrongQualified = $this->knockoutPrediction($match, 1, 1, $teamB);
+
+        $this->actingAs($admin)
+            ->post(route('admin.matches.result.update', $match), [
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+                'winner_team_id' => $teamA,
+            ])
+            ->assertRedirect(route('admin.matches.index'));
+
+        $match->refresh();
+
+        $this->assertSame($teamA, $match->winner_team_id);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(8, $exactAndQualified->refresh()->points_awarded);
+        $this->assertSame(5, $exactWrongQualified->refresh()->points_awarded);
+    }
+
+    public function test_knockout_tied_result_with_team_b_winner_saves_and_settles(): void
+    {
+        $admin = $this->admin();
+        $match = $this->matchReadyForResult(['stage' => 'semi_final']);
+        $teamA = $match->team_a_id;
+        $teamB = $match->team_b_id;
+        $exactWrongQualified = $this->knockoutPrediction($match, 1, 1, $teamA);
+        $exactAndQualified = $this->knockoutPrediction($match, 1, 1, $teamB);
+
+        $this->actingAs($admin)
+            ->post(route('admin.matches.result.update', $match), [
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+                'winner_team_id' => $teamB,
+            ])
+            ->assertRedirect(route('admin.matches.index'));
+
+        $match->refresh();
+
+        $this->assertSame($teamB, $match->winner_team_id);
+        $this->assertSame(TournamentMatch::STATUS_FINISHED, $match->status);
+        $this->assertSame(5, $exactWrongQualified->refresh()->points_awarded);
+        $this->assertSame(8, $exactAndQualified->refresh()->points_awarded);
+    }
+
+    public function test_knockout_tied_result_rejects_winner_not_in_match_teams(): void
+    {
+        $admin = $this->admin();
+        $match = $this->matchReadyForResult(['stage' => 'quarter_final']);
+        $otherTeam = Team::factory()->create();
+        $prediction = $this->knockoutPrediction($match, 1, 1, $match->team_a_id);
+
+        $this->actingAs($admin)
+            ->from(route('admin.matches.result.edit', $match))
+            ->post(route('admin.matches.result.update', $match), [
+                'team_a_score' => 1,
+                'team_b_score' => 1,
+                'winner_team_id' => $otherTeam->id,
+            ])
+            ->assertRedirect(route('admin.matches.result.edit', $match))
+            ->assertSessionHasErrors(['winner_team_id']);
+
+        $match->refresh();
+        $prediction->refresh();
+
+        $this->assertNull($match->team_a_score);
+        $this->assertNull($match->team_b_score);
+        $this->assertNull($match->winner_team_id);
+        $this->assertSame(TournamentMatch::STATUS_OPEN, $match->status);
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $prediction->status);
+        $this->assertNull($prediction->points_awarded);
+    }
+
     public function test_result_correction_recalculates_prediction_points_idempotently(): void
     {
         $admin = $this->admin();

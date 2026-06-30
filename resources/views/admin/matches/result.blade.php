@@ -107,6 +107,26 @@
                                 </div>
                             </div>
 
+                            @if ($tournamentMatch->requiresQualifiedTeamPrediction())
+                                <div class="rounded-md bg-slate-50 p-4">
+                                    <x-input-label for="winner_team_id" :value="__('Clasificado si el resultado queda empatado')" />
+                                    <select
+                                        id="winner_team_id"
+                                        name="winner_team_id"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="">{{ __('Elegir equipo clasificado') }}</option>
+                                        <option value="{{ $tournamentMatch->team_a_id }}" @selected((string) old('winner_team_id', $tournamentMatch->winner_team_id) === (string) $tournamentMatch->team_a_id)>
+                                            {{ $tournamentMatch->teamA->name }}
+                                        </option>
+                                        <option value="{{ $tournamentMatch->team_b_id }}" @selected((string) old('winner_team_id', $tournamentMatch->winner_team_id) === (string) $tournamentMatch->team_b_id)>
+                                            {{ $tournamentMatch->teamB->name }}
+                                        </option>
+                                    </select>
+                                    <x-input-error :messages="$errors->get('winner_team_id')" class="mt-2" />
+                                </div>
+                            @endif
+
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p class="text-sm text-gray-500">
                                     {{ __('Guardar este resultado marcara el partido como terminado y recalculara los puntos de sus predicciones.') }}

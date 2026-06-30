@@ -17,6 +17,14 @@ class MatchPredictionSettlementService
             return 0;
         }
 
+        if (
+            $tournamentMatch->requiresQualifiedTeamPrediction()
+            && $tournamentMatch->team_a_score === $tournamentMatch->team_b_score
+            && $tournamentMatch->winner_team_id === null
+        ) {
+            return 0;
+        }
+
         $scoredCount = 0;
 
         $tournamentMatch

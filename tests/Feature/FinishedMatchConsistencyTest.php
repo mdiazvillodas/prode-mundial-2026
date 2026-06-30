@@ -6,6 +6,7 @@ use App\Models\Prediction;
 use App\Models\Team;
 use App\Models\TournamentMatch;
 use App\Models\User;
+use App\Services\MatchPredictionSettlementService;
 use App\Services\Operations\FinishedMatchConsistencyChecker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
@@ -73,6 +74,27 @@ class FinishedMatchConsistencyTest extends TestCase
         $this->artisan('prode:check-finished-matches')
             ->expectsOutputToContain('knockout_finished_missing_winner')
             ->assertFailed();
+    }
+
+    public function test_finished_knockout_is_clean_after_winner_is_set_and_settlement_reruns(): void
+    {
+        $match = $this->finishedMatch([
+            'stage' => 'final',
+            'team_a_score' => 1,
+            'team_b_score' => 1,
+            'winner_team_id' => null,
+        ]);
+        $prediction = $this->unscoredPrediction($match, 1, 1);
+        $prediction->forceFill(['predicted_qualified_team_id' => $match->team_b_id])->save();
+
+        $this->assertContains('knockout_finished_missing_winner', $this->codesFor());
+
+        $match->forceFill(['winner_team_id' => $match->team_b_id])->save();
+        $this->assertSame(1, app(MatchPredictionSettlementService::class)->score($match->refresh()));
+
+        $this->assertSame([], $this->codesFor());
+        $this->assertSame(Prediction::STATUS_SCORED, $prediction->refresh()->status);
+        $this->assertSame(8, $prediction->points_awarded);
     }
 
     public function test_finished_match_with_unscored_prediction_is_reported(): void

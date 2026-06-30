@@ -99,6 +99,11 @@ class MatchController extends Controller
         $validated = $request->validate([
             'team_a_score' => ['required', 'integer', 'min:0', 'max:99'],
             'team_b_score' => ['required', 'integer', 'min:0', 'max:99'],
+            'winner_team_id' => [
+                'nullable',
+                'integer',
+                Rule::in([$tournamentMatch->team_a_id, $tournamentMatch->team_b_id]),
+            ],
         ]);
 
         $teamAScore = (int) $validated['team_a_score'];
@@ -110,6 +115,14 @@ class MatchController extends Controller
             $winnerTeamId = $tournamentMatch->team_a_id;
         } elseif ($teamBScore > $teamAScore) {
             $winnerTeamId = $tournamentMatch->team_b_id;
+        } elseif ($tournamentMatch->requiresQualifiedTeamPrediction()) {
+            if (empty($validated['winner_team_id'])) {
+                return back()
+                    ->withErrors(['winner_team_id' => __('Elegí qué equipo clasificó antes de cerrar un empate de eliminación directa.')])
+                    ->withInput();
+            }
+
+            $winnerTeamId = (int) $validated['winner_team_id'];
         }
 
         $tournamentMatch->update([

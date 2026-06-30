@@ -187,13 +187,15 @@ class MatchPredictionSettlementServiceTest extends TestCase
         $exact = User::factory()->create();
         $trend = User::factory()->create();
 
-        $this->prediction($exact, $match, 1, 1, $teamA); // exact, qualified not credited -> 5
-        $this->prediction($trend, $match, 0, 0, $teamA); // draw trend, qualified not credited -> 2
+        $exactPrediction = $this->prediction($exact, $match, 1, 1, $teamA);
+        $trendPrediction = $this->prediction($trend, $match, 0, 0, $teamA);
 
-        $this->settlement()->score($match);
+        $this->assertSame(0, $this->settlement()->score($match));
 
-        $this->assertSame(5, $this->pointsFor($exact, $match));
-        $this->assertSame(2, $this->pointsFor($trend, $match));
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $exactPrediction->refresh()->status);
+        $this->assertNull($exactPrediction->points_awarded);
+        $this->assertSame(Prediction::STATUS_SUBMITTED, $trendPrediction->refresh()->status);
+        $this->assertNull($trendPrediction->points_awarded);
     }
 
     private function settlement(): MatchPredictionSettlementService
