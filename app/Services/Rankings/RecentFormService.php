@@ -52,7 +52,7 @@ class RecentFormService
 
                     return [
                         'match_id' => $match->id,
-                        'state' => $this->stateForPrediction($prediction),
+                        'state' => $this->stateForPrediction($prediction, $match),
                     ];
                 })
                 ->values()
@@ -82,16 +82,29 @@ class RecentFormService
             ->values();
     }
 
-    private function stateForPrediction(?Prediction $prediction): string
+    private function stateForPrediction(?Prediction $prediction, TournamentMatch $match): string
     {
-        if (! $prediction) {
+        if (! $prediction || $prediction->points_awarded === null) {
             return self::STATE_NONE;
         }
 
-        return match ((int) $prediction->points_awarded) {
-            PredictionScoringService::POINTS_EXACT_RESULT => self::STATE_EXACT,
-            PredictionScoringService::POINTS_CORRECT_OUTCOME => self::STATE_TREND,
-            default => self::STATE_INCORRECT,
-        };
+        $points = (int) $prediction->points_awarded;
+
+        if ($points === 0) {
+            return self::STATE_INCORRECT;
+        }
+
+        if ($points === $this->maxPointsFor($match)) {
+            return self::STATE_EXACT;
+        }
+
+        return self::STATE_TREND;
+    }
+
+    private function maxPointsFor(TournamentMatch $match): int
+    {
+        return $match->requiresQualifiedTeamPrediction()
+            ? PredictionScoringService::POINTS_KNOCKOUT_EXACT_AND_QUALIFIED
+            : PredictionScoringService::POINTS_EXACT_RESULT;
     }
 }

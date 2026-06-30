@@ -53,6 +53,57 @@ class RecentRankingFormTest extends TestCase
         $this->assertArrayNotHasKey('team_b_score', $entry->recent_form[0]);
     }
 
+    public function test_recent_form_states_are_based_on_points_awarded_and_match_maximum(): void
+    {
+        $tournament = Tournament::factory()->create();
+        $teamA = Team::factory()->create(['name' => 'Argentina', 'short_name' => 'ARG']);
+        $teamB = Team::factory()->create(['name' => 'Brazil', 'short_name' => 'BRA']);
+        $user = User::factory()->create(['name' => 'Points User', 'username' => 'points']);
+        $peer = User::factory()->create(['name' => 'Peer User', 'username' => 'peer']);
+
+        $matches = collect([
+            $this->finishedMatch($tournament, $teamA, $teamB, Carbon::parse('2026-06-11 18:00:00', 'UTC'), ['stage' => TournamentMatch::STAGE_GROUP]),
+            $this->finishedMatch($tournament, $teamA, $teamB, Carbon::parse('2026-06-12 18:00:00', 'UTC'), ['stage' => TournamentMatch::STAGE_GROUP]),
+            $this->finishedMatch($tournament, $teamA, $teamB, Carbon::parse('2026-06-13 18:00:00', 'UTC'), ['stage' => TournamentMatch::STAGE_GROUP]),
+            $this->finishedMatch($tournament, $teamA, $teamB, Carbon::parse('2026-06-14 18:00:00', 'UTC'), ['stage' => TournamentMatch::STAGE_FINAL]),
+            $this->finishedMatch($tournament, $teamA, $teamB, Carbon::parse('2026-06-15 18:00:00', 'UTC'), ['stage' => TournamentMatch::STAGE_FINAL]),
+            $this->finishedMatch($tournament, $teamA, $teamB, Carbon::parse('2026-06-16 18:00:00', 'UTC'), ['stage' => TournamentMatch::STAGE_FINAL]),
+        ]);
+
+        $this->scoredPrediction($user, $matches[0], 6, 2, 1);
+        $this->scoredPrediction($user, $matches[1], 3, 1, 0);
+        $this->scoredPrediction($user, $matches[2], 0, 0, 2);
+        $this->scoredPrediction($user, $matches[3], 8, 1, 1);
+        $this->scoredPrediction($user, $matches[4], 5, 2, 2);
+        $this->pendingPrediction($user, $matches[5], 1, 1);
+        $this->scoredPrediction($peer, $matches[5], 8, 1, 1);
+
+        $entry = (new RecentFormService(6))
+            ->attachToEntries($this->rankingEntries([$user]))
+            ->first();
+
+        $this->assertSame([
+            RecentFormService::STATE_EXACT,
+            RecentFormService::STATE_TREND,
+            RecentFormService::STATE_INCORRECT,
+            RecentFormService::STATE_EXACT,
+            RecentFormService::STATE_TREND,
+            RecentFormService::STATE_NONE,
+        ], collect($entry->recent_form)->pluck('state')->all());
+    }
+
+    public function test_recent_form_rendering_uses_green_for_partial_points_red_for_zero_and_star_for_max(): void
+    {
+        [$users] = $this->seedRankingScenario();
+
+        $this->actingAs($users['leader'])
+            ->get(route('leaderboard.index'))
+            ->assertOk()
+            ->assertSee('bg-emerald-500 ring-emerald-200', false)
+            ->assertSee('bg-red-500 ring-red-200', false)
+            ->assertSee('★', false);
+    }
+
     public function test_ranking_order_remains_unchanged_when_form_is_attached(): void
     {
         [$users] = $this->seedRankingScenario();
@@ -174,19 +225,20 @@ class RecentRankingFormTest extends TestCase
             ->get();
     }
 
-    private function finishedMatch(Tournament $tournament, Team $teamA, Team $teamB, Carbon $startsAt): TournamentMatch
+    private function finishedMatch(Tournament $tournament, Team $teamA, Team $teamB, Carbon $startsAt, array $overrides = []): TournamentMatch
     {
-        return TournamentMatch::factory()->create([
+        return TournamentMatch::factory()->create(array_merge([
             'tournament_id' => $tournament->id,
             'team_a_id' => $teamA->id,
             'team_b_id' => $teamB->id,
             'starts_at' => $startsAt,
             'prediction_closes_at' => $startsAt->copy()->subMinutes(5),
+            'stage' => TournamentMatch::STAGE_GROUP,
             'status' => TournamentMatch::STATUS_FINISHED,
             'team_a_score' => 2,
             'team_b_score' => 1,
             'winner_team_id' => $teamA->id,
-        ]);
+        ], $overrides));
     }
 
     private function scoredPrediction(User $user, TournamentMatch $match, int $points, int $scoreA, int $scoreB): void
@@ -198,6 +250,18 @@ class RecentRankingFormTest extends TestCase
             'team_b_score' => $scoreB,
             'status' => Prediction::STATUS_SCORED,
             'points_awarded' => $points,
+        ]);
+    }
+
+    private function pendingPrediction(User $user, TournamentMatch $match, int $scoreA, int $scoreB): void
+    {
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'team_a_score' => $scoreA,
+            'team_b_score' => $scoreB,
+            'status' => Prediction::STATUS_SUBMITTED,
+            'points_awarded' => null,
         ]);
     }
 
